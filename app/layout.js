@@ -1,3 +1,5 @@
+import "./global.css"; 
+
 export const metadata = {
   title: "TestifyAI",
   description: "AI-powered adaptive testing app",
