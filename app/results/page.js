@@ -1,14 +1,22 @@
-export const dynamic = "force-dynamic";
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 export default function Results() {
-  const params = useSearchParams();
-  const score = parseInt(params.get("score")) || 0;
-  const total = parseInt(params.get("total")) || 0;
-  const percent = ((score / total) * 100).toFixed(0);
+  const searchParams = useSearchParams();
+  const [score, setScore] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    const s = parseInt(searchParams.get("score")) || 0;
+    const t = parseInt(searchParams.get("total")) || 0;
+    setScore(s);
+    setTotal(t);
+  }, [searchParams]);
+
+  const percent = total > 0 ? ((score / total) * 100).toFixed(0) : 0;
 
   const getMessage = () => {
     if (percent >= 90) return "🔥 Master Level! Excellent job!";
@@ -22,7 +30,9 @@ export default function Results() {
       <h1 className="text-4xl font-bold text-blue-600 mb-4">Your Results</h1>
 
       <div className="bg-white shadow-md rounded-2xl p-6 w-11/12 sm:w-2/3 lg:w-1/2 mb-6">
-        <p className="text-2xl font-semibold mb-2">Score: {score} / {total}</p>
+        <p className="text-2xl font-semibold mb-2">
+          Score: {score} / {total}
+        </p>
         <p className="text-xl text-gray-700 mb-4">{percent}%</p>
         <p className="text-lg">{getMessage()}</p>
       </div>
