@@ -1,3 +1,4 @@
+import Link from "next/link";
 export default function Test() {
   return (
     <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center text-gray-900">
@@ -52,11 +53,12 @@ export default function Test() {
 
         {/* Generate Test Button */}
         <div className="flex justify-end">
-          <a href="/test-chat">
-            <button className="bg-blue-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-blue-700 transition">
-              Generate Test
-            </button>
-          </a>
+          <Link href="/test-chat">
+  <button className="bg-blue-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-blue-700 transition">
+    Generate Test
+  </button>
+</Link>
+
         </div>
       </div>
     </div>
