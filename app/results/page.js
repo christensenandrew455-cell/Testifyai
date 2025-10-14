@@ -1,20 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 export default function Results() {
-  const searchParams = useSearchParams();
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    const s = parseInt(searchParams.get("score")) || 0;
-    const t = parseInt(searchParams.get("total")) || 0;
+    // Only access URL params on the client
+    const params = new URLSearchParams(window.location.search);
+    const s = parseInt(params.get("score")) || 0;
+    const t = parseInt(params.get("total")) || 0;
     setScore(s);
     setTotal(t);
-  }, [searchParams]);
+  }, []);
 
   const percent = total > 0 ? ((score / total) * 100).toFixed(0) : 0;
 
