@@ -2,93 +2,110 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import "../global.css";
 
-export default function TestPage() {
+export default function Test() {
   const router = useRouter();
+  const [topic, setTopic] = useState("");
+  const [difficulty, setDifficulty] = useState("medium");
+  const [numQuestions, setNumQuestions] = useState(5);
+  const [loading, setLoading] = useState(false);
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [score, setScore] = useState(0);
+  const handleGenerate = async () => {
+    if (!topic.trim()) {
+      alert("Please enter a test topic.");
+      return;
+    }
 
-  const questions = [
-    {
-      question: "What is the capital of France?",
-      answers: ["Berlin", "Paris", "Madrid", "Rome"],
-      correct: "Paris",
-    },
-    {
-      question: "Which planet is closest to the Sun?",
-      answers: ["Venus", "Earth", "Mercury", "Mars"],
-      correct: "Mercury",
-    },
-    {
-      question: "Who wrote 'Romeo and Juliet'?",
-      answers: ["Charles Dickens", "William Shakespeare", "Mark Twain", "J.K. Rowling"],
-      correct: "William Shakespeare",
-    },
-  ];
+    setLoading(true);
 
-  const handleNext = () => {
-    const isCorrect = selectedAnswer === questions[currentQuestion].correct;
-    const newScore = isCorrect ? score + 1 : score;
+    try {
+      const res = await fetch("/api/generate-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic,
+          difficulty,
+          numQuestions,
+        }),
+      });
 
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedAnswer(null);
-      setScore(newScore);
-    } else {
-      // Navigate to results page
-      router.push(`/results?score=${newScore}&total=${questions.length}`);
+      const data = await res.json();
+      localStorage.setItem("generatedTest", JSON.stringify(data.questions || []));
+      router.push("/Testchat");
+    } catch (err) {
+      console.error("Error generating test:", err);
+      alert("Something went wrong while generating your test.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center text-gray-900 p-6">
-      <div className="absolute top-4 left-4">
-        <Link href="/" className="text-blue-600 text-lg font-semibold hover:underline">
-          ← Back
-        </Link>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        textAlign: "center",
+      }}
+    >
+      <h1>Generate Your Test</h1>
+
+      <div style={{ margin: "20px 0" }}>
+        <input
+          type="text"
+          placeholder="Enter test topic..."
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          style={{
+            padding: "10px",
+            width: "250px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+          }}
+        />
       </div>
 
-      <h1 className="text-3xl font-bold text-blue-600 mb-4">TestifyAI Quiz</h1>
-      <p className="text-gray-700 mb-6">
-        Question {currentQuestion + 1} of {questions.length}
-      </p>
-
-      <div className="bg-white shadow-md rounded-2xl p-6 w-11/12 sm:w-2/3 lg:w-1/2">
-        <h2 className="text-xl font-semibold mb-4">{questions[currentQuestion].question}</h2>
-
-        <div className="space-y-3 mb-6">
-          {questions[currentQuestion].answers.map((answer, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedAnswer(answer)}
-              className={`w-full text-left p-3 rounded-xl border transition ${
-                selectedAnswer === answer
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white border-gray-300 hover:bg-blue-50"
-              }`}
-            >
-              {answer}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex justify-end">
-          <button
-            onClick={handleNext}
-            disabled={!selectedAnswer}
-            className={`px-6 py-2 rounded-xl font-semibold transition ${
-              selectedAnswer
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-gray-300 text-gray-600 cursor-not-allowed"
-            }`}
-          >
-            {currentQuestion === questions.length - 1 ? "Submit" : "Next"}
-          </button>
-        </div>
+      <div style={{ marginBottom: "10px" }}>
+        <label>Difficulty: </label>
+        <select
+          value={difficulty}
+          onChange={(e) => setDifficulty(e.target.value)}
+          style={{
+            padding: "8px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+          }}
+        >
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
       </div>
+
+      <div style={{ marginBottom: "20px" }}>
+        <label>Number of Questions: </label>
+        <input
+          type="number"
+          min="1"
+          max="20"
+          value={numQuestions}
+          onChange={(e) => setNumQuestions(e.target.value)}
+          style={{
+            padding: "8px",
+            width: "60px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+          }}
+        />
+      </div>
+
+      <button onClick={handleGenerate} disabled={loading}>
+        {loading ? "Generating..." : "Start Test"}
+      </button>
     </div>
   );
 }
