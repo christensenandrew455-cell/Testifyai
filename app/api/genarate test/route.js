@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // make sure this is set in .env.local
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function POST(req) {
@@ -25,14 +25,13 @@ export async function POST(req) {
     `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // lightweight, fast, and accurate model
+      model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.8,
     });
 
     const text = response.choices[0].message.content.trim();
 
-    // Try parsing JSON response safely
     let data;
     try {
       data = JSON.parse(text);
