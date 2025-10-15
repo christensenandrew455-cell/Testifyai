@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-
-export const dynamic = "force-dynamic"; // 👈 prevents prerender error on Vercel
+import { useEffect, useState } from "react";
 
 export default function Results() {
+  // 👇 prevents build/prerender crash
+  if (typeof window === "undefined") return null;
+
   const searchParams = useSearchParams();
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
