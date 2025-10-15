@@ -1,111 +1,106 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "../global.css";
 
-export default function Test() {
+export default function Testchat() {
   const router = useRouter();
-  const [topic, setTopic] = useState("");
-  const [difficulty, setDifficulty] = useState("medium");
-  const [numQuestions, setNumQuestions] = useState(5);
-  const [loading, setLoading] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selected, setSelected] = useState(null);
+  const [score, setScore] = useState(0);
 
-  const handleGenerate = async () => {
-    if (!topic.trim()) {
-      alert("Please enter a test topic.");
-      return;
+  useEffect(() => {
+    const saved = localStorage.getItem("generatedTest");
+    if (saved) {
+      setQuestions(JSON.parse(saved));
     }
+  }, []);
 
-    setLoading(true);
+  if (!questions.length) {
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <p>No test found. Please generate one first.</p>
+        <button onClick={() => router.push("/Test")}>Go Back</button>
+      </div>
+    );
+  }
 
-    try {
-      const res = await fetch("/api/generate-test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic,
-          difficulty,
-          numQuestions,
-        }),
-      });
+  const current = questions[currentIndex];
 
-      const data = await res.json();
-      localStorage.setItem("generatedTest", JSON.stringify(data.questions || []));
-      router.push("/Testchat");
-    } catch (err) {
-      console.error("Error generating test:", err);
-      alert("Something went wrong while generating your test.");
-    } finally {
-      setLoading(false);
+  const handleNext = () => {
+    if (selected === current.correct) {
+      setScore(score + 1);
+    }
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+      setSelected(null);
+    } else {
+      const percentage = Math.round((score / questions.length) * 100);
+      localStorage.setItem(
+        "testResults",
+        JSON.stringify({
+          topic: "Custom Test",
+          score: percentage,
+          level: "N/A",
+          time: "N/A",
+        })
+      );
+      router.push("/Results");
     }
   };
 
   return (
     <div
       style={{
+        height: "100vh",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        height: "100vh",
         textAlign: "center",
       }}
     >
-      <h1>Generate Your Test</h1>
+      <h2>
+        Question {currentIndex + 1} of {questions.length}
+      </h2>
+      <p style={{ maxWidth: "600px", marginBottom: "20px" }}>{current.question}</p>
 
-      <div style={{ margin: "20px 0" }}>
-        <input
-          type="text"
-          placeholder="Enter test topic..."
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          style={{
-            padding: "10px",
-            width: "250px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-          }}
-        />
+      <div>
+        {current.answers.map((a, i) => (
+          <button
+            key={i}
+            onClick={() => setSelected(a)}
+            style={{
+              backgroundColor:
+                selected === a ? "#2563eb" : "#3b82f6",
+              margin: "5px",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            {a}
+          </button>
+        ))}
       </div>
 
-      <div style={{ marginBottom: "10px" }}>
-        <label>Difficulty: </label>
-        <select
-          value={difficulty}
-          onChange={(e) => setDifficulty(e.target.value)}
-          style={{
-            padding: "8px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-          }}
-        >
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
+      <div style={{ marginTop: "20px" }}>
+        <button onClick={handleNext} disabled={!selected}>
+          {currentIndex < questions.length - 1 ? "Next Question" : "Finish Test"}
+        </button>
       </div>
-
-      <div style={{ marginBottom: "20px" }}>
-        <label>Number of Questions: </label>
-        <input
-          type="number"
-          min="1"
-          max="20"
-          value={numQuestions}
-          onChange={(e) => setNumQuestions(e.target.value)}
-          style={{
-            padding: "8px",
-            width: "60px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-          }}
-        />
-      </div>
-
-      <button onClick={handleGenerate} disabled={loading}>
-        {loading ? "Generating..." : "Start Test"}
-      </button>
     </div>
   );
 }
