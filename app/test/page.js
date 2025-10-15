@@ -1,66 +1,111 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import "../global.css";
 
 export default function Test() {
+  const router = useRouter();
+  const [topic, setTopic] = useState("");
+  const [difficulty, setDifficulty] = useState("medium");
+  const [numQuestions, setNumQuestions] = useState(5);
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!topic.trim()) {
+      alert("Please enter a test topic.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/generate-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic,
+          difficulty,
+          numQuestions,
+        }),
+      });
+
+      const data = await res.json();
+      localStorage.setItem("generatedTest", JSON.stringify(data.questions || []));
+      router.push("/Testchat");
+    } catch (err) {
+      console.error("Error generating test:", err);
+      alert("Something went wrong while generating your test.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center text-gray-900">
-      {/* Back Button */}
-      <div className="absolute top-4 left-4">
-        <Link href="/" className="text-blue-600 text-lg font-semibold hover:underline">
-          ← Back
-        </Link>
-      </div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        textAlign: "center",
+      }}
+    >
+      <h1>Generate Your Test</h1>
 
-      <h1 className="text-3xl font-bold text-blue-600 mb-6">TestifyAI</h1>
-
-      {/* Prompt Input */}
-      <div className="bg-white shadow-md rounded-2xl p-6 w-11/12 sm:w-2/3 lg:w-1/2">
-        <label className="block text-lg font-semibold mb-2">
-          Pick a noun / proper noun / subject / anything you want to be tested on
-        </label>
+      <div style={{ margin: "20px 0" }}>
         <input
           type="text"
-          placeholder="Example: Physics, Dogs, World War II..."
-          className="w-full border border-gray-300 rounded-lg p-2 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Enter test topic..."
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          style={{
+            padding: "10px",
+            width: "250px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+          }}
         />
-
-        {/* Difficulty Slider */}
-        <div className="mb-6">
-          <label className="block text-lg font-semibold mb-3">Difficulty Level</label>
-          <input
-            type="range"
-            min="1"
-            max="9"
-            defaultValue="5"
-            step="1"
-            className="w-full accent-blue-500"
-          />
-          <div className="flex justify-between text-sm mt-1 text-gray-700">
-            <span>1 — Beginner</span>
-            <span>5 — Apprentice</span>
-            <span>9 — Master</span>
-          </div>
-        </div>
-
-        {/* Number of Questions */}
-        <div className="flex items-center justify-between mb-6">
-          <label className="text-lg font-semibold">Number of Questions:</label>
-          <input
-            type="number"
-            min="1"
-            placeholder="e.g. 10"
-            className="border border-gray-300 rounded-lg p-2 w-24 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
-
-        {/* Generate Test Button */}
-        <div className="flex justify-end">
-          <Link href="/test-chat">
-            <button className="bg-blue-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-blue-700 transition">
-              Generate Test
-            </button>
-          </Link>
-        </div>
       </div>
+
+      <div style={{ marginBottom: "10px" }}>
+        <label>Difficulty: </label>
+        <select
+          value={difficulty}
+          onChange={(e) => setDifficulty(e.target.value)}
+          style={{
+            padding: "8px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+          }}
+        >
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+
+      <div style={{ marginBottom: "20px" }}>
+        <label>Number of Questions: </label>
+        <input
+          type="number"
+          min="1"
+          max="20"
+          value={numQuestions}
+          onChange={(e) => setNumQuestions(e.target.value)}
+          style={{
+            padding: "8px",
+            width: "60px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+          }}
+        />
+      </div>
+
+      <button onClick={handleGenerate} disabled={loading}>
+        {loading ? "Generating..." : "Start Test"}
+      </button>
     </div>
   );
 }
