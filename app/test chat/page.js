@@ -1,105 +1,103 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import "../global.css";
+import Link from "next/link";
 
-export default function Testchat() {
+export default function TestChat() {
   const router = useRouter();
+
   const [questions, setQuestions] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selected, setSelected] = useState(null);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [score, setScore] = useState(0);
 
+  // Load questions from localStorage when page loads
   useEffect(() => {
-    const saved = localStorage.getItem("generatedTest");
-    if (saved) {
-      setQuestions(JSON.parse(saved));
+    const savedQuestions = localStorage.getItem("testQuestions");
+    if (savedQuestions) {
+      setQuestions(JSON.parse(savedQuestions));
+    } else {
+      alert("No test found! Returning to home.");
+      router.push("/");
     }
-  }, []);
+  }, [router]);
 
-  if (!questions.length) {
+  // Go to next question or results
+  const handleNext = () => {
+    if (!selectedAnswer) return;
+
+    const correct = selectedAnswer === questions[currentQuestion].correct;
+    if (correct) setScore((prev) => prev + 1);
+
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+    } else {
+      // Go to results page
+      router.push(`/results?score=${score + (correct ? 1 : 0)}&total=${questions.length}`);
+    }
+  };
+
+  if (questions.length === 0) {
     return (
-      <div
-        style={{
-          textAlign: "center",
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <p>No test found. Please generate one first.</p>
-        <button onClick={() => router.push("/Test")}>Go Back</button>
+      <div className="min-h-screen flex items-center justify-center bg-orange-50 text-gray-700">
+        <p>Loading questions...</p>
       </div>
     );
   }
 
-  const current = questions[currentIndex];
-
-  const handleNext = () => {
-    if (selected === current.correct) {
-      setScore(score + 1);
-    }
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setSelected(null);
-    } else {
-      const percentage = Math.round((score / questions.length) * 100);
-      localStorage.setItem(
-        "testResults",
-        JSON.stringify({
-          topic: "Custom Test",
-          score: percentage,
-          level: "N/A",
-          time: "N/A",
-        })
-      );
-      router.push("/Results");
-    }
-  };
+  const current = questions[currentQuestion];
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        textAlign: "center",
-      }}
-    >
-      <h2>
-        Question {currentIndex + 1} of {questions.length}
-      </h2>
-      <p style={{ maxWidth: "600px", marginBottom: "20px" }}>{current.question}</p>
-
-      <div>
-        {current.answers.map((a, i) => (
-          <button
-            key={i}
-            onClick={() => setSelected(a)}
-            style={{
-              backgroundColor:
-                selected === a ? "#2563eb" : "#3b82f6",
-              margin: "5px",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            {a}
-          </button>
-        ))}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50 text-gray-900 p-6">
+      {/* Header */}
+      <div className="absolute top-4 left-4">
+        <Link href="/" className="text-blue-600 text-lg font-semibold hover:underline">
+          ← Leave Test
+        </Link>
       </div>
 
-      <div style={{ marginTop: "20px" }}>
-        <button onClick={handleNext} disabled={!selected}>
-          {currentIndex < questions.length - 1 ? "Next Question" : "Finish Test"}
-        </button>
+      <h1 className="text-2xl font-bold text-blue-600 mb-4">TestifyAI</h1>
+      <p className="text-gray-700 mb-6">
+        Question {currentQuestion + 1} of {questions.length}
+      </p>
+
+      {/* Question Box */}
+      <div className="bg-white shadow-md rounded-2xl p-6 w-11/12 sm:w-2/3 lg:w-1/2">
+        <h2 className="text-xl font-semibold mb-4">{current.question}</h2>
+
+        <div className="space-y-3 mb-6">
+          {current.answers.map((answer, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedAnswer(answer)}
+              className={`w-full text-left p-3 rounded-xl border transition ${
+                selectedAnswer === answer
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white border-gray-300 hover:bg-blue-50"
+              }`}
+            >
+              {answer}
+            </button>
+          ))}
+        </div>
+
+        {/* Next / Submit Button */}
+        <div className="flex justify-between items-center">
+          <p className="text-gray-600">Score: {score}</p>
+          <button
+            onClick={handleNext}
+            disabled={!selectedAnswer}
+            className={`px-6 py-2 rounded-xl font-semibold transition ${
+              selectedAnswer
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-300 text-gray-600 cursor-not-allowed"
+            }`}
+          >
+            {currentQuestion === questions.length - 1 ? "Submit" : "Next"}
+          </button>
+        </div>
       </div>
     </div>
   );
