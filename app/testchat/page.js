@@ -64,7 +64,7 @@ export default function TestChat() {
         <h2 className="text-xl font-semibold mb-6">{current.question}</h2>
 
         <div className="space-y-3 mb-6">
-          {current.answers.map((answer, index) => (
+          {(current.answers || current.options || []).map((answer, index) => (
             <button
               key={index}
               onClick={() => setSelectedAnswer(answer)}
