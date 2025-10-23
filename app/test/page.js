@@ -48,71 +48,76 @@ export default function TestPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50 p-6 text-gray-900">
       {/* LOGO */}
-      <h1 className="text-3xl font-bold text-blue-600 mb-6">TestifyAI</h1>
+      <h1 className="text-3xl font-bold text-blue-600 mb-8">TestifyAI</h1>
 
-      <div className="bg-white shadow-md rounded-2xl p-6 w-11/12 sm:w-2/3 lg:w-1/2">
+      {/* Main Card */}
+      <div className="bg-white shadow-lg rounded-2xl p-8 w-11/12 sm:w-2/3 lg:w-1/2 space-y-6">
+
         {/* TOPIC */}
-        <label className="block text-lg font-semibold mb-2">Topic</label>
-        <input
-          type="text"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          placeholder="e.g. Space, History, or Biology"
-          className="w-full p-3 border border-gray-300 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-
-        {/* DIFFICULTY */}
-        <label className="block text-lg font-semibold mb-2">Difficulty</label>
-        <select
-          value={difficulty}
-          onChange={(e) => setDifficulty(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
-
-        {/* NUMBER OF QUESTIONS */}
-        <label className="block text-lg font-semibold mb-2">Number of Questions</label>
-        <select
-          value={numQuestions}
-          onChange={(e) => setNumQuestions(parseInt(e.target.value))}
-          className="w-full p-3 border border-gray-300 rounded-xl mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none bg-white"
-        >
-          {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map((num) => (
-            <option key={num} value={num}>
-              {num}
-            </option>
-          ))}
-        </select>
-
-        {/* SUMMARY BOX */}
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
-          <h2 className="font-semibold text-lg mb-2">🧠 Test Summary</h2>
-          {topic ? (
-            <ul className="text-gray-700 space-y-1">
-              <li>
-                <strong>Topic:</strong> {topic}
-              </li>
-              <li>
-                <strong>Difficulty:</strong>{" "}
-                {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-              </li>
-              <li>
-                <strong>Number of Questions:</strong> {numQuestions}
-              </li>
-            </ul>
-          ) : (
-            <p className="text-gray-500 italic">Enter a topic to see your test summary...</p>
-          )}
+        <div>
+          <label className="block text-lg font-semibold mb-2">1️⃣ Topic</label>
+          <input
+            type="text"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            placeholder="Type your topic... (e.g. Space, History, Biology)"
+            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
         </div>
 
-        {/* GENERATE BUTTON */}
+        {/* DIFFICULTY */}
+        <div>
+          <label className="block text-lg font-semibold mb-2">2️⃣ Difficulty</label>
+          <select
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+
+        {/* NUMBER OF QUESTIONS */}
+        <div>
+          <label className="block text-lg font-semibold mb-2">3️⃣ Number of Questions</label>
+          <select
+            value={numQuestions}
+            onChange={(e) => setNumQuestions(parseInt(e.target.value))}
+            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none bg-white"
+          >
+            {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map((num) => (
+              <option key={num} value={num}>
+                {num}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* SUMMARY */}
+        <div className="border-t border-gray-200 pt-4">
+          <h2 className="text-lg font-semibold mb-2">🧠 Summary</h2>
+          <ul className="space-y-1 text-gray-700">
+            <li>
+              <strong>Topic:</strong>{" "}
+              {topic ? topic : <span className="text-gray-400 italic">Not set</span>}
+            </li>
+            <li>
+              <strong>Difficulty:</strong>{" "}
+              {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+            </li>
+            <li>
+              <strong>Questions:</strong> {numQuestions}
+            </li>
+          </ul>
+        </div>
+
+        {/* BUTTON */}
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className={`w-full py-3 rounded-xl font-semibold text-white transition ${
+          className={`w-full py-3 mt-2 rounded-xl font-semibold text-white transition ${
             loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
           }`}
         >
