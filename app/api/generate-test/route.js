@@ -1,75 +1,48 @@
-import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-// ✅ Safe environment logging (for debugging)
-console.log("🔍 Environment check:");
-console.log(
-  "OPENAI_API_KEY:",
-  process.env.OPENAI_API_KEY
-    ? process.env.OPENAI_API_KEY.slice(0, 10) + "..."
-    : "❌ missing"
-);
-console.log("OPENAI_PROJECT_ID:", process.env.OPENAI_PROJECT_ID || "❌ missing");
-console.log("OPENAI_ORG_ID:", process.env.OPENAI_ORG_ID || "❌ missing");
-
-// ✅ Initialize OpenAI client with all necessary fields for project keys
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   project: process.env.OPENAI_PROJECT_ID,
-  organization: process.env.OPENAI_ORG_ID,
 });
 
 export async function POST(req) {
   try {
-    const { topic, difficulty, numQuestions } = await req.json();
+    const body = await req.json();
+    const { topic, difficulty, numQuestions } = body;
 
-    // 🧠 Prompt sent to GPT
+    console.log("🔍 Environment check:");
+    console.log("OPENAI_API_KEY:", process.env.OPENAI_API_KEY?.slice(0, 10) + "...");
+    console.log("OPENAI_PROJECT_ID:", process.env.OPENAI_PROJECT_ID);
+    console.log("OPENAI_ORG_ID:", process.env.OPENAI_ORG_ID);
+
     const prompt = `
-      Create a multiple-choice test about "${topic}" at difficulty level ${difficulty}.
-      The test should have ${numQuestions} questions.
-      Each question must have 4 answer options: one correct and three incorrect but related answers.
-      Format the output strictly as JSON with this structure:
-      {
-        "questions": [
-          {
-            "question": "string",
-            "answers": ["a", "b", "c", "d"],
-            "correct": "exact answer string"
-          }
-        ]
-      }
+      Create ${numQuestions} multiple-choice questions about ${topic}, 
+      difficulty: ${difficulty}. 
+      Each question should have one correct answer and three related incorrect ones.
+      Return in JSON format:
+      [
+        {"question": "...", "options": ["A", "B", "C", "D"], "answer": "A"}
+      ]
     `;
 
-    // 🧠 Call the OpenAI API
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.8,
+      temperature: 0.7,
     });
 
-    const text = response.choices[0].message.content.trim();
+    const content = response.choices[0].message.content;
+    const questions = JSON.parse(content);
 
-    // ✅ Try to parse JSON safely
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (err) {
-      console.error("❌ Invalid JSON from AI:", text);
-      data = { questions: [] };
-    }
+    return new Response(JSON.stringify({ questions }), {
+      headers: { "Content-Type": "application/json" },
+    });
 
-    console.log(
-      "✅ Successfully generated test with",
-      data.questions?.length || 0,
-      "questions"
-    );
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("❌ Error generating test:", error);
-    return NextResponse.json(
-      { error: "Failed to generate test" },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error("❌ Error generating test:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
