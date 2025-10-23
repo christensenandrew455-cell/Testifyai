@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
+// ✅ Safe debug logging (will only show first few chars of key)
+console.log("🔍 Environment check:");
+console.log("OPENAI_API_KEY:", process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.slice(0, 10) + "..." : "❌ missing");
+console.log("OPENAI_PROJECT_ID:", process.env.OPENAI_PROJECT_ID || "❌ missing");
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  project: process.env.OPENAI_PROJECT_ID, // 👈 required for sk-proj keys
 });
 
 export async function POST(req) {
@@ -36,13 +42,15 @@ export async function POST(req) {
     try {
       data = JSON.parse(text);
     } catch (err) {
-      console.error("Invalid JSON from AI:", text);
+      console.error("❌ Invalid JSON from AI:", text);
       data = { questions: [] };
     }
 
+    console.log("✅ Successfully generated test with", data.questions?.length || 0, "questions");
+
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error generating test:", error);
+    console.error("❌ Error generating test:", error);
     return NextResponse.json({ error: "Failed to generate test" }, { status: 500 });
   }
 }
