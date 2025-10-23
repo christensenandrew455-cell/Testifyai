@@ -2,7 +2,6 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  project: process.env.OPENAI_PROJECT_ID,
 });
 
 export async function POST(req) {
@@ -10,20 +9,25 @@ export async function POST(req) {
     const body = await req.json();
     const { topic, difficulty, numQuestions } = body;
 
-    console.log("🔍 Environment check:");
-    console.log("OPENAI_API_KEY:", process.env.OPENAI_API_KEY?.slice(0, 10) + "...");
-    console.log("OPENAI_PROJECT_ID:", process.env.OPENAI_PROJECT_ID);
-    console.log("OPENAI_ORG_ID:", process.env.OPENAI_ORG_ID);
+    console.log("🔍 Generating test:", topic, difficulty);
 
     const prompt = `
-      Create ${numQuestions} multiple-choice questions about ${topic}, 
-      difficulty: ${difficulty}. 
-      Each question should have one correct answer and three related incorrect ones.
-      Return in JSON format:
-      [
-        {"question": "...", "options": ["A", "B", "C", "D"], "answer": "A"}
-      ]
-    `;
+You are a test question generator. 
+Generate ${numQuestions} multiple-choice questions about "${topic}" at ${difficulty} difficulty.
+Each question must have:
+- one correct answer
+- three incorrect but related answers
+- all answers should be short and clear
+Return ONLY valid JSON in this exact format:
+
+[
+  {
+    "question": "What is ...?",
+    "answers": ["Answer 1", "Answer 2", "Answer 3", "Answer 4"],
+    "correct": "Answer 1"
+  }
+]
+`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -31,8 +35,18 @@ export async function POST(req) {
       temperature: 0.7,
     });
 
-    const content = response.choices[0].message.content;
+    // Extract and parse AI response
+    let content = response.choices[0].message.content.trim();
+    if (content.startsWith("```")) {
+      content = content.replace(/```(json)?/g, "").trim();
+    }
+
     const questions = JSON.parse(content);
+
+    // Shuffle answer order for each question
+    for (const q of questions) {
+      q.answers = q.answers.sort(() => Math.random() - 0.5);
+    }
 
     return new Response(JSON.stringify({ questions }), {
       headers: { "Content-Type": "application/json" },
