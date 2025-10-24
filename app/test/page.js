@@ -48,7 +48,7 @@ export default function TestPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50 p-6 text-gray-900">
       {/* LOGO */}
-      <h1 className="text-3xl font-bold text-blue-600 mb-8">TestifyAI</h1>
+      <h1 className="text-3xl font-bold text-blue-600 mb-8">TheTestifyAI</h1>
 
       {/* Main Card */}
       <div className="bg-white shadow-lg rounded-2xl p-8 w-11/12 sm:w-2/3 lg:w-1/2 space-y-6">
