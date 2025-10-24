@@ -1,6 +1,6 @@
 "use client";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"; // <-- disables prerendering
 
 import Script from "next/script";
 import { useEffect } from "react";
@@ -35,11 +35,12 @@ export default function AdPage() {
         Your results will appear after this short ad.
       </p>
 
+      {/* Google Ad container */}
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client="ca-pub-9836120352832422"
-        data-ad-slot="1234567890"  // Replace with your AdSense slot ID
+        data-ad-slot="1234567890"  // Replace this with your AdSense slot ID
         data-ad-format="auto"
         data-full-width-responsive="true"
       ></ins>
