@@ -1,9 +1,9 @@
 "use client";
 
-// ✅ Force Next.js to skip prerendering and use runtime rendering instead
+// prevent static generation completely
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const fetchCache = "force-no-store";
-export const revalidate = false;
 
 import Script from "next/script";
 import { useEffect } from "react";
@@ -14,7 +14,6 @@ export default function AdPage() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Redirect to results after 5 seconds
     const timeout = setTimeout(() => {
       const score = searchParams.get("score");
       const total = searchParams.get("total");
@@ -25,7 +24,7 @@ export default function AdPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white text-gray-900 text-center p-6">
-      {/* ✅ Google AdSense Script */}
+      {/* Google AdSense loader */}
       <Script
         id="adsense-init"
         async
@@ -39,12 +38,11 @@ export default function AdPage() {
         Your results will appear after this short ad.
       </p>
 
-      {/* ✅ AdSense ad unit */}
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client="ca-pub-9836120352832422"
-        data-ad-slot="1234567890"  // replace with your real AdSense slot
+        data-ad-slot="1234567890"  // replace with your AdSense slot ID
         data-ad-format="auto"
         data-full-width-responsive="true"
       ></ins>
