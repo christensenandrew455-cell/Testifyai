@@ -1,7 +1,6 @@
 "use client";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 import Script from "next/script";
 import { useEffect } from "react";
@@ -22,7 +21,7 @@ export default function AdPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white text-gray-900 text-center p-6">
-      {/* AdSense script */}
+      {/* Google AdSense script */}
       <Script
         id="adsbygoogle-init"
         async
@@ -40,7 +39,7 @@ export default function AdPage() {
         className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client="ca-pub-9836120352832422"
-        data-ad-slot="1234567890"  // replace with your ad slot ID
+        data-ad-slot="1234567890"  // Replace with your AdSense slot ID
         data-ad-format="auto"
         data-full-width-responsive="true"
       ></ins>
