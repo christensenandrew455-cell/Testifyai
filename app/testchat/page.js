@@ -90,7 +90,7 @@ export default function TestChat() {
         </Link>
       </div>
 
-      <h1 className="text-2xl font-bold text-blue-600 mb-4">TestifyAI</h1>
+      <h1 className="text-2xl font-bold text-blue-600 mb-4">TheTestifyAI</h1>
       <p className="text-gray-700 mb-6">
         Question {currentQuestion + 1} of {questions.length}
       </p>
