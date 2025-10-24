@@ -1,33 +1,56 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+export const dynamic = "force-dynamic";
+
+import Script from "next/script";
 import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function AdPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const score = searchParams.get("score");
-  const total = searchParams.get("total");
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Redirect to results page after 5 seconds
+    const timeout = setTimeout(() => {
+      const score = searchParams.get("score");
+      const total = searchParams.get("total");
       router.push(`/results?score=${score}&total=${total}`);
-    }, 5000); // 5 seconds
-    return () => clearTimeout(timer);
-  }, [router, score, total]);
+    }, 5000);
+
+    return () => clearTimeout(timeout);
+  }, [router, searchParams]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-yellow-50 text-gray-900 text-center p-6">
-      <h1 className="text-3xl font-bold text-blue-700 mb-4">Sponsored Message</h1>
-      <p className="text-lg text-gray-700 mb-6">
-        Your results are almost ready! Please enjoy this brief message...
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white text-gray-900 text-center p-6">
+      {/* Load AdSense library safely */}
+      <Script
+        id="adsbygoogle-init"
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9836120352832422"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
+
+      <h1 className="text-3xl font-bold text-blue-700 mb-4">Advertisement</h1>
+      <p className="text-lg text-gray-700 mb-8">
+        Your results will appear after this short ad.
       </p>
-      <div className="bg-white rounded-2xl shadow-lg p-8 w-11/12 sm:w-2/3 lg:w-1/2">
-        <p className="text-gray-600">
-          [Ad space — you can place an image, video, or partner message here]
-        </p>
-      </div>
-      <p className="mt-6 text-sm text-gray-500">(You’ll be redirected automatically)</p>
+
+      {/* Actual ad unit */}
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block" }}
+        data-ad-client="ca-pub-9836120352832422"
+        data-ad-slot="1234567890"  // 👈 replace this with your real Ad Slot ID
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      ></ins>
+
+      {/* Initialize the ad */}
+      <Script id="adsbygoogle-load">{`
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      `}</Script>
     </div>
   );
 }
