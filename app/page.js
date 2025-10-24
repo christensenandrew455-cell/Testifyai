@@ -6,7 +6,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-white text-gray-900 text-center">
       <div className="flex flex-col items-center">
-        <h1 className="text-5xl font-bold text-blue-700 mb-3">TestifyAI</h1>
+        <h1 className="text-5xl font-bold text-blue-700 mb-3">TheTestifyAI</h1>
         <p className="text-lg text-gray-700 mb-10 max-w-md">
           For all your testing needs — powered by AI precision.
         </p>
