@@ -1,8 +1,8 @@
 "use client";
 
-// ✅ These tell Next.js: don't prerender or cache this page
+// ✅ These two are the only ones you need.
+// Remove `revalidate` entirely — it's the cause of the build error.
 export const dynamic = "force-dynamic";
-export const revalidate = false;
 export const fetchCache = "force-no-store";
 
 import Script from "next/script";
@@ -24,7 +24,7 @@ export default function AdPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white text-gray-900 text-center p-6">
-      {/* ✅ Google AdSense script */}
+      {/* Google AdSense script */}
       <Script
         id="adsense-init"
         async
@@ -38,12 +38,12 @@ export default function AdPage() {
         Your results will appear after this short ad.
       </p>
 
-      {/* ✅ Ad container */}
+      {/* Ad container */}
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client="ca-pub-9836120352832422"
-        data-ad-slot="1234567890"  // replace with your AdSense slot ID
+        data-ad-slot="1234567890"  // Replace with your AdSense slot ID
         data-ad-format="auto"
         data-full-width-responsive="true"
       ></ins>
