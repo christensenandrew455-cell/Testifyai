@@ -1,25 +1,25 @@
 // app/layout.js
-import "./global.css";
-import Script from "next/script";
+import "./globals.css";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Your Site Name",
-  description: "Your description",
+  title: "TestifyAI",
+  description: "For all your testing needs — powered by AI precision.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* ✅ Google AdSense */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9836120352832422"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
+        {/* ✅ Google AdSense verification meta tag */}
+        <meta
+          name="google-adsense-account"
+          content="ca-pub-9836120352832422"
         />
       </head>
-      <body>{children}</body>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
