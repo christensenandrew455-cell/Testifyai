@@ -5,12 +5,12 @@ import Link from "next/link";
 export default function LearnMorePage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white text-center text-gray-900 p-6">
-      <h1 className="text-4xl font-bold text-blue-700 mb-3">TestifyAI</h1>
+      <h1 className="text-4xl font-bold text-blue-700 mb-3">TheTestifyAI</h1>
       <h2 className="text-2xl font-semibold text-blue-600 mb-6">Learn More</h2>
 
       <div className="max-w-2xl text-gray-700 leading-relaxed mb-8">
         <p className="mb-4">
-          TestifyAI is a website suitable for phones, computers, and tablets.
+          TheTestifyAI is a website suitable for phones, computers, and tablets.
           This app lets you take a test on anything you want and allows you to
           choose both the difficulty and the number of questions.
         </p>
