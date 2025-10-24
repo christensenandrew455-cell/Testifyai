@@ -13,6 +13,7 @@ export default function TestChat() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackType, setFeedbackType] = useState(null);
   const [explanation, setExplanation] = useState("");
+  const [showNext, setShowNext] = useState(false);
 
   useEffect(() => {
     const savedQuestions = localStorage.getItem("testQuestions");
@@ -24,36 +25,50 @@ export default function TestChat() {
     }
   }, [router]);
 
+  // Simple mock explanation — can be replaced with AI call
+  const generateExplanation = (question, correctAnswer) => {
+    return `The correct answer is "${correctAnswer}" because it best fits what the question is asking.`;
+  };
+
+  const handleAnswerClick = (answer) => {
+    setSelectedAnswer(answer);
+  };
+
   const handleNext = () => {
     if (!selectedAnswer) return;
 
     const currentQ = questions[currentQuestion];
     const correct = selectedAnswer === currentQ.correct;
 
-    // Simple explanation text (can be made smarter later)
-    setExplanation(
-      correct
-        ? `✅ Correct! "${currentQ.correct}" is the right answer because it best fits the question.`
-        : `❌ Incorrect. The correct answer is "${currentQ.correct}".`
-    );
-
+    const explanationText = generateExplanation(currentQ.question, currentQ.correct);
+    setExplanation(explanationText);
     setFeedbackType(correct ? "correct" : "wrong");
     setShowFeedback(true);
+    setShowNext(false);
 
-    setTimeout(() => {
-      setShowFeedback(false);
+    if (correct) setScore((prev) => prev + 1);
 
-      if (correct) setScore((prev) => prev + 1);
+    if (correct) {
+      // Show Next Question button immediately
+      setShowNext(true);
+    } else {
+      // Wait 2 seconds before showing Next Question button
+      setTimeout(() => {
+        setShowNext(true);
+      }, 2000);
+    }
+  };
 
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(null);
-      } else {
-        router.push(
-          `/ad?score=${score + (correct ? 1 : 0)}&total=${questions.length}`
-        );
-      }
-    }, 2000);
+  const handleNextQuestion = () => {
+    setShowFeedback(false);
+    setShowNext(false);
+
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+    } else {
+      router.push(`/ad?score=${score}&total=${questions.length}`);
+    }
   };
 
   if (questions.length === 0) {
@@ -68,7 +83,7 @@ export default function TestChat() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50 text-gray-900 p-6 relative">
-      {/* Leave Test Link */}
+      {/* Leave Test */}
       <div className="absolute top-4 left-4">
         <Link href="/" className="text-blue-600 text-lg font-semibold hover:underline">
           ← Leave Test
@@ -87,11 +102,11 @@ export default function TestChat() {
           {(current.answers || current.options || []).map((answer, index) => (
             <button
               key={index}
-              onClick={() => setSelectedAnswer(answer)}
+              onClick={() => handleAnswerClick(answer)}
               className={`w-full text-left p-3 rounded-xl border-2 font-medium transition-colors duration-200 ${
                 selectedAnswer === answer
-                  ? "bg-blue-600 border-blue-600 text-white"
-                  : "bg-white border-blue-600 text-blue-600 hover:bg-blue-100"
+                  ? "bg-blue-700 border-blue-700 text-white"
+                  : "bg-white border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
               }`}
             >
               {answer}
@@ -110,7 +125,7 @@ export default function TestChat() {
                 : "bg-gray-300 text-gray-600 cursor-not-allowed"
             }`}
           >
-            {currentQuestion === questions.length - 1 ? "Submit" : "Next"}
+            {currentQuestion === questions.length - 1 ? "Submit" : "Check Answer"}
           </button>
         </div>
       </div>
@@ -123,10 +138,18 @@ export default function TestChat() {
           }`}
         >
           <h2 className="text-6xl font-bold mb-4">
-            {feedbackType === "correct" ? "✅" : "❌"}
+            {feedbackType === "correct" ? "✅ Correct!" : "❌ Incorrect"}
           </h2>
-          <p className="text-xl mb-6">{explanation}</p>
-          <p className="text-sm opacity-80">Next question coming up...</p>
+          <p className="text-xl mb-6 px-8 max-w-xl">{explanation}</p>
+
+          {showNext && (
+            <button
+              onClick={handleNextQuestion}
+              className="bg-white text-gray-800 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition"
+            >
+              Next Question →
+            </button>
+          )}
         </div>
       )}
     </div>
