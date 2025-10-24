@@ -1,8 +1,8 @@
 "use client";
 
-// prevent static generation completely
+// ✅ These tell Next.js: don't prerender or cache this page
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = false;
 export const fetchCache = "force-no-store";
 
 import Script from "next/script";
@@ -24,7 +24,7 @@ export default function AdPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white text-gray-900 text-center p-6">
-      {/* Google AdSense loader */}
+      {/* ✅ Google AdSense script */}
       <Script
         id="adsense-init"
         async
@@ -38,6 +38,7 @@ export default function AdPage() {
         Your results will appear after this short ad.
       </p>
 
+      {/* ✅ Ad container */}
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
