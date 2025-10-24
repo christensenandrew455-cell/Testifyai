@@ -1,7 +1,7 @@
 import "./global.css";
 
 export const metadata = {
-  title: "TestifyAI",
+  title: "TheTestifyAI",
   description: "AI-powered adaptive testing app",
 };
 
