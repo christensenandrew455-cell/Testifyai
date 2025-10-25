@@ -14,6 +14,7 @@ export default function TestChat() {
   const [feedbackType, setFeedbackType] = useState(null);
   const [explanation, setExplanation] = useState("");
   const [showNext, setShowNext] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const savedQuestions = localStorage.getItem("testQuestions");
@@ -25,34 +26,48 @@ export default function TestChat() {
     }
   }, [router]);
 
-  // Simple mock explanation — can be replaced with AI call
-  const generateExplanation = (question, correctAnswer) => {
-    return `The correct answer is "${correctAnswer}" because it best fits what the question is asking.`;
+  // 🧠 New: Get explanation from AI endpoint
+  const fetchAIExplanation = async (question, correctAnswer) => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/explain-answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, correctAnswer }),
+      });
+      const data = await res.json();
+      setLoading(false);
+      return data.explanation || "Explanation not available.";
+    } catch (err) {
+      console.error("Error getting explanation:", err);
+      setLoading(false);
+      return "Explanation not available.";
+    }
   };
 
   const handleAnswerClick = (answer) => {
     setSelectedAnswer(answer);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!selectedAnswer) return;
 
     const currentQ = questions[currentQuestion];
     const correct = selectedAnswer === currentQ.correct;
 
-    const explanationText = generateExplanation(currentQ.question, currentQ.correct);
-    setExplanation(explanationText);
     setFeedbackType(correct ? "correct" : "wrong");
     setShowFeedback(true);
     setShowNext(false);
 
     if (correct) setScore((prev) => prev + 1);
 
+    // 🔍 Ask AI for a fact/explanation
+    const explanationText = await fetchAIExplanation(currentQ.question, currentQ.correct);
+    setExplanation(explanationText);
+
     if (correct) {
-      // Show Next Question button immediately
       setShowNext(true);
     } else {
-      // Wait 2 seconds before showing Next Question button
       setTimeout(() => {
         setShowNext(true);
       }, 2000);
@@ -62,10 +77,10 @@ export default function TestChat() {
   const handleNextQuestion = () => {
     setShowFeedback(false);
     setShowNext(false);
+    setSelectedAnswer(null);
 
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
-      setSelectedAnswer(null);
     } else {
       router.push(`/ad?score=${score}&total=${questions.length}`);
     }
@@ -118,14 +133,14 @@ export default function TestChat() {
           <p className="text-gray-600">Score: {score}</p>
           <button
             onClick={handleNext}
-            disabled={!selectedAnswer}
+            disabled={!selectedAnswer || loading}
             className={`px-6 py-2 rounded-xl font-semibold transition ${
-              selectedAnswer
+              selectedAnswer && !loading
                 ? "bg-blue-600 text-white hover:bg-blue-700"
                 : "bg-gray-300 text-gray-600 cursor-not-allowed"
             }`}
           >
-            {currentQuestion === questions.length - 1 ? "Submit" : "Check Answer"}
+            {loading ? "Loading..." : currentQuestion === questions.length - 1 ? "Submit" : "Check Answer"}
           </button>
         </div>
       </div>
