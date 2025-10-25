@@ -7,11 +7,39 @@ const openai = new OpenAI({
 export async function POST(req) {
   try {
     const body = await req.json();
+
+    // If called for explanation only
+    if (body.question && body.correctAnswer) {
+      const { question, correctAnswer } = body;
+
+      const explanationPrompt = `
+Explain briefly and clearly why "${correctAnswer}" is the correct answer to the question:
+"${question}"
+
+- Include a factual or educational detail related to the topic, if possible.
+- Keep it short and conversational.
+- Make it helpful for learning, not just "because it fits."
+`;
+
+      const expResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: explanationPrompt }],
+        temperature: 0.7,
+      });
+
+      const explanation = expResponse.choices[0].message.content.trim();
+
+      return new Response(JSON.stringify({ explanation }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Otherwise: generate full test
     const { topic, difficulty, numQuestions } = body;
 
     console.log("🎯 Generating test on:", topic, "Difficulty:", difficulty);
 
-    const prompt = `
+    const testPrompt = `
 You are TestifyAI — an advanced quiz question generator and teacher.
 
 Your task is to create ${numQuestions} multiple-choice questions about the topic **"${topic}"**.
@@ -55,19 +83,20 @@ Follow these rules carefully:
    ]
 `;
 
-    const response = await openai.chat.completions.create({
+    const testResponse = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content: testPrompt }],
       temperature: 0.8,
     });
 
-    let content = response.choices[0].message.content.trim();
+    let content = testResponse.choices[0].message.content.trim();
     if (content.startsWith("```")) {
       content = content.replace(/```(json)?/g, "").trim();
     }
 
     const questions = JSON.parse(content);
 
+    // Randomize answer order
     for (const q of questions) {
       q.answers = q.answers.sort(() => Math.random() - 0.5);
     }
@@ -77,7 +106,7 @@ Follow these rules carefully:
     });
 
   } catch (err) {
-    console.error("❌ Error generating test:", err);
+    console.error("❌ Error generating test or explanation:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
