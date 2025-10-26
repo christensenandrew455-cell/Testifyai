@@ -1,87 +1,55 @@
 "use client";
-
-import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
-function CorrectPageContent() {
+export default function CorrectPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const question = searchParams.get("question");
-  const userAnswer = searchParams.get("userAnswer");
-  const correctAnswer = searchParams.get("correctAnswer");
-  const explanation = searchParams.get("explanation");
-  const index = parseInt(searchParams.get("index") || "0");
+  const params = useSearchParams();
 
-  const handleClick = () => {
-    sessionStorage.setItem("resumeIndex", index + 1);
-    router.push("/testchat");
+  const topic = params.get("topic");
+  const selected = params.get("selected");
+  const correct = params.get("correct");
+  const reason = params.get("reason");
+
+  const questions = JSON.parse(sessionStorage.getItem("testData") || "[]");
+  const currentIndex = Number(sessionStorage.getItem("resumeIndex")) || 0;
+
+  const isLastQuestion = currentIndex >= questions.length;
+
+  const goNext = () => {
+    if (isLastQuestion) {
+      router.push("/ad"); // ✅ go to ad if test is done
+    } else {
+      router.push("/testchat");
+    }
   };
 
   return (
     <div
-      onClick={handleClick}
+      onClick={goNext}
       style={{
-        height: "100vh",
-        width: "100vw",
-        backgroundColor: "#4CAF50",
+        minHeight: "100vh",
+        backgroundColor: "#e6f9ec",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        color: "white",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
         textAlign: "center",
-        cursor: "pointer",
+        color: "#2e7d32",
+        fontFamily: "Segoe UI, sans-serif",
       }}
     >
-      <div style={{ fontSize: "5rem", marginBottom: "20px" }}>✅</div>
-      <h1 style={{ fontSize: "2.2rem", fontWeight: 800, marginBottom: "20px" }}>
-        Correct!
-      </h1>
+      <div style={{ fontSize: "64px", marginBottom: "16px" }}>✅</div>
+      <h1>Correct!</h1>
 
-      <p style={{ maxWidth: "600px", marginBottom: "10px" }}>
-        <strong>Question:</strong> {question}
+      <p style={{ marginTop: "20px", fontSize: "1.1rem" }}>
+        <strong>Your answer:</strong> {selected}
       </p>
       <p>
-        <strong>Your Answer:</strong> {userAnswer}
-      </p>
-      <p>
-        <strong>Correct Answer:</strong> {correctAnswer}
+        <strong>Explanation:</strong> {reason}
       </p>
 
-      {explanation && (
-        <p
-          style={{
-            fontSize: "1.1rem",
-            marginTop: "20px",
-            color: "rgba(255,255,255,0.9)",
-            maxWidth: "600px",
-          }}
-        >
-          💡 {explanation}
-        </p>
-      )}
-
-      <div
-        style={{
-          fontSize: "1rem",
-          opacity: 0.9,
-          fontWeight: 500,
-          borderTop: "1px solid rgba(255,255,255,0.3)",
-          paddingTop: "10px",
-          marginTop: "30px",
-        }}
-      >
-        Click to continue
-      </div>
+      <p style={{ marginTop: "40px", opacity: 0.7 }}>Click anywhere to continue</p>
     </div>
-  );
-}
-
-export default function CorrectPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <CorrectPageContent />
-    </Suspense>
   );
 }
