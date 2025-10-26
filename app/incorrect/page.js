@@ -1,22 +1,28 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function IncorrectPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const explanation = searchParams.get("explanation") || "";
-  const [canClick, setCanClick] = useState(false);
+  const question = searchParams.get("question");
+  const userAnswer = searchParams.get("userAnswer");
+  const correctAnswer = searchParams.get("correctAnswer");
+  const explanation = searchParams.get("explanation");
+  const index = parseInt(searchParams.get("index") || "0");
 
-  // Wait 2.5 seconds before allowing clicks
+  const [canClick, setCanClick] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setCanClick(true), 2500);
     return () => clearTimeout(timer);
   }, []);
 
   const handleClick = () => {
-    if (canClick) router.push("/testchat");
+    if (canClick) {
+      sessionStorage.setItem("resumeIndex", index + 1);
+      router.push("/testchat");
+    }
   };
 
   return (
@@ -25,7 +31,7 @@ function IncorrectPageContent() {
       style={{
         height: "100vh",
         width: "100vw",
-        backgroundColor: "#F44336", // ❌ Red background
+        backgroundColor: "#F44336",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -34,34 +40,36 @@ function IncorrectPageContent() {
         fontFamily: "Segoe UI, Roboto, sans-serif",
         textAlign: "center",
         cursor: canClick ? "pointer" : "default",
-        userSelect: "none",
-        transition: "opacity 0.3s ease",
       }}
     >
-      {/* X Icon */}
       <div style={{ fontSize: "5rem", marginBottom: "20px" }}>❌</div>
-
-      {/* Title */}
       <h1 style={{ fontSize: "2.2rem", fontWeight: 800, marginBottom: "20px" }}>
         Incorrect
       </h1>
 
-      {/* Explanation */}
+      <p style={{ maxWidth: "600px", marginBottom: "10px" }}>
+        <strong>Question:</strong> {question}
+      </p>
+      <p>
+        <strong>Your Answer:</strong> {userAnswer}
+      </p>
+      <p>
+        <strong>Correct Answer:</strong> {correctAnswer}
+      </p>
+
       {explanation && (
         <p
           style={{
-            fontSize: "1.2rem",
-            maxWidth: "600px",
-            lineHeight: "1.5",
+            fontSize: "1.1rem",
+            marginTop: "20px",
             color: "rgba(255,255,255,0.9)",
-            marginBottom: "30px",
+            maxWidth: "600px",
           }}
         >
-          {explanation}
+          💡 {explanation}
         </p>
       )}
 
-      {/* Click to continue (appears after 2.5s) */}
       {canClick && (
         <div
           style={{
@@ -70,6 +78,7 @@ function IncorrectPageContent() {
             fontWeight: 500,
             borderTop: "1px solid rgba(255,255,255,0.3)",
             paddingTop: "10px",
+            marginTop: "30px",
           }}
         >
           Click to continue
