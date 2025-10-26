@@ -68,7 +68,7 @@ Follow these rules carefully:
    - Correct answers must be factual and unique per question.
 
 5. **Explanation**
-   - After identifying the correct answer, give a short, clear explanation (2–3 sentences).
+   - After identifying the correct answer, give a short, clear explanation (1-2 sentences).
    - The explanation must teach something about the topic — a fact, rule, or reasoning — not just “because it fits.”
 
 6. **Output**
