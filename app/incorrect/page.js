@@ -2,48 +2,37 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function IncorrectPage() {
+export default function IncorrectPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const current = Number(searchParams.get("current")) || 0;
   const total = Number(searchParams.get("total")) || 1;
   const selectedIndex = Number(searchParams.get("selected"));
-
-  const [canClick, setCanClick] = useState(false);
   const [questionObj, setQuestionObj] = useState(null);
+  const [clickable, setClickable] = useState(false);
 
   useEffect(() => {
-    // load testData from localStorage
     try {
       const raw = localStorage.getItem("testData");
       if (raw) {
         const arr = JSON.parse(raw);
         if (Array.isArray(arr) && arr[current]) {
           setQuestionObj(arr[current]);
-        } else {
-          console.warn("testData missing current index");
         }
-      } else {
-        console.warn("no testData in localStorage");
       }
     } catch (e) {
-      console.error("Failed to read testData from localStorage", e);
+      console.error("Error loading testData:", e);
     }
 
-    const timer = setTimeout(() => setCanClick(true), 2500);
+    // Wait 2.5s before allowing clicks
+    const timer = setTimeout(() => setClickable(true), 2500);
     return () => clearTimeout(timer);
   }, [current]);
 
   const handleClick = () => {
-    if (!canClick) return;
-    // advance to next question or to results
+    if (!clickable) return;
     if (current + 1 < total) {
-      // pass next index to testchat - we can navigate back to testchat and let it read from localStorage
-      router.push(`/testchat?topic=${encodeURIComponent(
-        // keep topic param if available
-        // read topic from stored question if exists, else fallback
-        (questionObj && questionObj.topic) || ""
-      )}&start=${current + 1}`);
+      router.push(`/testchat?start=${current + 1}`);
     } else {
       router.push("/results");
     }
@@ -54,8 +43,6 @@ export default function IncorrectPage() {
       ? questionObj.answers[selectedIndex]
       : "Unknown";
 
-  // The API should place the correct answer either as a string at `questionObj.correct`
-  // or `questionObj.correct` may be the correct answer string. We handle both:
   const correctText =
     questionObj && questionObj.correct !== undefined
       ? typeof questionObj.correct === "number"
@@ -78,29 +65,29 @@ export default function IncorrectPage() {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        background: "linear-gradient(to right, #ff8a80, #e53935)",
+        background: "linear-gradient(to right, #e57373, #c62828)",
         color: "white",
         fontFamily: "Segoe UI, Roboto, sans-serif",
         textAlign: "center",
-        cursor: canClick ? "pointer" : "default",
+        cursor: clickable ? "pointer" : "default",
         transition: "opacity 0.3s ease",
         padding: "20px",
       }}
     >
-      {/* Big Red X */}
+      {/* Big red X */}
       <div
         style={{
           fontSize: "120px",
           fontWeight: "bold",
           marginBottom: "20px",
           userSelect: "none",
-          opacity: 0.95,
+          opacity: 0.9,
         }}
       >
         ✖
       </div>
 
-      {/* Text Details */}
+      {/* Main text */}
       <div style={{ fontSize: "1.6rem", marginBottom: "8px", fontWeight: 800 }}>
         Incorrect
       </div>
@@ -125,8 +112,8 @@ export default function IncorrectPage() {
         {explanation}
       </div>
 
-      {/* "Click to Continue" text appears after delay */}
-      {canClick && (
+      {/* Click to continue (appears after 2.5s) */}
+      {clickable && (
         <div
           style={{
             fontSize: "0.95rem",
