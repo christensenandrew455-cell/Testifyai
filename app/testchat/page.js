@@ -62,10 +62,10 @@ export default function TestChat() {
 
     setLoadingExplanation(false);
 
-    // ✅ Wait a moment before showing next button
+    // ✅ Wait before showing next button
     setTimeout(() => {
       setShowNext(true);
-    }, correct ? 1000 : 2000);
+    }, 2000);
   };
 
   const handleNextQuestion = () => {
@@ -115,7 +115,7 @@ export default function TestChat() {
               className={`w-full text-left p-3 rounded-xl border-2 font-medium transition-colors duration-200 ${
                 selectedAnswer === answer
                   ? "bg-blue-700 border-blue-700 text-white"
-                  : "bg-white border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                  : "bg-white border-blue-600 text-blue-600 hover:bg-blue-100"
               }`}
             >
               {answer}
@@ -142,7 +142,8 @@ export default function TestChat() {
       {/* ✅ Feedback Overlay */}
       {showFeedback && (
         <div
-          className={`fixed inset-0 flex flex-col items-center justify-center text-white text-center z-50 transition-all duration-500 ${
+          onClick={showNext ? handleNextQuestion : undefined}
+          className={`fixed inset-0 flex flex-col items-center justify-center text-white text-center z-50 transition-all duration-700 animate-slide-up ${
             feedbackType === "correct" ? "bg-green-600" : "bg-red-600"
           }`}
         >
