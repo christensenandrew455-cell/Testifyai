@@ -1,128 +1,195 @@
 "use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-export default function TestPage() {
+export default function TestSetupPage() {
   const [topic, setTopic] = useState("");
-  const [difficulty, setDifficulty] = useState("medium");
-  const [numQuestions, setNumQuestions] = useState(5);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  const handleGenerate = async () => {
-    if (!topic.trim()) {
-      alert("Please enter a topic first!");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/generate-test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic,
-          difficulty,
-          numQuestions,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.questions && data.questions.length > 0) {
-        localStorage.setItem("testQuestions", JSON.stringify(data.questions));
-        router.push("/testchat");
-      } else {
-        alert("Failed to generate questions. Try again!");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error connecting to AI. Please try again.");
-    }
-
-    setLoading(false);
-  };
+  const [difficulty, setDifficulty] = useState(1);
+  const [questionCount, setQuestionCount] = useState(5);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50 p-6 text-gray-900">
-      {/* LOGO */}
-      <h1 className="text-3xl font-bold text-blue-600 mb-8">TheTestifyAI</h1>
+    <div
+      style={{
+        height: "100vh",
+        width: "100vw",
+        background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: "rgba(255,255,255,0.1)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "40px",
+          border: "3px solid rgba(255,255,255,0.2)",
+          padding: "40px 50px",
+          width: "90%",
+          maxWidth: "450px",
+          color: "white",
+          textAlign: "center",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+        }}
+      >
+        {/* Header */}
+        <h2 style={{ marginBottom: "24px", fontWeight: 800 }}>Topic</h2>
 
-      {/* Main Card */}
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-11/12 sm:w-2/3 lg:w-1/2 space-y-6">
+        {/* Topic input */}
+        <input
+          type="text"
+          placeholder="What do you want to be tested on?"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: "12px",
+            border: "none",
+            fontSize: "1rem",
+            textAlign: "center",
+            outline: "none",
+            marginBottom: "28px",
+          }}
+        />
 
-        {/* TOPIC */}
-        <div>
-          <label className="block text-lg font-semibold mb-2">1️⃣ Topic</label>
-          <input
-            type="text"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            placeholder="Type your topic... (e.g. Space, History, Biology)"
-            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
-
-        {/* DIFFICULTY */}
-        <div>
-          <label className="block text-lg font-semibold mb-2">2️⃣ Difficulty</label>
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
-
-        {/* NUMBER OF QUESTIONS */}
-        <div>
-          <label className="block text-lg font-semibold mb-2">3️⃣ Number of Questions</label>
-          <select
-            value={numQuestions}
-            onChange={(e) => setNumQuestions(parseInt(e.target.value))}
-            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none bg-white"
-          >
-            {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map((num) => (
-              <option key={num} value={num}>
-                {num}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* SUMMARY */}
-        <div className="border-t border-gray-200 pt-4">
-          <h2 className="text-lg font-semibold mb-2">🧠 Summary</h2>
-          <ul className="space-y-1 text-gray-700">
-            <li>
-              <strong>Topic:</strong>{" "}
-              {topic ? topic : <span className="text-gray-400 italic">Not set</span>}
-            </li>
-            <li>
-              <strong>Difficulty:</strong>{" "}
-              {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-            </li>
-            <li>
-              <strong>Questions:</strong> {numQuestions}
-            </li>
-          </ul>
-        </div>
-
-        {/* BUTTON */}
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className={`w-full py-3 mt-2 rounded-xl font-semibold text-white transition ${
-            loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-          }`}
+        {/* Difficulty label */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "8px",
+            fontWeight: 600,
+          }}
         >
-          {loading ? "Generating..." : "Generate Test"}
-        </button>
+          <span>Beginner</span>
+          <span>Difficulty Scale</span>
+          <span>Master</span>
+        </div>
+
+        {/* Slider */}
+        <input
+          type="range"
+          min="1"
+          max="10"
+          step="1"
+          value={difficulty}
+          onChange={(e) => setDifficulty(e.target.value)}
+          style={{
+            width: "100%",
+            accentColor: "#1976d2", // ✅ blue slider
+            marginBottom: "28px",
+            height: "6px",
+            cursor: "pointer",
+          }}
+        />
+
+        {/* Number of questions */}
+        <label
+          style={{
+            display: "block",
+            marginBottom: "8px",
+            fontWeight: 600,
+          }}
+        >
+          Number of questions on the test
+        </label>
+        <input
+          type="number"
+          min="1"
+          max="50"
+          value={questionCount}
+          onChange={(e) => setQuestionCount(e.target.value)}
+          style={{
+            width: "80px",
+            padding: "8px",
+            borderRadius: "10px",
+            border: "none",
+            textAlign: "center",
+            fontSize: "1rem",
+            marginBottom: "32px",
+          }}
+        />
+
+        {/* Buttons */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "20px",
+          }}
+        >
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <button
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                borderRadius: "12px",
+                border: "none",
+                backgroundColor: "#1976d2",
+                color: "white",
+                fontWeight: 700,
+                fontSize: "1rem",
+                cursor: "pointer",
+                transition: "background-color 0.2s, transform 0.1s",
+                width: "140px",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#135cb0")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "#1976d2")
+              }
+            >
+              Back
+            </button>
+          </Link>
+
+          <button
+            style={{
+              flex: 1,
+              padding: "12px 0",
+              borderRadius: "12px",
+              border: "none",
+              backgroundColor: "#1976d2",
+              color: "white",
+              fontWeight: 700,
+              fontSize: "1rem",
+              cursor: "pointer",
+              transition: "background-color 0.2s, transform 0.1s",
+              width: "140px",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#135cb0")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "#1976d2")
+            }
+            onClick={() => {
+              alert(
+                `Generating a test on "${topic}" with difficulty ${difficulty} and ${questionCount} questions.`
+              );
+            }}
+          >
+            Generate Test
+          </button>
+        </div>
+      </div>
+
+      {/* Logo text */}
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "30px",
+          fontWeight: 700,
+          color: "white",
+          fontSize: "1.2rem",
+        }}
+      >
+        TheTestifyAI
       </div>
     </div>
   );
