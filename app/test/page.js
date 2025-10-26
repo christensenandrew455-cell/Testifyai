@@ -10,29 +10,26 @@ export default function TestSetupPage() {
   const [loading, setLoading] = useState(false);
 
   const handleGenerateTest = async () => {
-    if (!topic) {
+    if (!topic.trim()) {
       alert("Please enter a topic!");
       return;
     }
 
+    const num = Math.max(1, questionCount); // ensure at least 1
     setLoading(true);
+
     try {
       const res = await fetch("/api/generate-test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic,
-          difficulty,
-          numQuestions: questionCount,
-        }),
+        body: JSON.stringify({ topic, difficulty, numQuestions: num }),
       });
 
       if (!res.ok) throw new Error("API failed");
 
       const data = await res.json();
-      localStorage.setItem("testData", JSON.stringify(data.questions));
+      sessionStorage.setItem("testData", JSON.stringify(data.questions));
 
-      // navigate to /testchat with topic in query
       router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
     } catch (err) {
       console.error("❌ Error generating test:", err);
@@ -104,10 +101,10 @@ export default function TestSetupPage() {
         <input
           type="range"
           min="1"
-          max="10"
+          max="9"
           step="1"
           value={difficulty}
-          onChange={(e) => setDifficulty(e.target.value)}
+          onChange={(e) => setDifficulty(Number(e.target.value))}
           style={{
             width: "100%",
             accentColor: "#1976d2",
@@ -131,7 +128,7 @@ export default function TestSetupPage() {
           min="1"
           max="50"
           value={questionCount}
-          onChange={(e) => setQuestionCount(e.target.value)}
+          onChange={(e) => setQuestionCount(Number(e.target.value))}
           style={{
             width: "80px",
             padding: "8px",
