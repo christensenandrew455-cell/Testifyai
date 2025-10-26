@@ -1,8 +1,9 @@
 "use client";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
-export default function CorrectPage() {
+function CorrectContent() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -13,12 +14,11 @@ export default function CorrectPage() {
 
   const questions = JSON.parse(sessionStorage.getItem("testData") || "[]");
   const currentIndex = Number(sessionStorage.getItem("resumeIndex")) || 0;
-
   const isLastQuestion = currentIndex >= questions.length;
 
   const goNext = () => {
     if (isLastQuestion) {
-      router.push("/ad"); // ✅ go to ad if test is done
+      router.push("/ad");
     } else {
       router.push("/testchat");
     }
@@ -51,5 +51,13 @@ export default function CorrectPage() {
 
       <p style={{ marginTop: "40px", opacity: 0.7 }}>Click anywhere to continue</p>
     </div>
+  );
+}
+
+export default function CorrectPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CorrectContent />
+    </Suspense>
   );
 }
