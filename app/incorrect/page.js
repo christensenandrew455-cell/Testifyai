@@ -1,59 +1,23 @@
 "use client";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
-export default function IncorrectPageContent() {
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+function IncorrectPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const current = Number(searchParams.get("current")) || 0;
-  const total = Number(searchParams.get("total")) || 1;
-  const selectedIndex = Number(searchParams.get("selected"));
-  const [questionObj, setQuestionObj] = useState(null);
-  const [clickable, setClickable] = useState(false);
+  const explanation = searchParams.get("explanation") || "";
+  const [canClick, setCanClick] = useState(false);
 
+  // Wait 2.5 seconds before allowing clicks
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("testData");
-      if (raw) {
-        const arr = JSON.parse(raw);
-        if (Array.isArray(arr) && arr[current]) {
-          setQuestionObj(arr[current]);
-        }
-      }
-    } catch (e) {
-      console.error("Error loading testData:", e);
-    }
-
-    // Wait 2.5s before allowing clicks
-    const timer = setTimeout(() => setClickable(true), 2500);
+    const timer = setTimeout(() => setCanClick(true), 2500);
     return () => clearTimeout(timer);
-  }, [current]);
+  }, []);
 
   const handleClick = () => {
-    if (!clickable) return;
-    if (current + 1 < total) {
-      router.push(`/testchat?start=${current + 1}`);
-    } else {
-      router.push("/results");
-    }
+    if (canClick) router.push("/testchat");
   };
-
-  const userAnswerText =
-    questionObj && Array.isArray(questionObj.answers) && !isNaN(selectedIndex)
-      ? questionObj.answers[selectedIndex]
-      : "Unknown";
-
-  const correctText =
-    questionObj && questionObj.correct !== undefined
-      ? typeof questionObj.correct === "number"
-        ? questionObj.answers[questionObj.correct]
-        : questionObj.correct
-      : "Unknown";
-
-  const explanation =
-    questionObj && questionObj.explanation
-      ? questionObj.explanation
-      : "Explanation unavailable.";
 
   return (
     <div
@@ -61,70 +25,64 @@ export default function IncorrectPageContent() {
       style={{
         height: "100vh",
         width: "100vw",
+        backgroundColor: "#F44336", // ❌ Red background
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
         alignItems: "center",
-        background: "linear-gradient(to right, #e57373, #c62828)",
+        justifyContent: "center",
         color: "white",
         fontFamily: "Segoe UI, Roboto, sans-serif",
         textAlign: "center",
-        cursor: clickable ? "pointer" : "default",
+        cursor: canClick ? "pointer" : "default",
+        userSelect: "none",
         transition: "opacity 0.3s ease",
-        padding: "20px",
       }}
     >
-      {/* Big red X */}
-      <div
-        style={{
-          fontSize: "120px",
-          fontWeight: "bold",
-          marginBottom: "20px",
-          userSelect: "none",
-          opacity: 0.9,
-        }}
-      >
-        ✖
-      </div>
+      {/* X Icon */}
+      <div style={{ fontSize: "5rem", marginBottom: "20px" }}>❌</div>
 
-      {/* Main text */}
-      <div style={{ fontSize: "1.6rem", marginBottom: "8px", fontWeight: 800 }}>
+      {/* Title */}
+      <h1 style={{ fontSize: "2.2rem", fontWeight: 800, marginBottom: "20px" }}>
         Incorrect
-      </div>
+      </h1>
 
-      <div style={{ fontSize: "1.05rem", marginBottom: "6px" }}>
-        Your answer was: <b>{userAnswerText}</b>
-      </div>
-
-      <div style={{ fontSize: "1.05rem", marginBottom: "12px" }}>
-        The correct answer is: <b>{correctText}</b>
-      </div>
-
-      <div
-        style={{
-          fontSize: "1rem",
-          maxWidth: "760px",
-          opacity: 0.95,
-          marginBottom: "18px",
-          lineHeight: 1.4,
-        }}
-      >
-        {explanation}
-      </div>
-
-      {/* Click to continue (appears after 2.5s) */}
-      {clickable && (
-        <div
+      {/* Explanation */}
+      {explanation && (
+        <p
           style={{
-            fontSize: "0.95rem",
-            marginTop: "8px",
-            opacity: 0.95,
-            animation: "fadeIn 0.4s ease-in-out",
+            fontSize: "1.2rem",
+            maxWidth: "600px",
+            lineHeight: "1.5",
+            color: "rgba(255,255,255,0.9)",
+            marginBottom: "30px",
           }}
         >
-          click to continue →
+          {explanation}
+        </p>
+      )}
+
+      {/* Click to continue (appears after 2.5s) */}
+      {canClick && (
+        <div
+          style={{
+            fontSize: "1rem",
+            opacity: 0.9,
+            fontWeight: 500,
+            borderTop: "1px solid rgba(255,255,255,0.3)",
+            paddingTop: "10px",
+          }}
+        >
+          Click to continue
         </div>
       )}
     </div>
+  );
+}
+
+export default function IncorrectPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <IncorrectPageContent />
+    </Suspense>
   );
 }
