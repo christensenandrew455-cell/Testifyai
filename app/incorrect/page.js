@@ -1,97 +1,70 @@
 "use client";
-
-import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
-function IncorrectPageContent() {
+export default function IncorrectPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const question = searchParams.get("question");
-  const userAnswer = searchParams.get("userAnswer");
-  const correctAnswer = searchParams.get("correctAnswer");
-  const explanation = searchParams.get("explanation");
-  const index = parseInt(searchParams.get("index") || "0");
+  const params = useSearchParams();
+
+  const topic = params.get("topic");
+  const selected = params.get("selected");
+  const correct = params.get("correct");
+  const reason = params.get("reason");
 
   const [canClick, setCanClick] = useState(false);
+
+  const questions = JSON.parse(sessionStorage.getItem("testData") || "[]");
+  const currentIndex = Number(sessionStorage.getItem("resumeIndex")) || 0;
+
+  const isLastQuestion = currentIndex >= questions.length;
+
   useEffect(() => {
     const timer = setTimeout(() => setCanClick(true), 2500);
     return () => clearTimeout(timer);
   }, []);
 
-  const handleClick = () => {
-    if (canClick) {
-      sessionStorage.setItem("resumeIndex", index + 1);
+  const goNext = () => {
+    if (!canClick) return;
+    if (isLastQuestion) {
+      router.push("/ad"); // ✅ go to ad if test is done
+    } else {
       router.push("/testchat");
     }
   };
 
   return (
     <div
-      onClick={handleClick}
+      onClick={goNext}
       style={{
-        height: "100vh",
-        width: "100vw",
-        backgroundColor: "#F44336",
+        minHeight: "100vh",
+        backgroundColor: "#fdecea",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        color: "white",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
         textAlign: "center",
-        cursor: canClick ? "pointer" : "default",
+        color: "#c62828",
+        fontFamily: "Segoe UI, sans-serif",
       }}
     >
-      <div style={{ fontSize: "5rem", marginBottom: "20px" }}>❌</div>
-      <h1 style={{ fontSize: "2.2rem", fontWeight: 800, marginBottom: "20px" }}>
-        Incorrect
-      </h1>
+      <div style={{ fontSize: "64px", marginBottom: "16px" }}>❌</div>
+      <h1>Incorrect</h1>
 
-      <p style={{ maxWidth: "600px", marginBottom: "10px" }}>
-        <strong>Question:</strong> {question}
+      <p style={{ marginTop: "20px", fontSize: "1.1rem" }}>
+        <strong>Your answer:</strong> {selected}
       </p>
       <p>
-        <strong>Your Answer:</strong> {userAnswer}
+        <strong>Correct answer:</strong> {correct}
       </p>
       <p>
-        <strong>Correct Answer:</strong> {correctAnswer}
+        <strong>Explanation:</strong> {reason}
       </p>
 
-      {explanation && (
-        <p
-          style={{
-            fontSize: "1.1rem",
-            marginTop: "20px",
-            color: "rgba(255,255,255,0.9)",
-            maxWidth: "600px",
-          }}
-        >
-          💡 {explanation}
-        </p>
-      )}
-
-      {canClick && (
-        <div
-          style={{
-            fontSize: "1rem",
-            opacity: 0.9,
-            fontWeight: 500,
-            borderTop: "1px solid rgba(255,255,255,0.3)",
-            paddingTop: "10px",
-            marginTop: "30px",
-          }}
-        >
-          Click to continue
-        </div>
+      {canClick ? (
+        <p style={{ marginTop: "40px", opacity: 0.7 }}>Click to continue</p>
+      ) : (
+        <p style={{ marginTop: "40px", opacity: 0.5 }}>Please wait...</p>
       )}
     </div>
-  );
-}
-
-export default function IncorrectPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <IncorrectPageContent />
-    </Suspense>
   );
 }
