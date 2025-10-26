@@ -124,7 +124,7 @@ export default function TestSetupPage() {
           min="1"
           max="50"
           value={questionCount}
-          onChange={(e) => setQuestionCount(Number(e.target.value)))}
+          onChange={(e) => setQuestionCount(Number(e.target.value))}
           style={{
             width: "80px",
             padding: "8px",
