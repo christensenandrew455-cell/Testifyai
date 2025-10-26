@@ -32,6 +32,12 @@ function TestChatInner() {
         const data = await res.json();
         if (data.questions) {
           setQuestions(data.questions);
+          // Save full test to localStorage so /correct and /incorrect can read explanations
+          try {
+            localStorage.setItem("testData", JSON.stringify(data.questions));
+          } catch (e) {
+            console.warn("Failed to save testData to localStorage", e);
+          }
         } else {
           console.error("Invalid test data:", data);
         }
@@ -53,19 +59,30 @@ function TestChatInner() {
       return;
     }
 
+    // pass the current index and the selected index in the URL
+    const qs = `?current=${currentIndex}&total=${questions.length}&selected=${selected}`;
     const correctAnswer = currentQuestion.correct;
-    const selectedAnswer = currentQuestion.answers[selected];
 
-    if (selectedAnswer === correctAnswer) {
-      router.push(
-        `/correct?current=${currentIndex}&total=${questions.length}`
-      );
+    // If the API's "correct" field is the answer string:
+    // check by comparing strings. If it's an index, adapt accordingly.
+    // We'll detect: if correctAnswer is a number -> treat as index; otherwise as string.
+    let isCorrect = false;
+    if (typeof correctAnswer === "number") {
+      isCorrect = correctAnswer === Number(selected);
     } else {
-      router.push(
-        `/incorrect?current=${currentIndex}&total=${questions.length}`
-      );
+      // correctAnswer likely a string: compare text
+      const selectedText = currentQuestion.answers[selected];
+      isCorrect = selectedText === correctAnswer;
+    }
+
+    if (isCorrect) {
+      router.push(`/correct${qs}`);
+    } else {
+      router.push(`/incorrect${qs}`);
     }
   };
+
+  const handleLeave = () => router.push("/test");
 
   if (loading) {
     return (
@@ -127,7 +144,7 @@ function TestChatInner() {
         }}
       >
         <button
-          onClick={() => router.push("/test")}
+          onClick={handleLeave}
           style={{
             backgroundColor: "#1976d2",
             color: "white",
