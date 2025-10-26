@@ -6,44 +6,48 @@ function TestChatInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const topic = searchParams.get("topic") || "Unknown Topic";
+  const difficulty = searchParams.get("difficulty") || "1";
+  const questionCount = searchParams.get("questionCount") || "5";
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState(null);
-  const [feedback, setFeedback] = useState("");
-  const [showNext, setShowNext] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TEMP MOCK DATA
-    setQuestions([
-      {
-        question: "What is the capital of France?",
-        answers: ["London", "Berlin", "Paris", "Madrid"],
-        correct: 2,
-      },
-      {
-        question: "Which planet is known as the Red Planet?",
-        answers: ["Earth", "Mars", "Jupiter", "Venus"],
-        correct: 1,
-      },
-    ]);
-  }, []);
+    const fetchTest = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/generate-test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            topic,
+            difficulty,
+            numQuestions: Number(questionCount),
+          }),
+        });
+
+        const data = await res.json();
+        if (data.questions) {
+          setQuestions(data.questions);
+        } else {
+          console.error("Invalid test format:", data);
+        }
+      } catch (err) {
+        console.error("Error fetching test:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTest();
+  }, [topic, difficulty, questionCount]);
 
   const currentQuestion = questions[currentIndex];
 
-  const checkAnswer = () => {
-    if (selected === null) return;
-    setFeedback(
-      selected === currentQuestion.correct ? "✅ Correct!" : "❌ Incorrect"
-    );
-    setShowNext(false);
-    setTimeout(() => setShowNext(true), 2000);
-  };
-
   const nextQuestion = () => {
-    setFeedback("");
     setSelected(null);
-    setShowNext(false);
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
@@ -51,6 +55,23 @@ function TestChatInner() {
       router.push("/test");
     }
   };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "1.2rem",
+          color: "#333",
+        }}
+      >
+        Generating your test...
+      </div>
+    );
+  }
 
   if (!currentQuestion) {
     return (
@@ -64,7 +85,7 @@ function TestChatInner() {
           color: "#333",
         }}
       >
-        Loading test...
+        No questions available.
       </div>
     );
   }
@@ -146,7 +167,6 @@ function TestChatInner() {
           <button
             key={i}
             onClick={() => setSelected(i)}
-            disabled={!!feedback}
             style={{
               display: "flex",
               alignItems: "center",
@@ -160,7 +180,7 @@ function TestChatInner() {
                   : "2px solid rgba(0,0,0,0.1)",
               backgroundColor:
                 selected === i ? "rgba(25,118,210,0.1)" : "white",
-              cursor: feedback ? "default" : "pointer",
+              cursor: "pointer",
               transition: "all 0.2s",
               fontWeight: 500,
             }}
@@ -196,62 +216,23 @@ function TestChatInner() {
           Question {currentIndex + 1} of {questions.length}
         </div>
 
-        {!feedback && (
-          <button
-            onClick={checkAnswer}
-            style={{
-              backgroundColor: "#1976d2",
-              color: "white",
-              border: "none",
-              borderRadius: "12px",
-              padding: "10px 20px",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            Check Answer
-          </button>
-        )}
-
-        {showNext && (
-          <button
-            onClick={nextQuestion}
-            style={{
-              backgroundColor: "#1976d2",
-              color: "white",
-              border: "none",
-              borderRadius: "12px",
-              padding: "10px 20px",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            Next Question
-          </button>
-        )}
-      </div>
-
-      {/* FEEDBACK OVERLAY */}
-      {feedback && (
-        <div
+        <button
+          onClick={nextQuestion}
           style={{
-            position: "fixed",
-            bottom: "100px",
-            backgroundColor: "rgba(255,255,255,0.95)",
-            border: "2px solid #1976d2",
+            backgroundColor: "#1976d2",
+            color: "white",
+            border: "none",
             borderRadius: "12px",
-            padding: "14px 28px",
-            fontSize: "1.2rem",
+            padding: "10px 20px",
             fontWeight: 700,
-            color: "#1976d2",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-            opacity: feedback ? 1 : 0,
-            transition: "opacity 0.3s ease-in-out",
+            cursor: "pointer",
           }}
         >
-          {feedback}
-        </div>
-      )}
+          {currentIndex < questions.length - 1
+            ? "Next Question"
+            : "Finish Test"}
+        </button>
+      </div>
     </div>
   );
 }
