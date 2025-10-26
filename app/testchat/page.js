@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 function TestChatInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const topic = searchParams.get("topic") || "Unknown Topic";
   const difficulty = searchParams.get("difficulty") || "1";
   const questionCount = searchParams.get("questionCount") || "5";
@@ -32,10 +33,10 @@ function TestChatInner() {
         if (data.questions) {
           setQuestions(data.questions);
         } else {
-          console.error("Invalid test format:", data);
+          console.error("Invalid test data:", data);
         }
       } catch (err) {
-        console.error("Error fetching test:", err);
+        console.error("Error generating test:", err);
       } finally {
         setLoading(false);
       }
@@ -46,13 +47,23 @@ function TestChatInner() {
 
   const currentQuestion = questions[currentIndex];
 
-  const nextQuestion = () => {
-    setSelected(null);
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+  const handleCheckAnswer = () => {
+    if (selected === null) {
+      alert("Please select an answer first!");
+      return;
+    }
+
+    const correctAnswer = currentQuestion.correct;
+    const selectedAnswer = currentQuestion.answers[selected];
+
+    if (selectedAnswer === correctAnswer) {
+      router.push(
+        `/correct?current=${currentIndex}&total=${questions.length}`
+      );
     } else {
-      alert("✅ Test completed!");
-      router.push("/test");
+      router.push(
+        `/incorrect?current=${currentIndex}&total=${questions.length}`
+      );
     }
   };
 
@@ -130,8 +141,20 @@ function TestChatInner() {
           Leave
         </button>
 
-        <h2 style={{ fontWeight: 800, fontSize: "1.3rem" }}>{topic}</h2>
+        {/* Topic Title (Blue) */}
+        <h2
+          style={{
+            fontWeight: 800,
+            fontSize: "1.3rem",
+            color: "#1976d2",
+            textAlign: "center",
+            flex: 1,
+          }}
+        >
+          {topic}
+        </h2>
 
+        {/* App Title */}
         <div style={{ fontWeight: 700, color: "#1976d2" }}>TheTestifyAI</div>
       </div>
 
@@ -217,7 +240,7 @@ function TestChatInner() {
         </div>
 
         <button
-          onClick={nextQuestion}
+          onClick={handleCheckAnswer}
           style={{
             backgroundColor: "#1976d2",
             color: "white",
@@ -228,9 +251,7 @@ function TestChatInner() {
             cursor: "pointer",
           }}
         >
-          {currentIndex < questions.length - 1
-            ? "Next Question"
-            : "Finish Test"}
+          Check Answer
         </button>
       </div>
     </div>
