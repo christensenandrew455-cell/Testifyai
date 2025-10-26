@@ -31,7 +31,11 @@ export default function TestSetupPage() {
       if (!res.ok) throw new Error("API failed");
 
       const data = await res.json();
+      // Save generated questions for testchat to read
       sessionStorage.setItem("testData", JSON.stringify(data.questions));
+      // start at the beginning
+      sessionStorage.setItem("resumeIndex", "0");
+
       router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
     } catch (err) {
       console.error("❌ Error generating test:", err);
@@ -104,6 +108,7 @@ export default function TestSetupPage() {
           type="range"
           min="1"
           max="9"
+          step="1"
           value={difficulty}
           onChange={(e) => setDifficulty(Number(e.target.value))}
           style={{
@@ -115,10 +120,15 @@ export default function TestSetupPage() {
           }}
         />
 
-        <label style={{ display: "block", marginBottom: "8px", fontWeight: 600 }}>
+        <label
+          style={{
+            display: "block",
+            marginBottom: "8px",
+            fontWeight: 600,
+          }}
+        >
           Number of questions
         </label>
-
         <input
           type="number"
           min="1"
@@ -149,6 +159,8 @@ export default function TestSetupPage() {
               fontWeight: 700,
               fontSize: "1rem",
               cursor: "pointer",
+              transition: "background-color 0.2s",
+              width: "140px",
             }}
           >
             Back
@@ -167,6 +179,8 @@ export default function TestSetupPage() {
               fontWeight: 700,
               fontSize: "1rem",
               cursor: loading ? "not-allowed" : "pointer",
+              width: "140px",
+              transition: "background-color 0.2s",
             }}
           >
             {loading ? "Generating..." : "Generate Test"}
