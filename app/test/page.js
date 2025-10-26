@@ -15,21 +15,23 @@ export default function TestSetupPage() {
       return;
     }
 
-    const num = Math.max(1, questionCount); // ensure at least 1
     setLoading(true);
 
     try {
       const res = await fetch("/api/generate-test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, difficulty, numQuestions: num }),
+        body: JSON.stringify({
+          topic,
+          difficulty,
+          numQuestions: Math.max(1, questionCount),
+        }),
       });
 
       if (!res.ok) throw new Error("API failed");
 
       const data = await res.json();
       sessionStorage.setItem("testData", JSON.stringify(data.questions));
-
       router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
     } catch (err) {
       console.error("❌ Error generating test:", err);
@@ -102,9 +104,8 @@ export default function TestSetupPage() {
           type="range"
           min="1"
           max="9"
-          step="1"
           value={difficulty}
-          onChange={(e) => setDifficulty(Number(e.target.value))}
+          onChange={(e) => setDifficulty(Number(e.target.value)))}
           style={{
             width: "100%",
             accentColor: "#1976d2",
@@ -114,21 +115,16 @@ export default function TestSetupPage() {
           }}
         />
 
-        <label
-          style={{
-            display: "block",
-            marginBottom: "8px",
-            fontWeight: 600,
-          }}
-        >
+        <label style={{ display: "block", marginBottom: "8px", fontWeight: 600 }}>
           Number of questions
         </label>
+
         <input
           type="number"
           min="1"
           max="50"
           value={questionCount}
-          onChange={(e) => setQuestionCount(Number(e.target.value))}
+          onChange={(e) => setQuestionCount(Number(e.target.value)))}
           style={{
             width: "80px",
             padding: "8px",
@@ -153,8 +149,6 @@ export default function TestSetupPage() {
               fontWeight: 700,
               fontSize: "1rem",
               cursor: "pointer",
-              transition: "background-color 0.2s",
-              width: "140px",
             }}
           >
             Back
@@ -173,8 +167,6 @@ export default function TestSetupPage() {
               fontWeight: 700,
               fontSize: "1rem",
               cursor: loading ? "not-allowed" : "pointer",
-              width: "140px",
-              transition: "background-color 0.2s",
             }}
           >
             {loading ? "Generating..." : "Generate Test"}
