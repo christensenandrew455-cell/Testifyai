@@ -8,17 +8,16 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    // If called for explanation only
+    // 📘 If called only for explanation
     if (body.question && body.correctAnswer) {
       const { question, correctAnswer } = body;
 
       const explanationPrompt = `
-Explain briefly like one sentence and clearly why "${correctAnswer}" is the correct answer to the question:
+Explain clearly and briefly (1-2 sentences) why "${correctAnswer}" is the correct answer to the question:
 "${question}"
 
-- Include a fact or educational detail related to the topic, if possible.
-- Keep it short and conversational.
-- Make it helpful for learning, not just "because it fits."
+- Include a useful fact or concept that helps the learner understand why it's right.
+- Make it sound natural, like a teacher explaining.
 `;
 
       const expResponse = await openai.chat.completions.create({
@@ -28,51 +27,48 @@ Explain briefly like one sentence and clearly why "${correctAnswer}" is the corr
       });
 
       const explanation = expResponse.choices[0].message.content.trim();
-
       return new Response(JSON.stringify({ explanation }), {
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    // Otherwise: generate full test
+    // 📘 Otherwise: full test generation
     const { topic, difficulty, numQuestions } = body;
 
     console.log("🎯 Generating test on:", topic, "Difficulty:", difficulty);
 
     const testPrompt = `
-You are TestifyAI — an advanced quiz question generator and teacher.
+You are TestifyAI — an advanced quiz generator.
 
-Your task is to create ${numQuestions} multiple-choice questions about the topic **"${topic}"**.
+Create ${numQuestions} multiple-choice questions on the topic **"${topic}"**.
 
-Follow these rules carefully:
+Follow these rules:
 
-1. **Topic Awareness**
-   - The topic above ("${topic}") is what the test should be about.
-   - Every question must be directly related to it. If the user gives a sentence, interpret what they want to learn from that sentence and make all questions about that subject.
+1. **Topic Focus**
+   - All questions must directly relate to "${topic}".
 
-2. **Difficulty**
-   - The difficulty setting is **"${difficulty}"**.
-   - If difficulty = "easy", make beginner-level questions.
-   - If difficulty = "medium", require moderate reasoning or applied understanding.
-   - If difficulty = "hard", make the questions genuinely challenging — like for an expert or master-level learner. These should demand deep understanding, analysis, or specific knowledge.
+2. **Difficulty (Scale 1–9)**
+   - Difficulty = ${difficulty}.
+   - 1–2 → absolute beginner (knows almost nothing; use simple facts).
+   - 3–4 → novice (has heard of the topic but not much else).
+   - 5–6 → intermediate (knows the basics; add reasoning or examples).
+   - 7–8 → advanced (knows most concepts; test applied understanding).
+   - 9 → master/expert (graduate-level or professional; deep analytical or specialized questions).
 
 3. **Questions**
-   - Generate ${numQuestions} questions.
-   - Each question should have 1 correct and 3 incorrect answers.
-   - Do **not** repeat questions in the same test.
-   - When generating a new test later, you may reuse similar content but never in the same order.
+   - Create ${numQuestions} unique questions.
+   - Each must have exactly 4 total answers.
+   - Include 1 correct and 3 incorrect but plausible options.
 
 4. **Answers**
-   - Each question must have exactly 4 total answers.
-   - Wrong answers should be plausible but clearly incorrect.
-   - Correct answers must be factual and unique per question.
+   - Mix factual recall, understanding, and reasoning questions.
+   - Do not make two answers too similar.
 
 5. **Explanation**
-   - After identifying the correct answer, give a very short, clear explanation (1 sentence).
-   - The explanation must teach something about the topic — a fact, rule, or reasoning — not just “because it fits.”
+   - Add a one-sentence educational explanation for why the correct answer is right.
 
 6. **Output**
-   Return ONLY valid JSON, no text before or after, exactly like this:
+   Return ONLY valid JSON like this:
    [
      {
        "question": "string",
@@ -96,7 +92,7 @@ Follow these rules carefully:
 
     const questions = JSON.parse(content);
 
-    // Randomize answer order
+    // Shuffle answers
     for (const q of questions) {
       q.answers = q.answers.sort(() => Math.random() - 0.5);
     }
@@ -104,9 +100,8 @@ Follow these rules carefully:
     return new Response(JSON.stringify({ questions }), {
       headers: { "Content-Type": "application/json" },
     });
-
   } catch (err) {
-    console.error("❌ Error generating test or explanation:", err);
+    console.error("❌ Error generating test:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
