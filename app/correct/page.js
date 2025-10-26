@@ -2,13 +2,12 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function CorrectPage() {
+export default function CorrectPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const current = Number(searchParams.get("current")) || 0;
   const total = Number(searchParams.get("total")) || 1;
   const selectedIndex = Number(searchParams.get("selected"));
-
   const [questionObj, setQuestionObj] = useState(null);
 
   useEffect(() => {
@@ -69,7 +68,6 @@ export default function CorrectPage() {
         padding: "20px",
       }}
     >
-      {/* Big Green Check */}
       <div
         style={{
           fontSize: "120px",
@@ -82,7 +80,6 @@ export default function CorrectPage() {
         ✔
       </div>
 
-      {/* Text Details */}
       <div style={{ fontSize: "1.6rem", marginBottom: "8px", fontWeight: 800 }}>
         Correct!
       </div>
