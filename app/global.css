@@ -1,64 +1,151 @@
-html, body {
-  height: 100%;
-  width: 100%;
+/* ==============================
+   GLOBAL STYLES FOR TESTIFYAI
+   ============================== */
+
+/* --- Basic Reset --- */
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #ffffff;
+  color: #1f2937;
+  overflow-x: hidden;
+}
+
+/* Smooth font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Links look clean by default */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ==============================
+   LAYOUT UTILITIES
+   ============================== */
+
+.centered-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: Arial, sans-serif;
-  background-color: #fffaf5;
-  color: #1f2937;
+  text-align: center;
+  height: 100vh;
+  width: 100vw;
+  padding: 2rem;
 }
 
-/* Buttons */
-button {
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
+/* ==============================
+   BUTTON STYLES
+   ============================== */
+
+.btn-primary,
+.btn-secondary,
+a.btn-primary,
+a.btn-secondary {
+  display: inline-block;
+  text-align: center;
+  padding: 12px 26px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  text-decoration: none !important;
+  transition: background-color 0.18s ease, transform 0.08s ease, box-shadow 0.18s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  border: none;
 }
 
-button:hover {
-  background-color: #2563eb;
+/* --- Primary Button (Blue) --- */
+.btn-primary {
+  background-color: #0b62b8;
+  color: white !important;
+  border: 2px solid rgba(255, 255, 255, 0.06);
 }
 
-/* ✅ Feedback slide-up animation */
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
+/* --- Secondary Button (Translucent White) --- */
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: white !important;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+}
+
+/* --- Hover States --- */
+.btn-primary:hover {
+  background-color: #074ea0;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(7, 78, 160, 0.14);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+  color: white !important;
+}
+
+/* --- Active Click --- */
+.btn-primary:active,
+.btn-secondary:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.10);
+}
+
+/* --- Responsive Layout --- */
+@media (max-width: 640px) {
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: 10px;
   }
+}
+
+/* ==============================
+   TYPOGRAPHY
+   ============================== */
+
+h1, h2, h3 {
+  font-weight: 800;
+  color: #ffffff;
+}
+
+p {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+/* ==============================
+   OPTIONAL EXTRAS
+   ============================== */
+
+/* Smooth fade-in effect for page load */
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 1s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
   to {
-    transform: translateY(0);
     opacity: 1;
   }
 }
 
-.animate-slide-up {
-  animation: slide-up 0.5s ease-out forwards;
-}
-
-/* Responsive spacing adjustments */
-@media (max-width: 640px) {
-  body {
-    padding: 1rem;
-  }
-
-  button {
-    width: 100%;
-    font-size: 1rem;
-  }
-
-  h1, h2 {
-    font-size: 1.5rem;
-  }
-
-  p {
-    font-size: 1rem;
-  }
+/* Scrollbar hidden for clean fullscreen look */
+::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
 }
