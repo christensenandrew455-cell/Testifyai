@@ -1,11 +1,46 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function TestSetupPage() {
+  const router = useRouter();
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
   const [questionCount, setQuestionCount] = useState(5);
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerateTest = async () => {
+    if (!topic) {
+      alert("Please enter a topic!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/generate-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic,
+          difficulty,
+          numQuestions: questionCount,
+        }),
+      });
+
+      if (!res.ok) throw new Error("API failed");
+
+      const data = await res.json();
+      localStorage.setItem("testData", JSON.stringify(data.questions));
+
+      // navigate to /testchat with topic in query
+      router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
+    } catch (err) {
+      console.error("❌ Error generating test:", err);
+      alert("Failed to generate test. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -33,10 +68,8 @@ export default function TestSetupPage() {
           boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
         }}
       >
-        {/* Header */}
         <h2 style={{ marginBottom: "24px", fontWeight: 800 }}>Topic</h2>
 
-        {/* Topic input */}
         <input
           type="text"
           placeholder="What do you want to be tested on?"
@@ -54,7 +87,6 @@ export default function TestSetupPage() {
           }}
         />
 
-        {/* Difficulty label */}
         <div
           style={{
             display: "flex",
@@ -69,7 +101,6 @@ export default function TestSetupPage() {
           <span>Master</span>
         </div>
 
-        {/* Slider */}
         <input
           type="range"
           min="1"
@@ -79,14 +110,13 @@ export default function TestSetupPage() {
           onChange={(e) => setDifficulty(e.target.value)}
           style={{
             width: "100%",
-            accentColor: "#1976d2", // ✅ blue slider
+            accentColor: "#1976d2",
             marginBottom: "28px",
             height: "6px",
             cursor: "pointer",
           }}
         />
 
-        {/* Number of questions */}
         <label
           style={{
             display: "block",
@@ -94,7 +124,7 @@ export default function TestSetupPage() {
             fontWeight: 600,
           }}
         >
-          Number of questions on the test
+          Number of questions
         </label>
         <input
           type="number"
@@ -113,41 +143,9 @@ export default function TestSetupPage() {
           }}
         />
 
-        {/* Buttons */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "20px",
-          }}
-        >
-          <Link href="/" style={{ textDecoration: "none" }}>
-            <button
-              style={{
-                flex: 1,
-                padding: "12px 0",
-                borderRadius: "12px",
-                border: "none",
-                backgroundColor: "#1976d2",
-                color: "white",
-                fontWeight: 700,
-                fontSize: "1rem",
-                cursor: "pointer",
-                transition: "background-color 0.2s, transform 0.1s",
-                width: "140px",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#135cb0")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "#1976d2")
-              }
-            >
-              Back
-            </button>
-          </Link>
-
+        <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
           <button
+            onClick={() => router.push("/")}
             style={{
               flex: 1,
               padding: "12px 0",
@@ -158,27 +156,35 @@ export default function TestSetupPage() {
               fontWeight: 700,
               fontSize: "1rem",
               cursor: "pointer",
-              transition: "background-color 0.2s, transform 0.1s",
+              transition: "background-color 0.2s",
               width: "140px",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#135cb0")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "#1976d2")
-            }
-            onClick={() => {
-              alert(
-                `Generating a test on "${topic}" with difficulty ${difficulty} and ${questionCount} questions.`
-              );
+          >
+            Back
+          </button>
+
+          <button
+            onClick={handleGenerateTest}
+            disabled={loading}
+            style={{
+              flex: 1,
+              padding: "12px 0",
+              borderRadius: "12px",
+              border: "none",
+              backgroundColor: loading ? "#ccc" : "#1976d2",
+              color: "white",
+              fontWeight: 700,
+              fontSize: "1rem",
+              cursor: loading ? "not-allowed" : "pointer",
+              width: "140px",
+              transition: "background-color 0.2s",
             }}
           >
-            Generate Test
+            {loading ? "Generating..." : "Generate Test"}
           </button>
         </div>
       </div>
 
-      {/* Logo text */}
       <div
         style={{
           position: "absolute",
