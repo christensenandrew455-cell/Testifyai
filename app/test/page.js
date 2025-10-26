@@ -105,7 +105,7 @@ export default function TestSetupPage() {
           min="1"
           max="9"
           value={difficulty}
-          onChange={(e) => setDifficulty(Number(e.target.value)))}
+          onChange={(e) => setDifficulty(Number(e.target.value))}
           style={{
             width: "100%",
             accentColor: "#1976d2",
