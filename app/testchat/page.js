@@ -12,21 +12,10 @@ function TestChatInner() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState(null);
 
-  // 🧠 Load or fetch test
   useEffect(() => {
     const stored = sessionStorage.getItem("testData");
     if (stored) {
       setQuestions(JSON.parse(stored));
-    } else {
-      // fallback mock data
-      setQuestions([
-        {
-          question: "What is the capital of France?",
-          answers: ["London", "Berlin", "Paris", "Madrid"],
-          correct: "Paris",
-          explanation: "Paris is the capital and most populous city of France.",
-        },
-      ]);
     }
   }, []);
 
@@ -34,7 +23,6 @@ function TestChatInner() {
 
   const handleCheckAnswer = () => {
     if (!currentQuestion || selected === null) return;
-
     const userAnswer = currentQuestion.answers[selected];
     const isCorrect = userAnswer === currentQuestion.correct;
 
@@ -42,14 +30,22 @@ function TestChatInner() {
       question: currentQuestion.question,
       userAnswer,
       correctAnswer: currentQuestion.correct,
-      explanation: currentQuestion.explanation,
+      explanation: currentQuestion.explanation || "",
       index: currentIndex.toString(),
     }).toString();
 
     router.push(isCorrect ? `/correct?${query}` : `/incorrect?${query}`);
   };
 
-  // 🧭 Called by result pages when continuing
+  // Move to next question (used by correct/incorrect)
+  const nextQuestion = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      router.push("/ad"); // ✅ after final question
+    }
+  };
+
   useEffect(() => {
     const resumeIndex = sessionStorage.getItem("resumeIndex");
     if (resumeIndex) {
@@ -58,16 +54,6 @@ function TestChatInner() {
     }
   }, []);
 
-  // 🧭 Move to next question (called by correct/incorrect pages)
-  const nextQuestion = () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      router.push("/ad"); // ✅ After final question → ad → results
-    }
-  };
-
-  // Save resume progress whenever index changes
   useEffect(() => {
     sessionStorage.setItem("resumeIndex", currentIndex);
   }, [currentIndex]);
@@ -103,7 +89,6 @@ function TestChatInner() {
         fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
-      {/* HEADER */}
       <div
         style={{
           width: "100%",
@@ -133,7 +118,7 @@ function TestChatInner() {
           style={{
             fontWeight: 800,
             fontSize: "1.3rem",
-            color: "#1976d2", // ✅ Title now blue
+            color: "#1976d2",
           }}
         >
           {topic}
@@ -142,7 +127,6 @@ function TestChatInner() {
         <div style={{ fontWeight: 700, color: "#1976d2" }}>TheTestifyAI</div>
       </div>
 
-      {/* QUESTION BOX */}
       <div
         style={{
           border: "3px solid #1976d2",
@@ -159,7 +143,6 @@ function TestChatInner() {
         {currentQuestion.question}
       </div>
 
-      {/* ANSWERS */}
       <div
         style={{
           display: "flex",
@@ -208,7 +191,6 @@ function TestChatInner() {
         ))}
       </div>
 
-      {/* BOTTOM BAR */}
       <div
         style={{
           width: "100%",
