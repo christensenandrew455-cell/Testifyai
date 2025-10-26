@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function TestChatPage() {
+function TestChatInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const topic = searchParams.get("topic") || "Unknown Topic";
@@ -33,14 +33,9 @@ export default function TestChatPage() {
 
   const checkAnswer = () => {
     if (selected === null) return;
-
-    if (selected === currentQuestion.correct) {
-      setFeedback("✅ Correct!");
-    } else {
-      setFeedback("❌ Incorrect");
-    }
-
-    // show feedback for 2 seconds, then show Next button
+    setFeedback(
+      selected === currentQuestion.correct ? "✅ Correct!" : "❌ Incorrect"
+    );
     setShowNext(false);
     setTimeout(() => setShowNext(true), 2000);
   };
@@ -258,5 +253,13 @@ export default function TestChatPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function TestChatPage() {
+  return (
+    <Suspense fallback={<div>Loading test...</div>}>
+      <TestChatInner />
+    </Suspense>
   );
 }
