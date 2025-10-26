@@ -1,105 +1,76 @@
 "use client";
-import { Suspense, useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 function TestChatInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const topic = searchParams.get("topic") || "Unknown Topic";
-  const difficulty = searchParams.get("difficulty") || "1";
-  const questionCount = searchParams.get("questionCount") || "5";
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState(null);
-  const [loading, setLoading] = useState(true);
 
+  // 🧠 Load or fetch test
   useEffect(() => {
-    const fetchTest = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/generate-test", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            topic,
-            difficulty,
-            numQuestions: Number(questionCount),
-          }),
-        });
-
-        const data = await res.json();
-        if (data.questions) {
-          setQuestions(data.questions);
-          // Save full test to localStorage so /correct and /incorrect can read explanations
-          try {
-            localStorage.setItem("testData", JSON.stringify(data.questions));
-          } catch (e) {
-            console.warn("Failed to save testData to localStorage", e);
-          }
-        } else {
-          console.error("Invalid test data:", data);
-        }
-      } catch (err) {
-        console.error("Error generating test:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTest();
-  }, [topic, difficulty, questionCount]);
+    const stored = sessionStorage.getItem("testData");
+    if (stored) {
+      setQuestions(JSON.parse(stored));
+    } else {
+      // fallback mock data
+      setQuestions([
+        {
+          question: "What is the capital of France?",
+          answers: ["London", "Berlin", "Paris", "Madrid"],
+          correct: "Paris",
+          explanation: "Paris is the capital and most populous city of France.",
+        },
+      ]);
+    }
+  }, []);
 
   const currentQuestion = questions[currentIndex];
 
   const handleCheckAnswer = () => {
-    if (selected === null) {
-      alert("Please select an answer first!");
-      return;
+    if (!currentQuestion || selected === null) return;
+
+    const userAnswer = currentQuestion.answers[selected];
+    const isCorrect = userAnswer === currentQuestion.correct;
+
+    const query = new URLSearchParams({
+      question: currentQuestion.question,
+      userAnswer,
+      correctAnswer: currentQuestion.correct,
+      explanation: currentQuestion.explanation,
+      index: currentIndex.toString(),
+    }).toString();
+
+    router.push(isCorrect ? `/correct?${query}` : `/incorrect?${query}`);
+  };
+
+  // 🧭 Called by result pages when continuing
+  useEffect(() => {
+    const resumeIndex = sessionStorage.getItem("resumeIndex");
+    if (resumeIndex) {
+      setCurrentIndex(parseInt(resumeIndex));
+      sessionStorage.removeItem("resumeIndex");
     }
+  }, []);
 
-    // pass the current index and the selected index in the URL
-    const qs = `?current=${currentIndex}&total=${questions.length}&selected=${selected}`;
-    const correctAnswer = currentQuestion.correct;
-
-    // If the API's "correct" field is the answer string:
-    // check by comparing strings. If it's an index, adapt accordingly.
-    // We'll detect: if correctAnswer is a number -> treat as index; otherwise as string.
-    let isCorrect = false;
-    if (typeof correctAnswer === "number") {
-      isCorrect = correctAnswer === Number(selected);
+  // 🧭 Move to next question (called by correct/incorrect pages)
+  const nextQuestion = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
     } else {
-      // correctAnswer likely a string: compare text
-      const selectedText = currentQuestion.answers[selected];
-      isCorrect = selectedText === correctAnswer;
-    }
-
-    if (isCorrect) {
-      router.push(`/correct${qs}`);
-    } else {
-      router.push(`/incorrect${qs}`);
+      router.push("/ad"); // ✅ After final question → ad → results
     }
   };
 
-  const handleLeave = () => router.push("/test");
-
-  if (loading) {
-    return (
-      <div
-        style={{
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "1.2rem",
-          color: "#333",
-        }}
-      >
-        Generating your test...
-      </div>
-    );
-  }
+  // Save resume progress whenever index changes
+  useEffect(() => {
+    sessionStorage.setItem("resumeIndex", currentIndex);
+  }, [currentIndex]);
 
   if (!currentQuestion) {
     return (
@@ -113,7 +84,7 @@ function TestChatInner() {
           color: "#333",
         }}
       >
-        No questions available.
+        Loading test...
       </div>
     );
   }
@@ -144,7 +115,7 @@ function TestChatInner() {
         }}
       >
         <button
-          onClick={handleLeave}
+          onClick={() => router.push("/test")}
           style={{
             backgroundColor: "#1976d2",
             color: "white",
@@ -158,20 +129,16 @@ function TestChatInner() {
           Leave
         </button>
 
-        {/* Topic Title (Blue) */}
         <h2
           style={{
             fontWeight: 800,
             fontSize: "1.3rem",
-            color: "#1976d2",
-            textAlign: "center",
-            flex: 1,
+            color: "#1976d2", // ✅ Title now blue
           }}
         >
           {topic}
         </h2>
 
-        {/* App Title */}
         <div style={{ fontWeight: 700, color: "#1976d2" }}>TheTestifyAI</div>
       </div>
 
