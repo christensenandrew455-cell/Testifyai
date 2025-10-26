@@ -13,10 +13,10 @@ export async function POST(req) {
       const { question, correctAnswer } = body;
 
       const explanationPrompt = `
-Explain briefly and clearly why "${correctAnswer}" is the correct answer to the question:
+Explain briefly like one sentence and clearly why "${correctAnswer}" is the correct answer to the question:
 "${question}"
 
-- Include a factual or educational detail related to the topic, if possible.
+- Include a fact or educational detail related to the topic, if possible.
 - Keep it short and conversational.
 - Make it helpful for learning, not just "because it fits."
 `;
