@@ -14,7 +14,7 @@ export default function TestChat() {
   const [feedbackType, setFeedbackType] = useState(null);
   const [explanation, setExplanation] = useState("");
   const [showNext, setShowNext] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loadingExplanation, setLoadingExplanation] = useState(false);
 
   useEffect(() => {
     const savedQuestions = localStorage.getItem("testQuestions");
@@ -26,25 +26,6 @@ export default function TestChat() {
     }
   }, [router]);
 
-  // 🧠 New: Get explanation from AI endpoint
-  const fetchAIExplanation = async (question, correctAnswer) => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/explain-answer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, correctAnswer }),
-      });
-      const data = await res.json();
-      setLoading(false);
-      return data.explanation || "Explanation not available.";
-    } catch (err) {
-      console.error("Error getting explanation:", err);
-      setLoading(false);
-      return "Explanation not available.";
-    }
-  };
-
   const handleAnswerClick = (answer) => {
     setSelectedAnswer(answer);
   };
@@ -54,24 +35,37 @@ export default function TestChat() {
 
     const currentQ = questions[currentQuestion];
     const correct = selectedAnswer === currentQ.correct;
-
     setFeedbackType(correct ? "correct" : "wrong");
     setShowFeedback(true);
     setShowNext(false);
+    setLoadingExplanation(true);
 
     if (correct) setScore((prev) => prev + 1);
 
-    // 🔍 Ask AI for a fact/explanation
-    const explanationText = await fetchAIExplanation(currentQ.question, currentQ.correct);
-    setExplanation(explanationText);
+    // 🧠 Fetch factual explanation from AI
+    try {
+      const res = await fetch("/api/generate-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: currentQ.question,
+          correctAnswer: currentQ.correct,
+        }),
+      });
 
-    if (correct) {
-      setShowNext(true);
-    } else {
-      setTimeout(() => {
-        setShowNext(true);
-      }, 2000);
+      const data = await res.json();
+      setExplanation(data.explanation || "Explanation unavailable.");
+    } catch (error) {
+      console.error("❌ Failed to get explanation:", error);
+      setExplanation("Explanation unavailable.");
     }
+
+    setLoadingExplanation(false);
+
+    // ✅ Wait a moment before showing next button
+    setTimeout(() => {
+      setShowNext(true);
+    }, correct ? 1000 : 2000);
   };
 
   const handleNextQuestion = () => {
@@ -80,7 +74,7 @@ export default function TestChat() {
     setSelectedAnswer(null);
 
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+      setCurrentQuestion((prev) => prev + 1);
     } else {
       router.push(`/ad?score=${score}&total=${questions.length}`);
     }
@@ -133,14 +127,14 @@ export default function TestChat() {
           <p className="text-gray-600">Score: {score}</p>
           <button
             onClick={handleNext}
-            disabled={!selectedAnswer || loading}
+            disabled={!selectedAnswer}
             className={`px-6 py-2 rounded-xl font-semibold transition ${
-              selectedAnswer && !loading
+              selectedAnswer
                 ? "bg-blue-600 text-white hover:bg-blue-700"
                 : "bg-gray-300 text-gray-600 cursor-not-allowed"
             }`}
           >
-            {loading ? "Loading..." : currentQuestion === questions.length - 1 ? "Submit" : "Check Answer"}
+            {currentQuestion === questions.length - 1 ? "Submit" : "Check Answer"}
           </button>
         </div>
       </div>
@@ -155,7 +149,10 @@ export default function TestChat() {
           <h2 className="text-6xl font-bold mb-4">
             {feedbackType === "correct" ? "✅ Correct!" : "❌ Incorrect"}
           </h2>
-          <p className="text-xl mb-6 px-8 max-w-xl">{explanation}</p>
+
+          <p className="text-xl mb-6 px-8 max-w-xl">
+            {loadingExplanation ? "Loading explanation..." : explanation}
+          </p>
 
           {showNext && (
             <button
