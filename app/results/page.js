@@ -1,9 +1,10 @@
-'use client'; // This must be at the very top of the page file
+'use client';
 
-import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-export default function ResultsPage() {
+function ResultsContent() {
   const searchParams = useSearchParams();
   const score = parseInt(searchParams.get("score") || "0");
   const total = parseInt(searchParams.get("total") || "0");
@@ -37,6 +38,14 @@ export default function ResultsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResultsPage() {
+  return (
+    <Suspense fallback={<div>Loading results...</div>}>
+      <ResultsContent />
+    </Suspense>
   );
 }
 
