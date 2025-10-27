@@ -27,40 +27,103 @@ function ResultsInner() {
 
   return (
     <div
-      className="min-h-screen flex flex-col justify-center items-center bg-[#f8fafc] text-gray-900 text-center px-6 py-10"
-      style={{ fontFamily: "Segoe UI, Roboto, sans-serif" }}
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f8fafc",
+        color: "#222",
+        padding: "40px 20px",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
+      }}
     >
-      <div className="max-w-lg w-full bg-white border-4 border-blue-600 rounded-3xl shadow-lg p-8">
-        <h1 className="text-3xl font-extrabold text-blue-700 mb-4">
+      <div
+        style={{
+          border: "3px solid #1976d2",
+          borderRadius: "24px",
+          backgroundColor: "white",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          padding: "40px",
+          textAlign: "center",
+          width: "100%",
+          maxWidth: "600px",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "2rem",
+            fontWeight: "800",
+            color: "#1976d2",
+            marginBottom: "20px",
+          }}
+        >
           Your Results
         </h1>
 
-        <div className="mb-6">
-          <p className="text-2xl font-bold mb-2 text-gray-800">
-            Score: {score} / {total}
-          </p>
-          <p className="text-xl text-blue-600 font-semibold mb-4">
-            {percent}%
-          </p>
-          <p className="text-lg text-gray-700">{getMessage()}</p>
-        </div>
+        <p style={{ fontSize: "1.5rem", fontWeight: "700", marginBottom: "10px" }}>
+          Score: {score} / {total}
+        </p>
+        <p
+          style={{
+            fontSize: "1.3rem",
+            fontWeight: "600",
+            color: "#1976d2",
+            marginBottom: "20px",
+          }}
+        >
+          {percent}%
+        </p>
+        <p style={{ fontSize: "1.1rem", marginBottom: "30px", color: "#555" }}>
+          {getMessage()}
+        </p>
 
-        <div className="flex justify-center gap-4 mt-8">
+        <div style={{ display: "flex", justifyContent: "center", gap: "16px" }}>
           <Link href="/test">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition">
+            <button
+              style={{
+                backgroundColor: "#1976d2",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                padding: "10px 20px",
+                fontWeight: "700",
+                cursor: "pointer",
+                fontSize: "1rem",
+              }}
+            >
               Try Again
             </button>
           </Link>
 
           <Link href="/">
-            <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-xl font-semibold transition">
+            <button
+              style={{
+                backgroundColor: "#e0e0e0",
+                color: "#333",
+                border: "none",
+                borderRadius: "12px",
+                padding: "10px 20px",
+                fontWeight: "700",
+                cursor: "pointer",
+                fontSize: "1rem",
+              }}
+            >
               Home
             </button>
           </Link>
         </div>
       </div>
 
-      <div className="mt-8 text-sm font-semibold text-blue-600">
+      <div
+        style={{
+          marginTop: "20px",
+          fontWeight: "700",
+          color: "#1976d2",
+          fontSize: "1.1rem",
+        }}
+      >
         TheTestifyAI
       </div>
     </div>
