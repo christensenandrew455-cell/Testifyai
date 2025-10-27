@@ -5,78 +5,116 @@ import { useRouter } from "next/navigation";
 
 export default function AdPage() {
   const router = useRouter();
-  const [facts, setFacts] = useState([]);
-  const [currentFactIndex, setCurrentFactIndex] = useState(0);
+  const [explanations, setExplanations] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Load the user's answered questions and their explanations
   useEffect(() => {
-    const stored = JSON.parse(sessionStorage.getItem("pastFacts") || "[]");
-    const score = parseInt(sessionStorage.getItem("resumeScore")) || 0;
-    const total = parseInt(sessionStorage.getItem("resumeTotal")) || stored.length;
+    try {
+      const stored = sessionStorage.getItem("testData");
+      if (stored) {
+        const questions = JSON.parse(stored);
+        // Collect all explanations from the questions already taken
+        const takenExplanations = questions
+          .map((q) => q.explanation)
+          .filter(Boolean);
+        // Shuffle them for randomness
+        const shuffled = takenExplanations.sort(() => Math.random() - 0.5);
+        setExplanations(shuffled);
+      }
+    } catch (err) {
+      console.error("Error loading explanations:", err);
+    }
+  }, []);
 
-    if (stored.length === 0) {
-      router.push("/results?score=" + score + "&total=" + total);
-      return;
+  // Cycle through explanations every 2.5 seconds
+  useEffect(() => {
+    if (explanations.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % explanations.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [explanations]);
+
+  // Load AdSense and redirect after 10 seconds
+  useEffect(() => {
+    try {
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) {
+      console.error("AdSense load error:", e);
     }
 
-    // Shuffle facts and take first 5
-    const shuffled = stored.sort(() => 0.5 - Math.random()).slice(0, 5);
-    setFacts(shuffled);
+    const timer = setTimeout(() => {
+      router.push("/results");
+    }, 10000);
 
-    let index = 0;
-    const interval = setInterval(() => {
-      index++;
-      if (index < shuffled.length) {
-        setCurrentFactIndex(index);
-      } else {
-        clearInterval(interval);
-        router.push(`/results?score=${score}&total=${total}`);
-      }
-    }, 2500);
-
-    return () => clearInterval(interval);
+    return () => clearTimeout(timer);
   }, [router]);
 
-  if (facts.length === 0)
-    return (
-      <div style={styles.loading}>Loading your fun facts...</div>
-    );
-
-  const fact = facts[currentFactIndex];
+  const currentFact =
+    explanations.length > 0
+      ? explanations[currentIndex]
+      : "Reviewing your answers helps solidify learning!";
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Fun Fact 💡</h1>
-      <p style={styles.factText}>{fact.explanation}</p>
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f9f9f9",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
+        textAlign: "center",
+        padding: "20px",
+      }}
+    >
+      <h2 style={{ color: "#1976d2", marginBottom: "16px" }}>
+        Learning Recap
+      </h2>
+
+      <p
+        key={currentIndex}
+        style={{
+          fontSize: "1.1rem",
+          marginBottom: "20px",
+          maxWidth: "500px",
+          minHeight: "60px",
+          transition: "opacity 0.5s ease-in-out",
+          color: "#111", // ✅ fixed color: black text for visibility
+        }}
+      >
+        {currentFact}
+      </p>
+
+      {/* Google AdSense Ad Slot */}
+      <div
+        style={{
+          width: "320px",
+          height: "100px",
+          backgroundColor: "#eee",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          borderRadius: "8px",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          marginBottom: "10px",
+        }}
+      >
+        <ins
+          className="adsbygoogle"
+          style={{ display: "block" }}
+          data-ad-client="ca-pub-XXXXXXXXXXXX" // ← your AdSense ID
+          data-ad-slot="1234567890" // ← your ad slot ID
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+      </div>
+
+      <p style={{ color: "#1976d2", fontWeight: 600 }}>
+        Your results will appear shortly...
+      </p>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    background: "linear-gradient(90deg, #2196f3, #ff9800)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    color: "#fff",
-    padding: "40px",
-  },
-  title: {
-    fontSize: "2rem",
-    marginBottom: "20px",
-  },
-  factText: {
-    fontSize: "1.2rem",
-    maxWidth: "600px",
-    lineHeight: "1.6",
-  },
-  loading: {
-    height: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#333",
-  },
-};
