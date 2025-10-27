@@ -2,21 +2,14 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState, Suspense } from "react";
+import { Suspense } from "react";
 
 function ResultsInner() {
   const searchParams = useSearchParams();
-  const [score, setScore] = useState(0);
-  const [total, setTotal] = useState(0);
 
-  useEffect(() => {
-    const s = parseInt(searchParams.get("score")) || 0;
-    const t = parseInt(searchParams.get("total")) || 0;
-    setScore(s);
-    setTotal(t);
-  }, [searchParams]);
-
-  const percent = total > 0 ? ((score / total) * 100).toFixed(0) : 0;
+  const score = parseInt(searchParams.get("score") || "0", 10);
+  const total = parseInt(searchParams.get("total") || "0", 10);
+  const percent = total > 0 ? Math.round((score / total) * 100) : 0;
 
   const getMessage = () => {
     if (percent >= 90) return "🔥 Master Level! Excellent job!";
