@@ -46,18 +46,19 @@ export default function AdPage() {
 
     const timer = setTimeout(() => {
       const stored = sessionStorage.getItem("testData");
-if (stored) {
-  try {
-    const data = JSON.parse(stored);
-    const score = data.filter((q) => q.correct).length;
-    const total = data.length;
-    router.push(`/results?score=${score}&total=${total}`);
-  } catch {
-    router.push("/results");
-  }
-} else {
-  router.push("/results");
-}
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          // ✅ FIXED score calculation
+          const score = data.filter((q) => q.userAnswer === q.correctAnswer).length;
+          const total = data.length;
+          router.push(`/results?score=${score}&total=${total}`);
+        } catch {
+          router.push("/results");
+        }
+      } else {
+        router.push("/results");
+      }
     }, 10000);
 
     return () => clearTimeout(timer);
@@ -82,9 +83,7 @@ if (stored) {
         padding: "20px",
       }}
     >
-      <h2 style={{ color: "#1976d2", marginBottom: "16px" }}>
-        Learning Recap
-      </h2>
+      <h2 style={{ color: "#1976d2", marginBottom: "16px" }}>Learning Recap</h2>
 
       <p
         key={currentIndex}
@@ -94,7 +93,7 @@ if (stored) {
           maxWidth: "500px",
           minHeight: "60px",
           transition: "opacity 0.5s ease-in-out",
-          color: "#111", // ✅ fixed color: black text for visibility
+          color: "#000", // make facts visible
         }}
       >
         {currentFact}
@@ -124,9 +123,7 @@ if (stored) {
         ></ins>
       </div>
 
-      <p style={{ color: "#1976d2", fontWeight: 600 }}>
-        Your results will appear shortly...
-      </p>
+      <p style={{ color: "#666" }}>Your results will appear shortly...</p>
     </div>
   );
 }
