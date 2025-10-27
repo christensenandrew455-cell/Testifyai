@@ -1,62 +1,84 @@
 "use client";
-import { Suspense } from "react";
+
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 function CorrectContent() {
   const router = useRouter();
-  const params = useSearchParams();
+  const searchParams = useSearchParams();
 
-  const topic = params.get("topic");
-  const selected = params.get("selected");
-  const correct = params.get("correct");
-  const reason = params.get("reason");
+  const question = searchParams.get("question") || "";
+  const userAnswer = searchParams.get("userAnswer") || "";
+  const correctAnswer = searchParams.get("correctAnswer") || "";
+  const explanation = searchParams.get("explanation") || "";
+  const index = Number(searchParams.get("index") ?? 0);
+  const topic = searchParams.get("topic") || "";
 
-  const questions = JSON.parse(sessionStorage.getItem("testData") || "[]");
-  const currentIndex = Number(sessionStorage.getItem("resumeIndex")) || 0;
-  const isLastQuestion = currentIndex >= questions.length;
+  const [questions, setQuestions] = useState([]);
 
-  const goNext = () => {
-    if (isLastQuestion) {
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("testData");
+      if (stored) setQuestions(JSON.parse(stored));
+    } catch (err) {
+      console.error("Error loading testData:", err);
+    }
+  }, []);
+
+  const isLast = questions.length > 0 ? index >= questions.length - 1 : false;
+
+  const handleContinue = () => {
+    if (isLast) {
       router.push("/ad");
     } else {
-      router.push("/testchat");
+      sessionStorage.setItem("resumeIndex", String(index + 1));
+      router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
     }
   };
 
   return (
     <div
-      onClick={goNext}
+      onClick={handleContinue}
       style={{
-        minHeight: "100vh",
-        backgroundColor: "#e6f9ec",
+        height: "100vh",
+        width: "100vw",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(to right, #81c784, #388e3c)",
+        color: "white",
         textAlign: "center",
-        color: "#2e7d32",
-        fontFamily: "Segoe UI, sans-serif",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
+        cursor: "pointer",
+        padding: "20px",
       }}
     >
-      <div style={{ fontSize: "64px", marginBottom: "16px" }}>✅</div>
-      <h1>Correct!</h1>
+      <div style={{ fontSize: 72, marginBottom: 12 }}>✅</div>
+      <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>Correct!</h1>
 
-      <p style={{ marginTop: "20px", fontSize: "1.1rem" }}>
-        <strong>Your answer:</strong> {selected}
-      </p>
-      <p>
-        <strong>Explanation:</strong> {reason}
-      </p>
+      <div style={{ maxWidth: 760, marginBottom: 10 }}>
+        <p><strong>Question:</strong> {question}</p>
+        <p><strong>Your answer:</strong> {userAnswer}</p>
+        <p><strong>Correct answer:</strong> {correctAnswer}</p>
+      </div>
 
-      <p style={{ marginTop: "40px", opacity: 0.7 }}>Click anywhere to continue</p>
+      {explanation && (
+        <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>
+          💡 {explanation}
+        </p>
+      )}
+
+      <div style={{ marginTop: 30, borderTop: "1px solid rgba(255,255,255,0.3)", paddingTop: 12 }}>
+        <small style={{ opacity: 0.95 }}>Click to continue</small>
+      </div>
     </div>
   );
 }
 
 export default function CorrectPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div style={{textAlign:"center", marginTop:"40vh"}}>Loading...</div>}>
       <CorrectContent />
     </Suspense>
   );
