@@ -5,113 +5,112 @@ import { useRouter } from "next/navigation";
 
 export default function AdPage() {
   const router = useRouter();
-  const [explanations, setExplanations] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [factIndex, setFactIndex] = useState(0);
+  const [facts, setFacts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Load the user's answered questions and their explanations
+  // Load past test facts
   useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem("testData");
-      if (stored) {
-        const questions = JSON.parse(stored);
-        // Collect all explanations from the questions already taken
-        const takenExplanations = questions
-          .map((q) => q.explanation)
-          .filter(Boolean);
-        // Shuffle them for randomness
-        const shuffled = takenExplanations.sort(() => Math.random() - 0.5);
-        setExplanations(shuffled);
-      }
-    } catch (err) {
-      console.error("Error loading explanations:", err);
-    }
+    const storedFacts = JSON.parse(localStorage.getItem("pastFacts")) || [];
+    setFacts(storedFacts.length ? storedFacts : ["Learning makes you smarter!"]);
+    setLoading(false);
   }, []);
 
-  // Cycle through explanations every 2.5 seconds
+  // Cycle through facts every 2.5s then go to results
   useEffect(() => {
-    if (explanations.length === 0) return;
+    if (facts.length === 0) return;
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % explanations.length);
+      setFactIndex((prev) => (prev + 1) % facts.length);
     }, 2500);
-    return () => clearInterval(interval);
-  }, [explanations]);
 
-  // Load AdSense and redirect after 10 seconds
-  useEffect(() => {
-    try {
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (e) {
-      console.error("AdSense load error:", e);
-    }
-
-    const timer = setTimeout(() => {
+    const timeout = setTimeout(() => {
       router.push("/results");
-    }, 10000);
+    }, 8000);
 
-    return () => clearTimeout(timer);
-  }, [router]);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [facts, router]);
 
-  const currentFact =
-    explanations.length > 0
-      ? explanations[currentIndex]
-      : "Reviewing your answers helps solidify learning!";
+  if (loading) {
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#1976d2",
+          fontSize: "1.5rem",
+        }}
+      >
+        Loading ad...
+      </div>
+    );
+  }
 
   return (
     <div
       style={{
-        height: "100vh",
+        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#f9f9f9",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
+        background: "linear-gradient(to bottom right, #ffffff, #e3f2fd)",
+        color: "#222",
         textAlign: "center",
-        padding: "20px",
+        padding: "40px",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
-      <h2 style={{ color: "#1976d2", marginBottom: "16px" }}>
-        Learning Recap
-      </h2>
-
-      <p
-        key={currentIndex}
+      <h1
         style={{
-          fontSize: "1.1rem",
+          fontSize: "2rem",
+          color: "#1976d2",
+          fontWeight: "800",
           marginBottom: "20px",
-          maxWidth: "500px",
-          minHeight: "60px",
-          transition: "opacity 0.5s ease-in-out",
         }}
       >
-        {currentFact}
-      </p>
+        Sponsored Learning Break
+      </h1>
 
-      {/* Google AdSense Ad Slot */}
       <div
         style={{
-          width: "320px",
-          height: "100px",
-          backgroundColor: "#eee",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          borderRadius: "8px",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          marginBottom: "10px",
+          backgroundColor: "white",
+          borderRadius: "16px",
+          padding: "40px 30px",
+          boxShadow: "0 6px 16px rgba(0,0,0,0.1)",
+          maxWidth: "700px",
+          width: "100%",
         }}
       >
-        <ins
-          className="adsbygoogle"
-          style={{ display: "block" }}
-          data-ad-client="ca-pub-XXXXXXXXXXXX" // ← your AdSense ID
-          data-ad-slot="1234567890" // ← your ad slot ID
-          data-ad-format="auto"
-          data-full-width-responsive="true"
-        ></ins>
+        <h2
+          style={{
+            color: "#1976d2",
+            fontSize: "1.5rem",
+            fontWeight: "700",
+            marginBottom: "10px",
+          }}
+        >
+          Fun Fact
+        </h2>
+        <p
+          style={{
+            color: "#333",
+            fontSize: "1.2rem",
+            minHeight: "80px",
+            transition: "opacity 0.5s ease",
+          }}
+        >
+          {facts[factIndex]}
+        </p>
       </div>
 
-      <p style={{ color: "#666" }}>Your results will appear shortly...</p>
+      <p style={{ marginTop: "30px", color: "#777", fontSize: "0.9rem" }}>
+        Your results will appear shortly...
+      </p>
     </div>
   );
 }
