@@ -34,18 +34,6 @@ function TestChatInner() {
       sessionStorage.setItem("score", (prevScore + 1).toString());
     }
 
-    // ✅ Store user answer so /results can use it later
-    try {
-      const updatedQuestions = [...questions];
-      updatedQuestions[currentIndex] = {
-        ...currentQuestion,
-        userAnswer,
-      };
-      sessionStorage.setItem("testData", JSON.stringify(updatedQuestions));
-    } catch (err) {
-      console.error("Error saving answer:", err);
-    }
-
     const query = new URLSearchParams({
       question: currentQuestion.question,
       userAnswer,
@@ -57,12 +45,18 @@ function TestChatInner() {
     router.push(isCorrect ? `/correct?${query}` : `/incorrect?${query}`);
   };
 
+  // Move to next question (used by correct/incorrect)
   const nextQuestion = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
+      // ✅ Go to results page at the end
       const score = parseInt(sessionStorage.getItem("score") || "0", 10);
       const total = questions.length;
+
+      sessionStorage.removeItem("testData");
+      sessionStorage.removeItem("resumeIndex");
+      sessionStorage.removeItem("score");
 
       router.push(`/results?score=${score}&total=${total}`);
     }
