@@ -1,210 +1,249 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 
-export default function TestSetupPage() {
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+function TestChatInner() {
   const router = useRouter();
-  const [topic, setTopic] = useState("");
-  const [difficulty, setDifficulty] = useState(1);
-  const [questionCount, setQuestionCount] = useState(5);
-  const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const topic = searchParams.get("topic") || "Unknown Topic";
 
-  const handleGenerateTest = async () => {
-    if (!topic.trim()) {
-      alert("Please enter a topic!");
-      return;
+  const [questions, setQuestions] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("testData");
+    if (stored) {
+      setQuestions(JSON.parse(stored));
+      // ✅ Reset score at test start
+      sessionStorage.setItem("score", "0");
+    }
+  }, []);
+
+  const currentQuestion = questions[currentIndex];
+
+  const handleCheckAnswer = () => {
+    if (!currentQuestion || selected === null) return;
+    const userAnswer = currentQuestion.answers[selected];
+    const isCorrect = userAnswer === currentQuestion.correct;
+
+    // ✅ Track correct answers
+    const prevScore = parseInt(sessionStorage.getItem("score") || "0", 10);
+    if (isCorrect) {
+      sessionStorage.setItem("score", (prevScore + 1).toString());
     }
 
-    setLoading(true);
+    const query = new URLSearchParams({
+      question: currentQuestion.question,
+      userAnswer,
+      correctAnswer: currentQuestion.correct,
+      explanation: currentQuestion.explanation || "",
+      index: currentIndex.toString(),
+    }).toString();
 
-    try {
-      const res = await fetch("/api/generate-test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic,
-          difficulty,
-          numQuestions: Math.max(1, questionCount),
-        }),
-      });
+    router.push(isCorrect ? `/correct?${query}` : `/incorrect?${query}`);
+  };
 
-      if (!res.ok) throw new Error("API failed");
+  // Move to next question (used by correct/incorrect)
+  const nextQuestion = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      // ✅ Go to results page at the end
+      const score = parseInt(sessionStorage.getItem("score") || "0", 10);
+      const total = questions.length;
 
-      const data = await res.json();
+      sessionStorage.removeItem("testData");
+      sessionStorage.removeItem("resumeIndex");
+      sessionStorage.removeItem("score");
 
-      // Save generated questions for testchat to read
-      sessionStorage.setItem("testdata", JSON.stringify(data.questions));
-
-      // 🟢 Initialize score tracking (invisible)
-      sessionStorage.setItem("score", "0");
-
-      // Start at the beginning
-      sessionStorage.setItem("resumeIndex", "0");
-
-      router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
-    } catch (err) {
-      console.error("❌ Error generating test:", err);
-      alert("Failed to generate test. Try again.");
-    } finally {
-      setLoading(false);
+      router.push(`/results?score=${score}&total=${total}`);
     }
   };
+
+  useEffect(() => {
+    const resumeIndex = sessionStorage.getItem("resumeIndex");
+    if (resumeIndex) {
+      setCurrentIndex(parseInt(resumeIndex));
+      sessionStorage.removeItem("resumeIndex");
+    }
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem("resumeIndex", currentIndex);
+  }, [currentIndex]);
+
+  if (!currentQuestion) {
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "1.2rem",
+          color: "#333",
+        }}
+      >
+        Loading test...
+      </div>
+    );
+  }
 
   return (
     <div
       style={{
-        height: "100vh",
-        width: "100vw",
-        background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
+        minHeight: "100vh",
         display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
         alignItems: "center",
-        justifyContent: "center",
+        backgroundColor: "#f8fafc",
+        color: "#222",
+        padding: "40px 20px",
         fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
       <div
         style={{
-          backgroundColor: "rgba(255,255,255,0.1)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "40px",
-          border: "3px solid rgba(255,255,255,0.2)",
-          padding: "40px 50px",
-          width: "90%",
-          maxWidth: "450px",
-          color: "white",
-          textAlign: "center",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+          width: "100%",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          maxWidth: "800px",
+          marginBottom: "30px",
         }}
       >
-        <h2 style={{ marginBottom: "24px", fontWeight: 800 }}>Topic</h2>
-        <input
-          type="text"
-          placeholder="What do you want to be tested on?"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
+        <button
+          onClick={() => router.push("/test")}
           style={{
-            width: "100%",
-            padding: "12px 16px",
-            borderRadius: "12px",
+            backgroundColor: "#1976d2",
+            color: "white",
             border: "none",
-            fontSize: "1rem",
-            textAlign: "center",
-            outline: "none",
-            marginBottom: "28px",
-          }}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "8px",
+            borderRadius: "12px",
+            padding: "8px 20px",
             fontWeight: 600,
-          }}
-        >
-          <span>Beginner</span>
-          <span>Difficulty Scale</span>
-          <span>Master</span>
-        </div>
-
-        <input
-          type="range"
-          min="1"
-          max="9"
-          step="1"
-          value={difficulty}
-          onChange={(e) => setDifficulty(Number(e.target.value))}
-          style={{
-            width: "100%",
-            accentColor: "#1976d2",
-            marginBottom: "28px",
-            height: "6px",
             cursor: "pointer",
           }}
-        />
+        >
+          Leave
+        </button>
 
-        <label
+        <h2
           style={{
-            display: "block",
-            marginBottom: "8px",
-            fontWeight: 600,
+            fontWeight: 800,
+            fontSize: "1.3rem",
+            color: "#1976d2",
           }}
         >
-          Number of questions
-        </label>
+          {topic}
+        </h2>
 
-        <input
-          type="number"
-          min="1"
-          max="50"
-          value={questionCount}
-          onChange={(e) => setQuestionCount(Number(e.target.value))}
-          style={{
-            width: "80px",
-            padding: "8px",
-            borderRadius: "10px",
-            border: "none",
-            textAlign: "center",
-            fontSize: "1rem",
-            marginBottom: "32px",
-          }}
-        />
-
-        <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
-          <button
-            onClick={() => router.push("/")}
-            style={{
-              flex: 1,
-              padding: "12px 0",
-              borderRadius: "12px",
-              border: "none",
-              backgroundColor: "#1976d2",
-              color: "white",
-              fontWeight: 700,
-              fontSize: "1rem",
-              cursor: "pointer",
-              transition: "background-color 0.2s",
-              width: "140px",
-            }}
-          >
-            Back
-          </button>
-
-          <button
-            onClick={handleGenerateTest}
-            disabled={loading}
-            style={{
-              flex: 1,
-              padding: "12px 0",
-              borderRadius: "12px",
-              border: "none",
-              backgroundColor: loading ? "#ccc" : "#1976d2",
-              color: "white",
-              fontWeight: 700,
-              fontSize: "1rem",
-              cursor: loading ? "not-allowed" : "pointer",
-              width: "140px",
-              transition: "background-color 0.2s",
-            }}
-          >
-            {loading ? "Generating..." : "Generate Test"}
-          </button>
-        </div>
+        <div style={{ fontWeight: 700, color: "#1976d2" }}>TheTestifyAI</div>
       </div>
 
       <div
         style={{
-          position: "absolute",
-          top: "20px",
-          right: "30px",
-          fontWeight: 700,
-          color: "white",
-          fontSize: "1.2rem",
+          border: "3px solid #1976d2",
+          borderRadius: "16px",
+          backgroundColor: "white",
+          width: "100%",
+          maxWidth: "700px",
+          padding: "24px",
+          fontSize: "1.1rem",
+          fontWeight: 500,
+          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
         }}
       >
-        TheTestifyAI
+        {currentQuestion.question}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          marginTop: "24px",
+          width: "100%",
+          maxWidth: "500px",
+        }}
+      >
+        {currentQuestion.answers.map((ans, i) => (
+          <button
+            key={i}
+            onClick={() => setSelected(i)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              gap: "10px",
+              padding: "10px 16px",
+              borderRadius: "12px",
+              border:
+                selected === i
+                  ? "3px solid #1976d2"
+                  : "2px solid rgba(0,0,0,0.1)",
+              backgroundColor:
+                selected === i ? "rgba(25,118,210,0.1)" : "white",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              fontWeight: 500,
+            }}
+          >
+            <div
+              style={{
+                height: "16px",
+                width: "16px",
+                borderRadius: "50%",
+                border:
+                  selected === i
+                    ? "6px solid #1976d2"
+                    : "2px solid rgba(0,0,0,0.3)",
+              }}
+            ></div>
+            {ans}
+          </button>
+        ))}
+      </div>
+
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "700px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "30px",
+        }}
+      >
+        <div style={{ fontWeight: 600 }}>
+          Question {currentIndex + 1} of {questions.length}
+        </div>
+
+        <button
+          onClick={handleCheckAnswer}
+          style={{
+            backgroundColor: "#1976d2",
+            color: "white",
+            border: "none",
+            borderRadius: "12px",
+            padding: "10px 20px",
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Check Answer
+        </button>
       </div>
     </div>
+  );
+}
+
+export default function TestChatPage() {
+  return (
+    <Suspense fallback={<div>Loading test...</div>}>
+      <TestChatInner />
+    </Suspense>
   );
 }
