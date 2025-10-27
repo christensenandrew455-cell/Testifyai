@@ -14,7 +14,7 @@ function TestChatContent() {
   const [score, setScore] = useState(0);
 
   useEffect(() => {
-    const saved = sessionStorage.getItem("testData");
+    const saved = sessionStorage.getItem("generatedtest"); // ✅ fixed key name
     const resumeIndex = Number(sessionStorage.getItem("resumeIndex") || "0");
     const resumeScore = Number(sessionStorage.getItem("resumeScore") || "0");
 
@@ -31,15 +31,13 @@ function TestChatContent() {
   }, [router]);
 
   if (loading) {
-    return (
-      <div style={styles.loadingScreen}>Loading test...</div>
-    );
+    return <div style={styles.loadingScreen}>Loading test...</div>;
   }
 
   const currentQuestion = questions[currentIndex];
 
   const handleAnswer = (answer) => {
-    const isCorrect = answer === currentQuestion.correctAnswer;
+    const isCorrect = answer === currentQuestion.correct;
 
     // ✅ Save explanation/fact for ad page
     const pastFacts = JSON.parse(sessionStorage.getItem("pastFacts") || "[]");
@@ -77,7 +75,7 @@ function TestChatContent() {
         <p style={styles.questionText}>{currentQuestion.question}</p>
 
         <div style={styles.answers}>
-          {currentQuestion.options.map((option, i) => (
+          {currentQuestion.answers.map((option, i) => (
             <button
               key={i}
               style={styles.answerButton}
