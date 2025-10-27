@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function TestChat() {
+function TestChatContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const topic = searchParams.get("topic") || "Test";
@@ -13,7 +13,6 @@ export default function TestChat() {
   const [loading, setLoading] = useState(true);
   const [score, setScore] = useState(0);
 
-  // ✅ Load test data from session
   useEffect(() => {
     const saved = sessionStorage.getItem("testData");
     const resumeIndex = Number(sessionStorage.getItem("resumeIndex") || "0");
@@ -42,7 +41,7 @@ export default function TestChat() {
   const handleAnswer = (answer) => {
     const isCorrect = answer === currentQuestion.correctAnswer;
 
-    // ✅ Save explanation & question for Learn page
+    // ✅ Save explanation/fact for ad page
     const pastFacts = JSON.parse(sessionStorage.getItem("pastFacts") || "[]");
     pastFacts.push({
       question: currentQuestion.question,
@@ -55,18 +54,14 @@ export default function TestChat() {
     setScore(newScore);
     sessionStorage.setItem("resumeScore", newScore);
 
-    // ✅ Save index progress
+    // ✅ Save progress index
     sessionStorage.setItem("resumeIndex", currentIndex + 1);
 
-    // ✅ Go to next route
+    // ✅ Navigate depending on result
     if (isCorrect) {
-      router.push(
-        `/correct?index=${currentIndex}&total=${questions.length}`
-      );
+      router.push(`/correct?index=${currentIndex}&total=${questions.length}`);
     } else {
-      router.push(
-        `/incorrect?index=${currentIndex}&total=${questions.length}`
-      );
+      router.push(`/incorrect?index=${currentIndex}&total=${questions.length}`);
     }
   };
 
@@ -94,6 +89,14 @@ export default function TestChat() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TestChatPage() {
+  return (
+    <Suspense fallback={<div style={styles.loadingScreen}>Loading test...</div>}>
+      <TestChatContent />
+    </Suspense>
   );
 }
 
