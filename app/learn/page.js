@@ -2,109 +2,101 @@
 
 import Link from "next/link";
 
-export default function LearnMorePage() {
+export default function LearnPage() {
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(180deg, #fff7ed 0%, #fffdf8 100%)",
+        background: "linear-gradient(180deg, #fffaf3 0%, #fff6e8 100%)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         padding: "40px 20px",
-        fontFamily: "Georgia, serif",
       }}
     >
       <div
         style={{
-          backgroundColor: "#fffdf9",
-          borderRadius: "12px",
-          boxShadow: "0 4px 18px rgba(0,0,0,0.08)",
-          border: "1px solid #f1e2c6",
-          maxWidth: "800px",
+          backgroundColor: "#fffefb",
+          color: "#222", // ✅ Force visible text
+          maxWidth: "700px",
           width: "100%",
-          padding: "60px 80px",
-          textAlign: "left",
+          padding: "40px",
+          borderRadius: "16px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          border: "1px solid #f1e0c5",
           lineHeight: "1.8",
-          // ✅ make all text black
-          color: "#111",
+          fontFamily: "Georgia, serif",
         }}
       >
         <h1
           style={{
+            color: "#d47a00", // Warm orange title
             textAlign: "center",
-            fontSize: "2.4rem",
-            color: "#c46b1a",
-            marginBottom: "5px",
-          }}
-        >
-          TheTestifyAI
-        </h1>
-
-        <h2
-          style={{
-            textAlign: "center",
-            color: "#d47b24",
-            marginBottom: "30px",
-            fontSize: "1.6rem",
+            fontSize: "2.2rem",
+            marginBottom: "20px",
           }}
         >
           Learn More
-        </h2>
+        </h1>
 
-        {/* 🧹 Removed “Dear learner,” paragraph */}
-        
-        <p style={{ marginBottom: "20px" }}>
-          TheTestifyAI is designed for everyone — on phones, tablets, and
-          computers. It allows you to take a test on any topic you choose and
-          customize both the difficulty and number of questions.
+        <p style={{ marginBottom: "16px", color: "#222" }}>
+          TheTestifyAI is designed to make learning engaging and adaptive.
+          You can take tests on nearly any topic — whether it’s history,
+          science, entertainment, or random facts. You choose the difficulty
+          and the number of questions, and the AI does the rest.
         </p>
 
-        <p style={{ marginBottom: "20px" }}>
-          Each question is crafted by an AI that studies your chosen topic,
-          creates four answer options, and ensures one is correct. After every
-          answer, you’ll see a short explanation to help you learn and
-          understand more deeply.
+        <p style={{ marginBottom: "16px", color: "#222" }}>
+          Our AI gathers accurate, topic-based information, then builds
+          multiple-choice questions with detailed reasoning for each correct
+          answer. After each question, you’ll see an explanation to help you
+          learn as you go.
         </p>
 
-        <p style={{ marginBottom: "20px" }}>
-          Since these questions are AI-generated, small inaccuracies can occur.
-          If you find anything that could be improved, we’d love your feedback
-          at:
+        <p style={{ marginBottom: "16px", color: "#222" }}>
+          Because each question set is freshly generated, some variations may
+          occur. We’re always improving accuracy and depth, so if you notice
+          any issues, feel free to contact us at:
         </p>
 
         <p
           style={{
-            textAlign: "center",
-            color: "#d47b24",
+            color: "#d47a00",
             fontWeight: "bold",
-            marginBottom: "30px",
+            textAlign: "center",
+            margin: "12px 0 28px 0",
           }}
         >
           thetestifyai@gmail.com
         </p>
 
-        <p style={{ fontStyle: "italic", marginBottom: "30px", color: "#444" }}>
-          More updates and improvements are on the way. We appreciate your
-          support as TheTestifyAI continues to grow and evolve.
+        <p
+          style={{
+            textAlign: "center",
+            fontStyle: "italic",
+            color: "#444",
+            marginBottom: "30px",
+          }}
+        >
+          More updates and improvements are coming soon — stay tuned!
         </p>
 
-        {/* 🧹 Removed “Sincerely,” and “TheTestifyAI Team” */}
-
-        <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <div style={{ textAlign: "center" }}>
           <Link
             href="/"
             style={{
-              backgroundColor: "#d47b24",
-              color: "white",
-              padding: "12px 28px",
+              backgroundColor: "#d47a00",
+              color: "#fff",
+              padding: "12px 24px",
               borderRadius: "8px",
               textDecoration: "none",
               fontWeight: "bold",
-              fontSize: "1.05rem",
+              transition: "background-color 0.3s ease",
             }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = "#b86500")}
+            onMouseOut={(e) => (e.target.style.backgroundColor = "#d47a00")}
           >
-            Return Home
+            Home
           </Link>
         </div>
       </div>
