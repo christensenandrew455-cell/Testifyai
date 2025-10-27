@@ -1,77 +1,93 @@
 "use client";
-import { Suspense, useState, useEffect } from "react";
+
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
-function IncorrectContent() {
+export default function IncorrectContent() {
   const router = useRouter();
-  const params = useSearchParams();
+  const searchParams = useSearchParams();
 
-  const topic = params.get("topic");
-  const selected = params.get("selected");
-  const correct = params.get("correct");
-  const reason = params.get("reason");
+  const question = searchParams.get("question") || "";
+  const userAnswer = searchParams.get("userAnswer") || "";
+  const correctAnswer = searchParams.get("correctAnswer") || "";
+  const explanation = searchParams.get("explanation") || "";
+  const index = Number(searchParams.get("index") ?? 0);
+  const topic = searchParams.get("topic") || "";
 
+  const [questions, setQuestions] = useState([]);
   const [canClick, setCanClick] = useState(false);
 
-  const questions = JSON.parse(sessionStorage.getItem("testData") || "[]");
-  const currentIndex = Number(sessionStorage.getItem("resumeIndex")) || 0;
-  const isLastQuestion = currentIndex >= questions.length;
-
   useEffect(() => {
-    const timer = setTimeout(() => setCanClick(true), 2500);
-    return () => clearTimeout(timer);
+    try {
+      const stored = sessionStorage.getItem("testData");
+      if (stored) setQuestions(JSON.parse(stored));
+    } catch (e) {
+      console.error("Failed to read testData:", e);
+      setQuestions([]);
+    }
+
+    const t = setTimeout(() => setCanClick(true), 2500);
+    return () => clearTimeout(t);
   }, []);
 
-  const goNext = () => {
+  const isLast = questions.length > 0 ? index >= questions.length - 1 : false;
+
+  const handleContinue = () => {
     if (!canClick) return;
-    if (isLastQuestion) {
+    if (isLast) {
       router.push("/ad");
     } else {
-      router.push("/testchat");
+      sessionStorage.setItem("resumeIndex", String(index + 1));
+      router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
     }
   };
 
   return (
     <div
-      onClick={goNext}
+      onClick={handleContinue}
       style={{
-        minHeight: "100vh",
-        backgroundColor: "#fdecea",
+        height: "100vh",
+        width: "100vw",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(to right, #ff8a80, #e53935)",
+        color: "white",
         textAlign: "center",
-        color: "#c62828",
-        fontFamily: "Segoe UI, sans-serif",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
+        padding: "20px",
+        cursor: canClick ? "pointer" : "default",
       }}
     >
-      <div style={{ fontSize: "64px", marginBottom: "16px" }}>❌</div>
-      <h1>Incorrect</h1>
+      <div style={{ fontSize: 72, marginBottom: 12 }}>❌</div>
+      <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>Incorrect</h1>
 
-      <p style={{ marginTop: "20px", fontSize: "1.1rem" }}>
-        <strong>Your answer:</strong> {selected}
-      </p>
-      <p>
-        <strong>Correct answer:</strong> {correct}
-      </p>
-      <p>
-        <strong>Explanation:</strong> {reason}
-      </p>
+      <div style={{ maxWidth: 760, marginBottom: 10 }}>
+        <p style={{ margin: "8px 0" }}>
+          <strong>Question:</strong> {question}
+        </p>
+        <p style={{ margin: "8px 0" }}>
+          <strong>Your answer:</strong> {userAnswer}
+        </p>
+        <p style={{ margin: "8px 0" }}>
+          <strong>Correct answer:</strong> {correctAnswer}
+        </p>
+      </div>
 
-      {canClick ? (
-        <p style={{ marginTop: "40px", opacity: 0.7 }}>Click to continue</p>
-      ) : (
-        <p style={{ marginTop: "40px", opacity: 0.5 }}>Please wait...</p>
+      {explanation && (
+        <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>
+          💡 {explanation}
+        </p>
       )}
-    </div>
-  );
-}
 
-export default function IncorrectPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <IncorrectContent />
-    </Suspense>
+      <div style={{ marginTop: 30 }}>
+        {canClick ? (
+          <small style={{ opacity: 0.95 }}>Click to continue</small>
+        ) : (
+          <small style={{ opacity: 0.7 }}>Please wait...</small>
+        )}
+      </div>
+    </div>
   );
 }
