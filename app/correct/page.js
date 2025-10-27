@@ -15,6 +15,7 @@ function CorrectContent() {
   const topic = searchParams.get("topic") || "";
 
   const [questions, setQuestions] = useState([]);
+  const [canClick, setCanClick] = useState(false);
 
   useEffect(() => {
     try {
@@ -23,12 +24,22 @@ function CorrectContent() {
     } catch (err) {
       console.error("Error loading testData:", err);
     }
+
+    const t = setTimeout(() => setCanClick(true), 2500);
+    return () => clearTimeout(t);
   }, []);
 
   const isLast = questions.length > 0 ? index >= questions.length - 1 : false;
 
   const handleContinue = () => {
+    if (!canClick) return;
+
     if (isLast) {
+      // ✅ Calculate final score and total before going to ad
+      const score = parseInt(sessionStorage.getItem("score") || "0", 10);
+      const total = questions.length;
+      sessionStorage.setItem("finalScore", score.toString());
+      sessionStorage.setItem("finalTotal", total.toString());
       router.push("/ad");
     } else {
       sessionStorage.setItem("resumeIndex", String(index + 1));
@@ -50,7 +61,7 @@ function CorrectContent() {
         color: "white",
         textAlign: "center",
         fontFamily: "Segoe UI, Roboto, sans-serif",
-        cursor: "pointer",
+        cursor: canClick ? "pointer" : "default",
         padding: "20px",
       }}
     >
@@ -70,7 +81,9 @@ function CorrectContent() {
       )}
 
       <div style={{ marginTop: 30, borderTop: "1px solid rgba(255,255,255,0.3)", paddingTop: 12 }}>
-        <small style={{ opacity: 0.95 }}>Click to continue</small>
+        <small style={{ opacity: 0.95 }}>
+          {canClick ? "Click to continue" : "Please wait..."}
+        </small>
       </div>
     </div>
   );
