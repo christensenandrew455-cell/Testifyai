@@ -33,7 +33,7 @@ export default function TestSetupPage() {
       const data = await res.json();
 
       // Save generated questions for testchat to read
-      sessionStorage.setItem("testData", JSON.stringify(data.questions));
+      sessionStorage.setItem("generatedtest", JSON.stringify(data.questions));
 
       // 🟢 Initialize score tracking (invisible)
       sessionStorage.setItem("score", "0");
