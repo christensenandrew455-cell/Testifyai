@@ -17,7 +17,7 @@ export default function LearnPage() {
       <div
         style={{
           backgroundColor: "#fffefb",
-          color: "#333",
+          color: "#222", // ✅ Force visible text
           maxWidth: "700px",
           width: "100%",
           padding: "40px",
@@ -30,7 +30,7 @@ export default function LearnPage() {
       >
         <h1
           style={{
-            color: "#d47a00",
+            color: "#d47a00", // Warm orange title
             textAlign: "center",
             fontSize: "2.2rem",
             marginBottom: "20px",
@@ -39,21 +39,21 @@ export default function LearnPage() {
           Learn More
         </h1>
 
-        <p style={{ marginBottom: "16px" }}>
+        <p style={{ marginBottom: "16px", color: "#222" }}>
           TheTestifyAI is designed to make learning engaging and adaptive.
           You can take tests on nearly any topic — whether it’s history,
           science, entertainment, or random facts. You choose the difficulty
           and the number of questions, and the AI does the rest.
         </p>
 
-        <p style={{ marginBottom: "16px" }}>
+        <p style={{ marginBottom: "16px", color: "#222" }}>
           Our AI gathers accurate, topic-based information, then builds
           multiple-choice questions with detailed reasoning for each correct
           answer. After each question, you’ll see an explanation to help you
           learn as you go.
         </p>
 
-        <p style={{ marginBottom: "16px" }}>
+        <p style={{ marginBottom: "16px", color: "#222" }}>
           Because each question set is freshly generated, some variations may
           occur. We’re always improving accuracy and depth, so if you notice
           any issues, feel free to contact us at:
@@ -74,7 +74,7 @@ export default function LearnPage() {
           style={{
             textAlign: "center",
             fontStyle: "italic",
-            color: "#555",
+            color: "#444",
             marginBottom: "30px",
           }}
         >
