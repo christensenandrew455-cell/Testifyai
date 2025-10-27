@@ -5,112 +5,78 @@ import { useRouter } from "next/navigation";
 
 export default function AdPage() {
   const router = useRouter();
-  const [factIndex, setFactIndex] = useState(0);
   const [facts, setFacts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [currentFactIndex, setCurrentFactIndex] = useState(0);
 
-  // Load past test facts
   useEffect(() => {
-    const storedFacts = JSON.parse(localStorage.getItem("pastFacts")) || [];
-    setFacts(storedFacts.length ? storedFacts : ["Learning makes you smarter!"]);
-    setLoading(false);
-  }, []);
+    const stored = JSON.parse(sessionStorage.getItem("pastFacts") || "[]");
+    const score = parseInt(sessionStorage.getItem("resumeScore")) || 0;
+    const total = parseInt(sessionStorage.getItem("resumeTotal")) || stored.length;
 
-  // Cycle through facts every 2.5s then go to results
-  useEffect(() => {
-    if (facts.length === 0) return;
+    if (stored.length === 0) {
+      router.push("/results?score=" + score + "&total=" + total);
+      return;
+    }
+
+    // Shuffle facts and take first 5
+    const shuffled = stored.sort(() => 0.5 - Math.random()).slice(0, 5);
+    setFacts(shuffled);
+
+    let index = 0;
     const interval = setInterval(() => {
-      setFactIndex((prev) => (prev + 1) % facts.length);
+      index++;
+      if (index < shuffled.length) {
+        setCurrentFactIndex(index);
+      } else {
+        clearInterval(interval);
+        router.push(`/results?score=${score}&total=${total}`);
+      }
     }, 2500);
 
-    const timeout = setTimeout(() => {
-      router.push("/results");
-    }, 8000);
+    return () => clearInterval(interval);
+  }, [router]);
 
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [facts, router]);
-
-  if (loading) {
+  if (facts.length === 0)
     return (
-      <div
-        style={{
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          color: "#1976d2",
-          fontSize: "1.5rem",
-        }}
-      >
-        Loading ad...
-      </div>
+      <div style={styles.loading}>Loading your fun facts...</div>
     );
-  }
+
+  const fact = facts[currentFactIndex];
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(to bottom right, #ffffff, #e3f2fd)",
-        color: "#222",
-        textAlign: "center",
-        padding: "40px",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-      }}
-    >
-      <h1
-        style={{
-          fontSize: "2rem",
-          color: "#1976d2",
-          fontWeight: "800",
-          marginBottom: "20px",
-        }}
-      >
-        Sponsored Learning Break
-      </h1>
-
-      <div
-        style={{
-          backgroundColor: "white",
-          borderRadius: "16px",
-          padding: "40px 30px",
-          boxShadow: "0 6px 16px rgba(0,0,0,0.1)",
-          maxWidth: "700px",
-          width: "100%",
-        }}
-      >
-        <h2
-          style={{
-            color: "#1976d2",
-            fontSize: "1.5rem",
-            fontWeight: "700",
-            marginBottom: "10px",
-          }}
-        >
-          Fun Fact
-        </h2>
-        <p
-          style={{
-            color: "#333",
-            fontSize: "1.2rem",
-            minHeight: "80px",
-            transition: "opacity 0.5s ease",
-          }}
-        >
-          {facts[factIndex]}
-        </p>
-      </div>
-
-      <p style={{ marginTop: "30px", color: "#777", fontSize: "0.9rem" }}>
-        Your results will appear shortly...
-      </p>
+    <div style={styles.container}>
+      <h1 style={styles.title}>Fun Fact 💡</h1>
+      <p style={styles.factText}>{fact.explanation}</p>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    minHeight: "100vh",
+    background: "linear-gradient(90deg, #2196f3, #ff9800)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    color: "#fff",
+    padding: "40px",
+  },
+  title: {
+    fontSize: "2rem",
+    marginBottom: "20px",
+  },
+  factText: {
+    fontSize: "1.2rem",
+    maxWidth: "600px",
+    lineHeight: "1.6",
+  },
+  loading: {
+    height: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#333",
+  },
+};
