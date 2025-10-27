@@ -33,7 +33,13 @@ function IncorrectContent() {
 
   const handleContinue = () => {
     if (!canClick) return;
+
     if (isLast) {
+      // ✅ Calculate final score and total before going to ad
+      const score = parseInt(sessionStorage.getItem("score") || "0", 10);
+      const total = questions.length;
+      sessionStorage.setItem("finalScore", score.toString());
+      sessionStorage.setItem("finalTotal", total.toString());
       router.push("/ad");
     } else {
       sessionStorage.setItem("resumeIndex", String(index + 1));
@@ -75,11 +81,9 @@ function IncorrectContent() {
       )}
 
       <div style={{ marginTop: 30 }}>
-        {canClick ? (
-          <small style={{ opacity: 0.95 }}>Click to continue</small>
-        ) : (
-          <small style={{ opacity: 0.7 }}>Please wait...</small>
-        )}
+        <small style={{ opacity: 0.95 }}>
+          {canClick ? "Click to continue" : "Please wait..."}
+        </small>
       </div>
     </div>
   );
