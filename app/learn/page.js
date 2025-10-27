@@ -27,7 +27,7 @@ export default function LearnMorePage() {
           textAlign: "left",
           lineHeight: "1.8",
           // ✅ make all text black
-          color: "black",
+          color: "#111",
         }}
       >
         <h1
