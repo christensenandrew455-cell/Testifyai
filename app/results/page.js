@@ -1,53 +1,42 @@
-'use client';
+'use client'; // This must be at the very top of the page file
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 
 export default function ResultsPage() {
   const searchParams = useSearchParams();
-  const [score, setScore] = useState(0);
-  const [total, setTotal] = useState(0);
-
-  useEffect(() => {
-    const s = parseInt(searchParams.get("score")) || 0;
-    const t = parseInt(searchParams.get("total")) || 0;
-    setScore(s);
-    setTotal(t);
-  }, [searchParams]);
-
+  const score = parseInt(searchParams.get("score") || "0");
+  const total = parseInt(searchParams.get("total") || "0");
   const percent = total > 0 ? ((score / total) * 100).toFixed(0) : 0;
 
   return (
-    <Suspense fallback={<div>Loading results...</div>}>
-      <div style={styles.container}>
-        <div style={styles.card}>
-          <h1 style={styles.title}>Your Results</h1>
-          <p style={styles.score}>
-            You got {score} out of {total}
-          </p>
-          <p style={styles.percent}>{percent}%</p>
-          <p style={styles.message}>
-            {percent >= 90
-              ? "🔥 Excellent job!"
-              : percent >= 70
-              ? "💪 Great work!"
-              : percent >= 50
-              ? "🧠 Keep practicing!"
-              : "📘 Keep going — you’ll improve!"}
-          </p>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h1 style={styles.title}>Your Results</h1>
+        <p style={styles.score}>
+          You got {score} out of {total}
+        </p>
+        <p style={styles.percent}>{percent}%</p>
+        <p style={styles.message}>
+          {percent >= 90
+            ? "🔥 Excellent job!"
+            : percent >= 70
+            ? "💪 Great work!"
+            : percent >= 50
+            ? "🧠 Keep practicing!"
+            : "📘 Keep going — you’ll improve!"}
+        </p>
 
-          <div style={styles.buttons}>
-            <Link href="/test" style={styles.tryAgain}>
-              Try Again
-            </Link>
-            <Link href="/" style={styles.home}>
-              Home
-            </Link>
-          </div>
+        <div style={styles.buttons}>
+          <Link href="/test" style={styles.tryAgain}>
+            Try Again
+          </Link>
+          <Link href="/" style={styles.home}>
+            Home
+          </Link>
         </div>
       </div>
-    </Suspense>
+    </div>
   );
 }
 
