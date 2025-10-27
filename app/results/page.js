@@ -2,12 +2,9 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 
-export default function Results() {
-  // 👇 prevents build/prerender crash
-  if (typeof window === "undefined") return null;
-
+function ResultsInner() {
   const searchParams = useSearchParams();
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
@@ -29,30 +26,51 @@ export default function Results() {
   };
 
   return (
-    <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center text-gray-900 text-center p-6">
-      <h1 className="text-4xl font-bold text-blue-600 mb-4">Your Results</h1>
+    <div
+      className="min-h-screen flex flex-col justify-center items-center bg-[#f8fafc] text-gray-900 text-center px-6 py-10"
+      style={{ fontFamily: "Segoe UI, Roboto, sans-serif" }}
+    >
+      <div className="max-w-lg w-full bg-white border-4 border-blue-600 rounded-3xl shadow-lg p-8">
+        <h1 className="text-3xl font-extrabold text-blue-700 mb-4">
+          Your Results
+        </h1>
 
-      <div className="bg-white shadow-md rounded-2xl p-6 w-11/12 sm:w-2/3 lg:w-1/2 mb-6">
-        <p className="text-2xl font-semibold mb-2">
-          Score: {score} / {total}
-        </p>
-        <p className="text-xl text-gray-700 mb-4">{percent}%</p>
-        <p className="text-lg">{getMessage()}</p>
+        <div className="mb-6">
+          <p className="text-2xl font-bold mb-2 text-gray-800">
+            Score: {score} / {total}
+          </p>
+          <p className="text-xl text-blue-600 font-semibold mb-4">
+            {percent}%
+          </p>
+          <p className="text-lg text-gray-700">{getMessage()}</p>
+        </div>
+
+        <div className="flex justify-center gap-4 mt-8">
+          <Link href="/test">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition">
+              Try Again
+            </button>
+          </Link>
+
+          <Link href="/">
+            <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-xl font-semibold transition">
+              Home
+            </button>
+          </Link>
+        </div>
       </div>
 
-      <div className="flex space-x-4">
-        <Link href="/test">
-          <button className="bg-blue-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-blue-700 transition">
-            Try Again
-          </button>
-        </Link>
-
-        <Link href="/">
-          <button className="bg-gray-200 text-gray-800 px-5 py-2 rounded-xl font-semibold hover:bg-gray-300 transition">
-            Home
-          </button>
-        </Link>
+      <div className="mt-8 text-sm font-semibold text-blue-600">
+        TheTestifyAI
       </div>
     </div>
+  );
+}
+
+export default function Results() {
+  return (
+    <Suspense fallback={<div>Loading results...</div>}>
+      <ResultsInner />
+    </Suspense>
   );
 }
