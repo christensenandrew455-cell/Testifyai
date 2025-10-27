@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-export default function IncorrectContent() {
+function IncorrectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -21,9 +21,8 @@ export default function IncorrectContent() {
     try {
       const stored = sessionStorage.getItem("testData");
       if (stored) setQuestions(JSON.parse(stored));
-    } catch (e) {
-      console.error("Failed to read testData:", e);
-      setQuestions([]);
+    } catch (err) {
+      console.error("Error loading testData:", err);
     }
 
     const t = setTimeout(() => setCanClick(true), 2500);
@@ -56,23 +55,17 @@ export default function IncorrectContent() {
         color: "white",
         textAlign: "center",
         fontFamily: "Segoe UI, Roboto, sans-serif",
-        padding: "20px",
         cursor: canClick ? "pointer" : "default",
+        padding: "20px",
       }}
     >
       <div style={{ fontSize: 72, marginBottom: 12 }}>❌</div>
       <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>Incorrect</h1>
 
       <div style={{ maxWidth: 760, marginBottom: 10 }}>
-        <p style={{ margin: "8px 0" }}>
-          <strong>Question:</strong> {question}
-        </p>
-        <p style={{ margin: "8px 0" }}>
-          <strong>Your answer:</strong> {userAnswer}
-        </p>
-        <p style={{ margin: "8px 0" }}>
-          <strong>Correct answer:</strong> {correctAnswer}
-        </p>
+        <p><strong>Question:</strong> {question}</p>
+        <p><strong>Your answer:</strong> {userAnswer}</p>
+        <p><strong>Correct answer:</strong> {correctAnswer}</p>
       </div>
 
       {explanation && (
@@ -89,5 +82,13 @@ export default function IncorrectContent() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function IncorrectPage() {
+  return (
+    <Suspense fallback={<div style={{textAlign:"center", marginTop:"40vh"}}>Loading...</div>}>
+      <IncorrectContent />
+    </Suspense>
   );
 }
