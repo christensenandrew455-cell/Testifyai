@@ -1,13 +1,31 @@
 'use client';
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 function ResultsContent() {
   const searchParams = useSearchParams();
-  const score = parseInt(searchParams.get("score") || "0");
-  const total = parseInt(searchParams.get("total") || "0");
+  const [score, setScore] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    // 1️⃣ Try to read from URL
+    const scoreFromUrl = parseInt(searchParams.get("score") || "NaN");
+    const totalFromUrl = parseInt(searchParams.get("total") || "NaN");
+
+    // 2️⃣ If URL values are invalid, use sessionStorage
+    if (!isNaN(scoreFromUrl) && !isNaN(totalFromUrl)) {
+      setScore(scoreFromUrl);
+      setTotal(totalFromUrl);
+    } else {
+      const storedScore = parseInt(sessionStorage.getItem("score") || "0", 10);
+      const storedData = JSON.parse(sessionStorage.getItem("testData") || "[]");
+      setScore(storedScore);
+      setTotal(storedData.length || 0);
+    }
+  }, [searchParams]);
+
   const percent = total > 0 ? ((score / total) * 100).toFixed(0) : 0;
 
   return (
