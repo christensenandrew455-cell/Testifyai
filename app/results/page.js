@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 
 export default function ResultsPage() {
@@ -19,33 +19,35 @@ export default function ResultsPage() {
   const percent = total > 0 ? ((score / total) * 100).toFixed(0) : 0;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Your Results</h1>
-        <p style={styles.score}>
-          You got {score} out of {total}
-        </p>
-        <p style={styles.percent}>{percent}%</p>
-        <p style={styles.message}>
-          {percent >= 90
-            ? "🔥 Excellent job!"
-            : percent >= 70
-            ? "💪 Great work!"
-            : percent >= 50
-            ? "🧠 Keep practicing!"
-            : "📘 Keep going — you’ll improve!"}
-        </p>
+    <Suspense fallback={<div>Loading results...</div>}>
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <h1 style={styles.title}>Your Results</h1>
+          <p style={styles.score}>
+            You got {score} out of {total}
+          </p>
+          <p style={styles.percent}>{percent}%</p>
+          <p style={styles.message}>
+            {percent >= 90
+              ? "🔥 Excellent job!"
+              : percent >= 70
+              ? "💪 Great work!"
+              : percent >= 50
+              ? "🧠 Keep practicing!"
+              : "📘 Keep going — you’ll improve!"}
+          </p>
 
-        <div style={styles.buttons}>
-          <Link href="/test" style={styles.tryAgain}>
-            Try Again
-          </Link>
-          <Link href="/" style={styles.home}>
-            Home
-          </Link>
+          <div style={styles.buttons}>
+            <Link href="/test" style={styles.tryAgain}>
+              Try Again
+            </Link>
+            <Link href="/" style={styles.home}>
+              Home
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </Suspense>
   );
 }
 
