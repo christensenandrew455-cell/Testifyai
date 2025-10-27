@@ -45,7 +45,19 @@ export default function AdPage() {
     }
 
     const timer = setTimeout(() => {
-      router.push("/results");
+      const stored = sessionStorage.getItem("testData");
+if (stored) {
+  try {
+    const data = JSON.parse(stored);
+    const score = data.filter((q) => q.correct).length;
+    const total = data.length;
+    router.push(`/results?score=${score}&total=${total}`);
+  } catch {
+    router.push("/results");
+  }
+} else {
+  router.push("/results");
+}
     }, 10000);
 
     return () => clearTimeout(timer);
