@@ -37,16 +37,21 @@ function TestChatInner() {
         }
         sessionStorage.setItem("testData", JSON.stringify(data));
       }
+
+      // ✅ Also store topic so other pages can use it
+      sessionStorage.setItem("topic", topic);
     } catch (err) {
       console.error("Error saving answer:", err);
     }
 
+    // ✅ Include topic in query params so /correct & /incorrect pages get it
     const query = new URLSearchParams({
       question: currentQuestion.question,
       userAnswer,
       correctAnswer: currentQuestion.correct,
       explanation: currentQuestion.explanation || "",
       index: currentIndex.toString(),
+      topic, // 👈 FIX ADDED HERE
     }).toString();
 
     router.push(isCorrect ? `/correct?${query}` : `/incorrect?${query}`);
