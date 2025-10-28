@@ -49,10 +49,16 @@ export default function AdPage() {
       if (stored) {
         try {
           const data = JSON.parse(stored);
-          // ✅ FIXED score calculation (only change made)
           const score = data.filter((q) => q.isCorrect).length;
           const total = data.length;
-          router.push(`/results?score=${score}&total=${total}`);
+
+          // ✅ NEW: include topic from testData
+          const topic = data[0]?.topic || "Unknown Topic";
+
+          // ✅ Send topic with score + total to /results
+          router.push(
+            `/results?score=${score}&total=${total}&topic=${encodeURIComponent(topic)}`
+          );
         } catch {
           router.push("/results");
         }
