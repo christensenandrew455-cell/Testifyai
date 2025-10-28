@@ -1,126 +1,132 @@
-'use client';
+"use client";
 
-import { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Suspense } from "react";
 
-function ResultsContent() {
+function ResultsInner() {
   const searchParams = useSearchParams();
-  const [score, setScore] = useState(0);
-  const [total, setTotal] = useState(0);
 
-  useEffect(() => {
-    // 1️⃣ Try to read from URL
-    const scoreFromUrl = parseInt(searchParams.get("score") || "NaN");
-    const totalFromUrl = parseInt(searchParams.get("total") || "NaN");
+  const score = parseInt(searchParams.get("score") || "0", 10);
+  const total = parseInt(searchParams.get("total") || "0", 10);
+  const percent = total > 0 ? Math.round((score / total) * 100) : 0;
 
-    // 2️⃣ If URL values are invalid, use sessionStorage
-    if (!isNaN(scoreFromUrl) && !isNaN(totalFromUrl)) {
-      setScore(scoreFromUrl);
-      setTotal(totalFromUrl);
-    } else {
-      const storedScore = parseInt(sessionStorage.getItem("score") || "0", 10);
-      const storedData = JSON.parse(sessionStorage.getItem("testData") || "[]");
-      setScore(storedScore);
-      setTotal(storedData.length || 0);
-    }
-  }, [searchParams]);
-
-  const percent = total > 0 ? ((score / total) * 100).toFixed(0) : 0;
+  const getMessage = () => {
+    if (percent >= 90) return "🔥 Master Level! Excellent job!";
+    if (percent >= 70) return "💪 Great work! You’re learning fast.";
+    if (percent >= 50) return "🧠 Not bad — keep studying!";
+    return "📘 Keep going — you’ll improve!";
+  };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Your Results</h1>
-        <p style={styles.score}>
-          You got {score} out of {total}
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f8fafc",
+        color: "#222",
+        padding: "40px 20px",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
+      }}
+    >
+      <div
+        style={{
+          border: "3px solid #1976d2",
+          borderRadius: "24px",
+          backgroundColor: "white",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          padding: "40px",
+          textAlign: "center",
+          width: "100%",
+          maxWidth: "600px",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "2rem",
+            fontWeight: "800",
+            color: "#1976d2",
+            marginBottom: "20px",
+          }}
+        >
+          Your Results
+        </h1>
+
+        <p style={{ fontSize: "1.5rem", fontWeight: "700", marginBottom: "10px" }}>
+          Score: {score} / {total}
         </p>
-        <p style={styles.percent}>{percent}%</p>
-        <p style={styles.message}>
-          {percent >= 90
-            ? "🔥 Excellent job!"
-            : percent >= 70
-            ? "💪 Great work!"
-            : percent >= 50
-            ? "🧠 Keep practicing!"
-            : "📘 Keep going — you’ll improve!"}
+        <p
+          style={{
+            fontSize: "1.3rem",
+            fontWeight: "600",
+            color: "#1976d2",
+            marginBottom: "20px",
+          }}
+        >
+          {percent}%
+        </p>
+        <p style={{ fontSize: "1.1rem", marginBottom: "30px", color: "#555" }}>
+          {getMessage()}
         </p>
 
-        <div style={styles.buttons}>
-          <Link href="/test" style={styles.tryAgain}>
-            Try Again
+        <div style={{ display: "flex", justifyContent: "center", gap: "16px" }}>
+          <Link href="/test">
+            <button
+              style={{
+                backgroundColor: "#1976d2",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                padding: "10px 20px",
+                fontWeight: "700",
+                cursor: "pointer",
+                fontSize: "1rem",
+              }}
+            >
+              Try Again
+            </button>
           </Link>
-          <Link href="/" style={styles.home}>
-            Home
+
+          <Link href="/">
+            <button
+              style={{
+                backgroundColor: "#e0e0e0",
+                color: "#333",
+                border: "none",
+                borderRadius: "12px",
+                padding: "10px 20px",
+                fontWeight: "700",
+                cursor: "pointer",
+                fontSize: "1rem",
+              }}
+            >
+              Home
+            </button>
           </Link>
         </div>
+      </div>
+
+      <div
+        style={{
+          marginTop: "20px",
+          fontWeight: "700",
+          color: "#1976d2",
+          fontSize: "1.1rem",
+        }}
+      >
+        TheTestifyAI
       </div>
     </div>
   );
 }
 
-export default function ResultsPage() {
+export default function Results() {
   return (
     <Suspense fallback={<div>Loading results...</div>}>
-      <ResultsContent />
+      <ResultsInner />
     </Suspense>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    backgroundColor: "#fff",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  card: {
-    background: "#f8f8f8",
-    padding: "40px",
-    borderRadius: "12px",
-    textAlign: "center",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-  },
-  title: {
-    fontSize: "2rem",
-    color: "#1565c0",
-    marginBottom: "20px",
-  },
-  score: {
-    fontSize: "1.4rem",
-    color: "#333",
-  },
-  percent: {
-    fontSize: "2rem",
-    color: "#1976d2",
-    fontWeight: "bold",
-    margin: "10px 0",
-  },
-  message: {
-    margin: "10px 0 30px",
-    fontSize: "1.1rem",
-    color: "#555",
-  },
-  buttons: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "10px",
-  },
-  tryAgain: {
-    backgroundColor: "#1976d2",
-    color: "#fff",
-    padding: "10px 20px",
-    borderRadius: "8px",
-    textDecoration: "none",
-    fontWeight: "bold",
-  },
-  home: {
-    backgroundColor: "#ddd",
-    color: "#222",
-    padding: "10px 20px",
-    borderRadius: "8px",
-    textDecoration: "none",
-    fontWeight: "bold",
-  },
-};
