@@ -116,7 +116,7 @@ export default function AdPage() {
         <ins
           className="adsbygoogle"
           style={{ display: "block" }}
-          data-ad-client="ca-pub-XXXXXXXXXXXX" // ← your AdSense ID
+          data-ad-client="ca-pub-98361203528322422" // ← your AdSense ID
           data-ad-slot="1234567890" // ← your ad slot ID
           data-ad-format="auto"
           data-full-width-responsive="true"
