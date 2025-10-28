@@ -15,7 +15,9 @@ function TestChatInner() {
   useEffect(() => {
     const stored = sessionStorage.getItem("testData");
     if (stored) {
-      setQuestions(JSON.parse(stored));
+      const parsed = JSON.parse(stored).map(q => ({ ...q, topic }));
+      setQuestions(parsed);
+      sessionStorage.setItem("testData", JSON.stringify(parsed));
     }
   }, []);
 
