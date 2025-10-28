@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 function ResultsInner() {
   const searchParams = useSearchParams();
@@ -10,6 +10,25 @@ function ResultsInner() {
   const score = parseInt(searchParams.get("score") || "0", 10);
   const total = parseInt(searchParams.get("total") || "0", 10);
   const percent = total > 0 ? Math.round((score / total) * 100) : 0;
+
+  const [topic, setTopic] = useState(searchParams.get("topic") || "Unknown Topic");
+
+  // 🧩 Try to recover topic from sessionStorage if not in URL
+  useEffect(() => {
+    if (!topic || topic === "Unknown Topic") {
+      try {
+        const stored = sessionStorage.getItem("testData");
+        if (stored) {
+          const data = JSON.parse(stored);
+          if (data.length > 0 && data[0].topic) {
+            setTopic(data[0].topic);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading topic:", err);
+      }
+    }
+  }, [topic]);
 
   const getMessage = () => {
     if (percent >= 90) return "🔥 Master Level! Excellent job!";
@@ -46,18 +65,19 @@ function ResultsInner() {
       >
         <h1
           style={{
-            fontSize: "2rem",
+            fontSize: "1.6rem",
             fontWeight: "800",
             color: "#1976d2",
-            marginBottom: "20px",
+            marginBottom: "10px",
           }}
         >
-          Your Results
+          {topic}
         </h1>
 
         <p style={{ fontSize: "1.5rem", fontWeight: "700", marginBottom: "10px" }}>
-          Score: {score} / {total}
+          {score} out of {total}
         </p>
+
         <p
           style={{
             fontSize: "1.3rem",
@@ -68,6 +88,7 @@ function ResultsInner() {
         >
           {percent}%
         </p>
+
         <p style={{ fontSize: "1.1rem", marginBottom: "30px", color: "#555" }}>
           {getMessage()}
         </p>
