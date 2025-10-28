@@ -34,7 +34,7 @@ function IncorrectContent() {
   const handleContinue = () => {
     if (!canClick) return;
     if (isLast) {
-      router.push("/ad");
+      router.push(`/ad?topic=${encodeURIComponent(topic)}`);
     } else {
       sessionStorage.setItem("resumeIndex", String(index + 1));
       router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
@@ -87,7 +87,7 @@ function IncorrectContent() {
 
 export default function IncorrectPage() {
   return (
-    <Suspense fallback={<div style={{textAlign:"center", marginTop:"40vh"}}>Loading...</div>}>
+    <Suspense fallback={<div style={{ textAlign: "center", marginTop: "40vh" }}>Loading...</div>}>
       <IncorrectContent />
     </Suspense>
   );
