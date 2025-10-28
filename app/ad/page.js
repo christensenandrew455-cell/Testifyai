@@ -49,8 +49,8 @@ export default function AdPage() {
       if (stored) {
         try {
           const data = JSON.parse(stored);
-          // ✅ FIXED score calculation
-          const score = data.filter((q) => q.userAnswer === q.correctAnswer).length;
+          // ✅ FIXED score calculation (only change made)
+          const score = data.filter((q) => q.isCorrect).length;
           const total = data.length;
           router.push(`/results?score=${score}&total=${total}`);
         } catch {
