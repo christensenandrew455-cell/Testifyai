@@ -20,16 +20,18 @@ function CorrectContent() {
     try {
       const stored = sessionStorage.getItem("testData");
       if (stored) setQuestions(JSON.parse(stored));
+      // 🧩 Save topic to sessionStorage so it persists
+      if (topic) sessionStorage.setItem("testTopic", topic);
     } catch (err) {
       console.error("Error loading testData:", err);
     }
-  }, []);
+  }, [topic]);
 
   const isLast = questions.length > 0 ? index >= questions.length - 1 : false;
 
   const handleContinue = () => {
     if (isLast) {
-      router.push(`/ad?topic=${encodeURIComponent(topic)}`);
+      router.push("/ad");
     } else {
       sessionStorage.setItem("resumeIndex", String(index + 1));
       router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
@@ -78,7 +80,7 @@ function CorrectContent() {
 
 export default function CorrectPage() {
   return (
-    <Suspense fallback={<div style={{ textAlign: "center", marginTop: "40vh" }}>Loading...</div>}>
+    <Suspense fallback={<div style={{textAlign:"center", marginTop:"40vh"}}>Loading...</div>}>
       <CorrectContent />
     </Suspense>
   );
