@@ -74,7 +74,7 @@ function ResultsInner() {
           style={{
             fontSize: "1.8rem",
             fontWeight: "800",
-            color: "#1976d2", // ✅ makes the score visible again
+            color: "#333", // ✅ makes the score visible again
             marginBottom: "5px",
           }}
         >
