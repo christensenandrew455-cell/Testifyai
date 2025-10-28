@@ -16,8 +16,6 @@ function TestChatInner() {
     const stored = sessionStorage.getItem("testData");
     if (stored) {
       setQuestions(JSON.parse(stored));
-      // ✅ Reset score at test start
-      sessionStorage.setItem("score", "0");
     }
   }, []);
 
@@ -28,10 +26,19 @@ function TestChatInner() {
     const userAnswer = currentQuestion.answers[selected];
     const isCorrect = userAnswer === currentQuestion.correct;
 
-    // ✅ Track correct answers
-    const prevScore = parseInt(sessionStorage.getItem("score") || "0", 10);
-    if (isCorrect) {
-      sessionStorage.setItem("score", (prevScore + 1).toString());
+    // ✅ Save user's answer + correctness into sessionStorage
+    try {
+      const stored = sessionStorage.getItem("testData");
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data[currentIndex]) {
+          data[currentIndex].userAnswer = userAnswer;
+          data[currentIndex].isCorrect = isCorrect;
+        }
+        sessionStorage.setItem("testData", JSON.stringify(data));
+      }
+    } catch (err) {
+      console.error("Error saving answer:", err);
     }
 
     const query = new URLSearchParams({
@@ -50,15 +57,7 @@ function TestChatInner() {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // ✅ Go to results page at the end
-      const score = parseInt(sessionStorage.getItem("score") || "0", 10);
-      const total = questions.length;
-
-      sessionStorage.removeItem("testData");
-      sessionStorage.removeItem("resumeIndex");
-      sessionStorage.removeItem("score");
-
-      router.push(`/results?score=${score}&total=${total}`);
+      router.push("/ad"); // ✅ after final question
     }
   };
 
