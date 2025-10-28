@@ -7,28 +7,32 @@ import { Suspense, useEffect, useState } from "react";
 function ResultsInner() {
   const searchParams = useSearchParams();
 
-  const score = parseInt(searchParams.get("score") || "0", 10);
-  const total = parseInt(searchParams.get("total") || "0", 10);
+  const scoreParam = searchParams.get("score");
+  const totalParam = searchParams.get("total");
+  const topicParam = searchParams.get("topic");
+
+  const [score, setScore] = useState(parseInt(scoreParam || "0", 10));
+  const [total, setTotal] = useState(parseInt(totalParam || "0", 10));
+  const [topic, setTopic] = useState(topicParam || "Unknown Topic");
+
   const percent = total > 0 ? Math.round((score / total) * 100) : 0;
 
-  const [topic, setTopic] = useState(searchParams.get("topic") || "Unknown Topic");
-
-  // 🧩 Try to recover topic from sessionStorage if not in URL
+  // 🧩 If data is missing, recover from sessionStorage
   useEffect(() => {
-    if (!topic || topic === "Unknown Topic") {
-      try {
-        const stored = sessionStorage.getItem("testData");
-        if (stored) {
-          const data = JSON.parse(stored);
-          if (data.length > 0 && data[0].topic) {
-            setTopic(data[0].topic);
-          }
+    try {
+      const stored = sessionStorage.getItem("testData");
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data.length > 0) {
+          if (!topicParam) setTopic(data[0].topic || "Unknown Topic");
+          if (!totalParam) setTotal(data.length);
+          if (!scoreParam) setScore(data.filter((q) => q.isCorrect).length);
         }
-      } catch (err) {
-        console.error("Error loading topic:", err);
       }
+    } catch (err) {
+      console.error("Error loading stored data:", err);
     }
-  }, [topic]);
+  }, []);
 
   const getMessage = () => {
     if (percent >= 90) return "🔥 Master Level! Excellent job!";
