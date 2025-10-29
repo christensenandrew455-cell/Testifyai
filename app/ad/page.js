@@ -8,17 +8,15 @@ export default function AdPage() {
   const [explanations, setExplanations] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Load the user's answered questions and their explanations
+  // Load user's answered questions and their explanations
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("testData");
       if (stored) {
         const questions = JSON.parse(stored);
-        // Collect all explanations from the questions already taken
         const takenExplanations = questions
           .map((q) => q.explanation)
           .filter(Boolean);
-        // Shuffle them for randomness
         const shuffled = takenExplanations.sort(() => Math.random() - 0.5);
         setExplanations(shuffled);
       }
@@ -36,14 +34,8 @@ export default function AdPage() {
     return () => clearInterval(interval);
   }, [explanations]);
 
-  // Load AdSense and redirect after 10 seconds
+  // Redirect after 10 seconds
   useEffect(() => {
-    try {
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (e) {
-      console.error("AdSense load error:", e);
-    }
-
     const timer = setTimeout(() => {
       const stored = sessionStorage.getItem("testData");
       if (stored) {
@@ -51,11 +43,7 @@ export default function AdPage() {
           const data = JSON.parse(stored);
           const score = data.filter((q) => q.isCorrect).length;
           const total = data.length;
-
-          // ✅ NEW: include topic from testData
           const topic = data[0]?.topic || "Unknown Topic";
-
-          // ✅ Send topic with score + total to /results
           router.push(
             `/results?score=${score}&total=${total}&topic=${encodeURIComponent(topic)}`
           );
@@ -66,7 +54,6 @@ export default function AdPage() {
         router.push("/results");
       }
     }, 10000);
-
     return () => clearTimeout(timer);
   }, [router]);
 
@@ -74,6 +61,16 @@ export default function AdPage() {
     explanations.length > 0
       ? explanations[currentIndex]
       : "Reviewing your answers helps solidify learning!";
+
+  // ✅ Add Ezoic ad loading logic
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.ezstandalone) {
+      window.ezstandalone.cmd = window.ezstandalone.cmd || [];
+      window.ezstandalone.cmd.push(function () {
+        window.ezstandalone.showAds(101); // Replace 101 with your real Ezoic placement ID
+      });
+    }
+  }, []);
 
   return (
     <div
@@ -99,37 +96,18 @@ export default function AdPage() {
           maxWidth: "500px",
           minHeight: "60px",
           transition: "opacity 0.5s ease-in-out",
-          color: "#000", // make facts visible
+          color: "#000",
         }}
       >
         {currentFact}
       </p>
 
-      {/* Google AdSense Ad Slot */}
-      <div
-        style={{
-          width: "320px",
-          height: "100px",
-          backgroundColor: "#eee",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          borderRadius: "8px",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          marginBottom: "10px",
-        }}
-      >
-        <ins
-          className="adsbygoogle"
-          style={{ display: "block" }}
-          data-ad-client="ca-pub-98361203528322422" // ← your AdSense ID
-          data-ad-slot="1234567890" // ← your ad slot ID
-          data-ad-format="auto"
-          data-full-width-responsive="true"
-        ></ins>
-      </div>
+      {/* ✅ Ezoic Ad Placeholder (center ad) */}
+      <div id="ezoic-pub-ad-placeholder-101" />
 
-      <p style={{ color: "#666" }}>Your results will appear shortly...</p>
+      <p style={{ color: "#666", marginTop: "12px" }}>
+        Your results will appear shortly...
+      </p>
     </div>
   );
 }
