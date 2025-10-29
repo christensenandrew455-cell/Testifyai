@@ -13,12 +13,28 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* ✅ Google AdSense verification meta tag */}
-        <meta
-          name="google-adsense-account"
-          content="ca-pub-9836120352832422"
+        {/* ✅ Ezoic Privacy Scripts (must load first) */}
+        <script
+          src="https://cmp.gatekeeperconsent.com/min.js"
+          data-cfasync="false"
+        ></script>
+        <script
+          src="https://the.gatekeeperconsent.com/cmp.min.js"
+          data-cfasync="false"
+        ></script>
+
+        {/* ✅ Ezoic Header Script */}
+        <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.ezstandalone = window.ezstandalone || {};
+              ezstandalone.cmd = ezstandalone.cmd || [];
+            `,
+          }}
         />
       </head>
+
       <body className={inter.className}>{children}</body>
     </html>
   );
