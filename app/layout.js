@@ -35,7 +35,24 @@ export default function RootLayout({ children }) {
         />
       </head>
 
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} flex flex-col min-h-screen`}>
+        <main className="flex-grow">{children}</main>
+
+        {/* ✅ Simple Footer */}
+        <footer className="border-t mt-10 py-6 text-center text-sm text-gray-500">
+          <p>
+            © {new Date().getFullYear()} TestifyAI. All rights reserved.
+          </p>
+          <p className="mt-2">
+            <a
+              href="/privacy-policy"
+              className="text-blue-600 hover:text-blue-800"
+            >
+              Privacy Policy
+            </a>
+          </p>
+        </footer>
+      </body>
     </html>
   );
 }
