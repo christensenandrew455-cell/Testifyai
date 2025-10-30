@@ -1,57 +1,76 @@
 export default function PrivacyPolicy() {
   return (
     <div
+      className="privacy-policy"
       style={{
-        color: "#000000", // force all text to be black
         padding: "40px",
-        fontFamily: "Inter, Arial, sans-serif",
         lineHeight: "1.6",
+        color: "#000",
+        backgroundColor: "transparent",
+        maxWidth: "800px",
+        margin: "0 auto",
       }}
     >
-      <h1 style={{ color: "#000000" }}>Privacy Policy</h1>
-      <p>
-        Welcome to <strong>TestifyAI</strong>. This Privacy Policy explains how
-        we collect, use, and protect your information when you use our website
-        (thetestifyai.com).
+      <h1 style={{ color: "#000", fontSize: "2rem", marginBottom: "20px" }}>
+        Privacy Policy
+      </h1>
+
+      <p style={{ color: "#000" }}>
+        This Privacy Policy describes how TestifyAI ("we", "us", or "our")
+        collects, uses, and protects your personal information when you use our
+        website located at <strong>https://thetestifyai.com</strong>.
       </p>
 
-      <h2 style={{ color: "#000000" }}>1. Information We Collect</h2>
-      <p>
-        We may collect usage data, cookies, and analytics information to improve
-        your experience. We do not collect personally identifiable information
-        unless voluntarily provided.
+      <h2 style={{ color: "#000", marginTop: "30px" }}>1. Information We Collect</h2>
+      <p style={{ color: "#000" }}>
+        We may collect non-personal information such as browser type, device
+        information, and general usage statistics. If you contact us or create
+        an account, we may also collect your name and email address.
       </p>
 
-      <h2 style={{ color: "#000000" }}>2. How We Use Information</h2>
-      <p>
-        Information collected is used to enhance site functionality, improve our
-        AI systems, and show relevant ads through third-party partners like
-        Ezoic or Google.
+      <h2 style={{ color: "#000", marginTop: "30px" }}>2. How We Use Information</h2>
+      <p style={{ color: "#000" }}>
+        We use collected data to improve our services, display relevant ads,
+        analyze traffic, and enhance your experience using TestifyAI.
       </p>
 
-      <h2 style={{ color: "#000000" }}>3. Third-Party Services</h2>
-      <p>
-        We use third-party ad networks and analytics tools that may use cookies
-        or tracking pixels to deliver better ad experiences.
+      <h2 style={{ color: "#000", marginTop: "30px" }}>3. Cookies and Advertising</h2>
+      <p style={{ color: "#000" }}>
+        Our site uses cookies and similar technologies to personalize content
+        and ads. Third-party ad partners, such as Google and Ezoic, may use
+        cookies to serve ads based on your visits to this and other websites.
       </p>
 
-      <h2 style={{ color: "#000000" }}>4. Your Rights</h2>
-      <p>
-        You can contact us at{" "}
-        <a href="mailto:thetestifyai@gmail.com" style={{ color: "#0000EE" }}>
+      <h2 style={{ color: "#000", marginTop: "30px" }}>4. Data Sharing</h2>
+      <p style={{ color: "#000" }}>
+        We do not sell your personal information. Data may be shared with
+        trusted partners (like ad networks) strictly for analytics or ad
+        serving purposes.
+      </p>
+
+      <h2 style={{ color: "#000", marginTop: "30px" }}>5. Your Choices</h2>
+      <p style={{ color: "#000" }}>
+        You may disable cookies through your browser settings. You can also
+        adjust your privacy preferences using the consent management pop-up
+        provided by Ezoic.
+      </p>
+
+      <h2 style={{ color: "#000", marginTop: "30px" }}>6. Security</h2>
+      <p style={{ color: "#000" }}>
+        We take reasonable measures to protect your data, but no method of
+        transmission over the Internet is completely secure.
+      </p>
+
+      <h2 style={{ color: "#000", marginTop: "30px" }}>7. Contact Us</h2>
+      <p style={{ color: "#000" }}>
+        If you have questions about this Privacy Policy, please contact us at{" "}
+        <a href="mailto:thetestifyai@gmail.com" style={{ color: "#000", textDecoration: "underline" }}>
           thetestifyai@gmail.com
-        </a>{" "}
-        for questions about your data or to request deletion.
+        </a>.
       </p>
 
-      <h2 style={{ color: "#000000" }}>5. Updates</h2>
-      <p>
-        This Privacy Policy may be updated periodically. Please review it
-        regularly for changes.
-      </p>
-
-      <p style={{ marginTop: "40px", fontSize: "0.9rem", color: "#333333" }}>
-        Last updated: {new Date().toLocaleDateString()}
+      <p style={{ color: "#000", marginTop: "40px" }}>
+        <strong>Effective Date:</strong> October 29, 2025
       </p>
     </div>
   );
