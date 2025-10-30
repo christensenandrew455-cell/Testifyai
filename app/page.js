@@ -29,7 +29,7 @@ export default function HomePage() {
             textShadow: "0 2px 6px rgba(0,0,0,0.25)",
           }}
         >
-          Welcome to TestifyAI
+          Welcome to TheTestifyAI
         </h1>
 
         <p
