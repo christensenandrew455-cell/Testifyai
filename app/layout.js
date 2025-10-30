@@ -1,6 +1,7 @@
 // app/layout.js
 import "./globals.css";
 import { Inter } from "next/font/google";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,22 +36,38 @@ export default function RootLayout({ children }) {
         />
       </head>
 
-      <body className={`${inter.className} flex flex-col min-h-screen`}>
-        <main className="flex-grow">{children}</main>
+      <body
+        className={`${inter.className}`}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh",
+          margin: 0,
+        }}
+      >
+        <div style={{ flex: 1 }}>{children}</div>
 
-        {/* ✅ Simple Footer */}
-        <footer className="border-t mt-10 py-6 text-center text-sm text-gray-500">
-          <p>
-            © {new Date().getFullYear()} TestifyAI. All rights reserved.
-          </p>
-          <p className="mt-2">
-            <a
-              href="/privacy-policy"
-              className="text-blue-600 hover:text-blue-800"
-            >
-              Privacy Policy
-            </a>
-          </p>
+        {/* ✅ Footer Section */}
+        <footer
+          style={{
+            textAlign: "center",
+            padding: "16px 0",
+            backgroundColor: "#f5f5f5",
+            fontSize: "0.9rem",
+            color: "#444",
+            borderTop: "1px solid #ddd",
+          }}
+        >
+          <Link
+            href="/privacy-policy"
+            style={{
+              color: "#1976d2",
+              textDecoration: "none",
+              fontWeight: "500",
+            }}
+          >
+            Privacy Policy
+          </Link>
         </footer>
       </body>
     </html>
