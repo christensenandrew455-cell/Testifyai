@@ -75,7 +75,7 @@ export default function TestSetupPage() {
 
         <input
           type="text"
-          placeholder="Type in anything (vague or specific)"
+          placeholder="Enter any topic — broad or specific"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           style={{
@@ -87,6 +87,7 @@ export default function TestSetupPage() {
             textAlign: "center",
             outline: "none",
             marginBottom: "28px",
+            maxWidth: "100%",
           }}
         />
 
