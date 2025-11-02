@@ -8,7 +8,6 @@ export default function AdPage() {
   const [explanations, setExplanations] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Load user's answered questions and their explanations
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("testData");
@@ -25,7 +24,6 @@ export default function AdPage() {
     }
   }, []);
 
-  // Cycle through explanations every 2.5 seconds
   useEffect(() => {
     if (explanations.length === 0) return;
     const interval = setInterval(() => {
@@ -34,7 +32,7 @@ export default function AdPage() {
     return () => clearInterval(interval);
   }, [explanations]);
 
-  // Redirect after 10 seconds
+  // ✅ Redirect after 10 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       const stored = sessionStorage.getItem("testData");
@@ -62,14 +60,12 @@ export default function AdPage() {
       ? explanations[currentIndex]
       : "Reviewing your answers helps solidify learning!";
 
-  // ✅ Add Ezoic ad loading logic
+  // ✅ Inject Monetag In-Page Push script
   useEffect(() => {
-    if (typeof window !== "undefined" && window.ezstandalone) {
-      window.ezstandalone.cmd = window.ezstandalone.cmd || [];
-      window.ezstandalone.cmd.push(function () {
-        window.ezstandalone.showAds(101); // Replace 101 with your real Ezoic placement ID
-      });
-    }
+    const script = document.createElement("script");
+    script.innerHTML = `(function(s){s.dataset.zone='10133204',s.src='https://forfrogadiertor.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+    document.body.appendChild(script);
+    return () => document.body.removeChild(script);
   }, []);
 
   return (
@@ -102,8 +98,8 @@ export default function AdPage() {
         {currentFact}
       </p>
 
-      {/* ✅ Ezoic Ad Placeholder (center ad) */}
-      <div id="ezoic-pub-ad-placeholder-101" />
+      {/* 👇 The ad will appear centered on top of this */}
+      <div id="monetag-ad-slot" style={{ margin: "10px 0" }} />
 
       <p style={{ color: "#666", marginTop: "12px" }}>
         Your results will appear shortly...
