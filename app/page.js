@@ -18,18 +18,27 @@ export default function HomePage() {
         margin: 0,
       }}
     >
-      <div style={{ maxWidth: 900, width: "100%", padding: "2rem" }}>
+      <div
+        style={{
+          maxWidth: 900,
+          width: "100%",
+          padding: "2rem",
+          wordWrap: "break-word", // ✅ prevents overflow on mobile
+        }}
+      >
         <h1
           style={{
-            fontSize: "3.25rem",
-            lineHeight: 1.05,
+            fontSize: "clamp(2rem, 6vw, 3.25rem)", // ✅ scales with screen size
+            lineHeight: 1.1,
             fontWeight: 800,
             color: "white",
             marginBottom: "0.75rem",
             textShadow: "0 2px 6px rgba(0,0,0,0.25)",
+            textAlign: "center", // ✅ ensures it’s centered on all devices
+            wordBreak: "break-word", // ✅ ensures long words wrap properly
           }}
         >
-          Welcome to TheTestifyAI
+          Welcome to <span style={{ display: "inline-block" }}>TheTestifyAI</span>
         </h1>
 
         <p
@@ -38,6 +47,7 @@ export default function HomePage() {
             color: "rgba(255,255,255,0.95)",
             maxWidth: 720,
             margin: "0 auto 1.25rem",
+            lineHeight: 1.4,
           }}
         >
           Test on any topic using AI for free.
