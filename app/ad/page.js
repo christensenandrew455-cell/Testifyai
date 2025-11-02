@@ -63,7 +63,7 @@ export default function AdPage() {
   // ✅ Inject Monetag In-Page Push script
   useEffect(() => {
     const script = document.createElement("script");
-    script.innerHTML = `(function(s){s.dataset.zone='10133204',s.src='https://forfrogadiertor.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+  
     document.body.appendChild(script);
     return () => document.body.removeChild(script);
   }, []);
