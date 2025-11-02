@@ -41,7 +41,6 @@ export default function HomePage() {
           }}
         >
           Test on any topic using AI for free.
-          <br />
           Click <strong>Test Me</strong> to get started.
         </p>
 
