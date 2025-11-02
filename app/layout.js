@@ -16,10 +16,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <title>TestifyAI</title>
+        {/* ✅ Monetag verification meta tag */}
+        <meta name="monetag" content="1a8ae42b7ebcfe6cbe21c25d047bbd48" />
       </head>
 
       <body
-        className={`${inter.className}`}
+        className={inter.className}
         style={{
           display: "flex",
           flexDirection: "column",
