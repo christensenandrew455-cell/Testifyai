@@ -42,9 +42,9 @@ export default function LearnPage() {
         <p style={{ marginBottom: "16px", color: "#222" }}>
           TheTestifyAI is designed to make learning engaging and adaptive.
           You can take tests on nearly any topic — whether it’s history,
-          science, entertainment, or random facts. You choose the difficulty
-          and the number of questions (the more questions the better), 
-          and the AI does the rest.
+          science, entertainment (be as vague or specific as you like). 
+          You choose the difficulty and the number of questions 
+          (the more questions the better), and the AI does the rest.
         </p>
 
         <p style={{ marginBottom: "16px", color: "#222" }}>
