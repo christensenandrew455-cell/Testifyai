@@ -40,7 +40,7 @@ export default function HomePage() {
             margin: "0 auto 1.25rem",
           }}
         >
-          For all your testing needs — powered by AI precision.
+          Test on any topic using ai for free.
         </p>
 
         <div
