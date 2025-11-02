@@ -75,7 +75,7 @@ export default function TestSetupPage() {
 
         <input
           type="text"
-          placeholder="What do you want to be tested on?"
+          placeholder="Type in anything (vague or specific)"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           style={{
