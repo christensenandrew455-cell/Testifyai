@@ -8,6 +8,7 @@ export default function AdPage() {
   const [explanations, setExplanations] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // ✅ Load explanations
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("testData");
@@ -24,6 +25,7 @@ export default function AdPage() {
     }
   }, []);
 
+  // ✅ Rotate facts every 2.5s
   useEffect(() => {
     if (explanations.length === 0) return;
     const interval = setInterval(() => {
@@ -32,7 +34,7 @@ export default function AdPage() {
     return () => clearInterval(interval);
   }, [explanations]);
 
-  // ✅ Redirect after 10 seconds
+  // ✅ Redirect after 10s
   useEffect(() => {
     const timer = setTimeout(() => {
       const stored = sessionStorage.getItem("testData");
@@ -60,12 +62,20 @@ export default function AdPage() {
       ? explanations[currentIndex]
       : "Reviewing your answers helps solidify learning!";
 
-  // ✅ Inject Monetag In-Page Push script
+  // ✅ Inject Monetag Vignette Script
   useEffect(() => {
     const script = document.createElement("script");
-  
-    document.body.appendChild(script);
-    return () => document.body.removeChild(script);
+    script.dataset.zone = "10133618"; // your Monetag zone ID
+    script.src = "https://gizokraijaw.net/vignette.min.js";
+    script.async = true;
+
+    // Append the script inside our ad container
+    const adContainer = document.getElementById("monetag-ad-slot");
+    if (adContainer) adContainer.appendChild(script);
+
+    return () => {
+      if (adContainer) adContainer.innerHTML = "";
+    };
   }, []);
 
   return (
@@ -73,7 +83,6 @@ export default function AdPage() {
       style={{
         height: "100vh",
         display: "flex",
-        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#f9f9f9",
@@ -82,28 +91,58 @@ export default function AdPage() {
         padding: "20px",
       }}
     >
-      <h2 style={{ color: "#1976d2", marginBottom: "16px" }}>Learning Recap</h2>
-
-      <p
-        key={currentIndex}
+      <div
         style={{
-          fontSize: "1.1rem",
-          marginBottom: "20px",
-          maxWidth: "500px",
-          minHeight: "60px",
-          transition: "opacity 0.5s ease-in-out",
-          color: "#000",
+          backgroundColor: "#fff",
+          borderRadius: "16px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          padding: "32px 40px",
+          maxWidth: "600px",
+          width: "90%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
-        {currentFact}
-      </p>
+        <h2 style={{ color: "#1976d2", marginBottom: "16px" }}>Learning Recap</h2>
 
-      {/* 👇 The ad will appear centered on top of this */}
-      <div id="monetag-ad-slot" style={{ margin: "10px 0" }} />
+        <p
+          key={currentIndex}
+          style={{
+            fontSize: "1.1rem",
+            marginBottom: "20px",
+            maxWidth: "500px",
+            minHeight: "60px",
+            transition: "opacity 0.5s ease-in-out",
+            color: "#000",
+          }}
+        >
+          {currentFact}
+        </p>
 
-      <p style={{ color: "#666", marginTop: "12px" }}>
-        Your results will appear shortly...
-      </p>
+        {/* 👇 Centered ad container */}
+        <div
+          id="monetag-ad-slot"
+          style={{
+            width: "100%",
+            minHeight: "120px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            border: "1px solid #ddd",
+            borderRadius: "12px",
+            overflow: "hidden",
+            backgroundColor: "#fafafa",
+            marginBottom: "20px",
+          }}
+        >
+          <span style={{ fontSize: "0.9rem", color: "#aaa" }}>
+            Loading ad...
+          </span>
+        </div>
+
+        <p style={{ color: "#666" }}>Your results will appear shortly...</p>
+      </div>
     </div>
   );
 }
