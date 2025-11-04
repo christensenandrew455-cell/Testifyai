@@ -31,6 +31,16 @@ function IncorrectContent() {
 
   const isLast = questions.length > 0 ? index >= questions.length - 1 : false;
 
+  // 👇 Show ad every 15 questions
+  useEffect(() => {
+    if ((index + 1) % 15 === 0) {
+      const script = document.createElement("script");
+      script.dataset.zone = "10137448";
+      script.src = "https://groleegni.net/vignette.min.js";
+      document.body.appendChild(script);
+    }
+  }, [index]);
+
   const handleContinue = () => {
     if (!canClick) return;
     if (isLast) {
