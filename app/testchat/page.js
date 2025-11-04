@@ -25,8 +25,23 @@ function TestChatInner() {
 
   const handleCheckAnswer = () => {
     if (!currentQuestion || selected === null) return;
+
+    // ======= START: Minimal fix (only this block changed) =======
     const userAnswer = currentQuestion.answers[selected];
-    const isCorrect = userAnswer === currentQuestion.correct;
+
+    // Determine the correct answer text (handle cases where correct is a letter like "A")
+    let correctAnswerText = currentQuestion.correct;
+    if (
+      typeof currentQuestion.correct === "string" &&
+      currentQuestion.correct.length === 1 &&
+      /^[A-D]$/i.test(currentQuestion.correct)
+    ) {
+      const letterIndex = currentQuestion.correct.toUpperCase().charCodeAt(0) - 65;
+      correctAnswerText = currentQuestion.answers[letterIndex] || currentQuestion.correct;
+    }
+
+    const isCorrect = userAnswer === correctAnswerText;
+    // ======= END: Minimal fix (only this block changed) =======
 
     // ✅ Save user's answer + correctness into sessionStorage
     try {
@@ -50,10 +65,10 @@ function TestChatInner() {
     const query = new URLSearchParams({
       question: currentQuestion.question,
       userAnswer,
-      correctAnswer: currentQuestion.correct,
+      correctAnswer: correctAnswerText, // send the full text now
       explanation: currentQuestion.explanation || "",
       index: currentIndex.toString(),
-      topic, // 👈 FIX ADDED HERE
+      topic, // 👈 FIX ADDED HERE (kept as before)
     }).toString();
 
     router.push(isCorrect ? `/correct?${query}` : `/incorrect?${query}`);
