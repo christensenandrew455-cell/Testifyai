@@ -6,7 +6,6 @@ import { Suspense, useEffect, useState } from "react";
 function IncorrectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const question = searchParams.get("question") || "";
   const userAnswer = searchParams.get("userAnswer") || "";
   const correctAnswer = searchParams.get("correctAnswer") || "";
@@ -16,40 +15,32 @@ function IncorrectContent() {
 
   const [questions, setQuestions] = useState([]);
   const [canClick, setCanClick] = useState(false);
+  const [showAd, setShowAd] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem("testData");
-      if (stored) setQuestions(JSON.parse(stored));
-    } catch (err) {
-      console.error("Error loading testData:", err);
-    }
-
+    const stored = sessionStorage.getItem("testData");
+    if (stored) setQuestions(JSON.parse(stored));
     const t = setTimeout(() => setCanClick(true), 2500);
     return () => clearTimeout(t);
   }, []);
 
-  const isLast = questions.length > 0 ? index >= questions.length - 1 : false;
+  useEffect(() => {
+    const adIndexes = (sessionStorage.getItem("adIndexes") || "")
+      .split(",")
+      .map(Number);
+    if (adIndexes.includes(index)) {
+      setShowAd(true);
+      const t = setTimeout(() => setShowAd(false), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [index]);
 
   const handleContinue = () => {
-    if (!canClick) return;
-    const total = questions.length;
-
+    if (!canClick || showAd) return;
+    const isLast = questions.length > 0 ? index >= questions.length - 1 : false;
     if (isLast) {
       router.push(`/ad?topic=${encodeURIComponent(topic)}`);
-      if (total < 15 && index >= Math.floor(total / 2)) {
-        const script = document.createElement("script");
-        script.dataset.zone = "10137448";
-        script.src = "https://groleegni.net/vignette.min.js";
-        document.body.appendChild(script);
-      }
     } else {
-      if (total >= 15 && (index + 1) % 15 === 0) {
-        const script = document.createElement("script");
-        script.dataset.zone = "10137448";
-        script.src = "https://groleegni.net/vignette.min.js";
-        document.body.appendChild(script);
-      }
       sessionStorage.setItem("resumeIndex", String(index + 1));
       router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
     }
@@ -69,28 +60,40 @@ function IncorrectContent() {
         color: "white",
         textAlign: "center",
         fontFamily: "Segoe UI, Roboto, sans-serif",
-        cursor: canClick ? "pointer" : "default",
-        padding: "20px",
+        cursor: canClick && !showAd ? "pointer" : "default",
+        padding: "20px"
       }}
     >
       <div style={{ fontSize: 72, marginBottom: 12 }}>❌</div>
       <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>Incorrect</h1>
-
       <div style={{ maxWidth: 760, marginBottom: 10 }}>
         <p><strong>Question:</strong> {question}</p>
         <p><strong>Your answer:</strong> {userAnswer}</p>
         <p><strong>Correct answer:</strong> {correctAnswer}</p>
       </div>
-
       {explanation && (
-        <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>
-          💡 {explanation}
-        </p>
+        <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>💡 {explanation}</p>
       )}
-
+      {showAd && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(0,0,0,0.85)",
+          color: "white",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "1.3rem",
+          zIndex: 9999
+        }}>
+          Loading ad...
+        </div>
+      )}
       <div style={{ marginTop: 30 }}>
         {canClick ? (
-          <small style={{ opacity: 0.95 }}>Click to continue</small>
+          <small style={{ opacity: 0.95 }}>
+            {showAd ? "Please wait for the ad..." : "Click to continue"}
+          </small>
         ) : (
           <small style={{ opacity: 0.7 }}>Please wait...</small>
         )}
