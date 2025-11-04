@@ -26,10 +26,9 @@ function TestChatInner() {
   const handleCheckAnswer = () => {
     if (!currentQuestion || selected === null) return;
 
-    // ======= START: Minimal fix (only this block changed) =======
     const userAnswer = currentQuestion.answers[selected];
 
-    // Determine the correct answer text (handle cases where correct is a letter like "A")
+    // Fix for letter-based correct answers
     let correctAnswerText = currentQuestion.correct;
     if (
       typeof currentQuestion.correct === "string" &&
@@ -41,9 +40,8 @@ function TestChatInner() {
     }
 
     const isCorrect = userAnswer === correctAnswerText;
-    // ======= END: Minimal fix (only this block changed) =======
 
-    // ✅ Save user's answer + correctness into sessionStorage
+    // Save user answer
     try {
       const stored = sessionStorage.getItem("testData");
       if (stored) {
@@ -54,35 +52,33 @@ function TestChatInner() {
         }
         sessionStorage.setItem("testData", JSON.stringify(data));
       }
-
-      // ✅ Also store topic so other pages can use it
       sessionStorage.setItem("topic", topic);
     } catch (err) {
       console.error("Error saving answer:", err);
     }
 
-    // ✅ Include topic in query params so /correct & /incorrect pages get it
     const query = new URLSearchParams({
       question: currentQuestion.question,
       userAnswer,
-      correctAnswer: correctAnswerText, // send the full text now
+      correctAnswer: correctAnswerText,
       explanation: currentQuestion.explanation || "",
       index: currentIndex.toString(),
-      topic, // 👈 FIX ADDED HERE (kept as before)
+      topic,
     }).toString();
 
     router.push(isCorrect ? `/correct?${query}` : `/incorrect?${query}`);
   };
 
-  // Move to next question (used by correct/incorrect)
+  // Move to next question after returning from correct/incorrect
   const nextQuestion = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      router.push("/ad"); // ✅ after final question
+      router.push("/ad"); // after last question
     }
   };
 
+  // Resume index
   useEffect(() => {
     const resumeIndex = sessionStorage.getItem("resumeIndex");
     if (resumeIndex) {
