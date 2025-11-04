@@ -21,7 +21,7 @@ export default function AdPage() {
         setExplanations(shuffled);
       }
     } catch (err) {
-      console.error("Error loading explanations:", err);
+      console.error("Error loading testData:", err);
     }
   }, []);
 
@@ -61,22 +61,6 @@ export default function AdPage() {
     explanations.length > 0
       ? explanations[currentIndex]
       : "Reviewing your answers helps solidify learning!";
-
-  // ✅ Inject Monetag Vignette Script
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.dataset.zone = "10133618"; // your Monetag zone ID
-    script.src = "https://gizokraijaw.net/vignette.min.js";
-    script.async = true;
-
-    // Append the script inside our ad container
-    const adContainer = document.getElementById("monetag-ad-slot");
-    if (adContainer) adContainer.appendChild(script);
-
-    return () => {
-      if (adContainer) adContainer.innerHTML = "";
-    };
-  }, []);
 
   return (
     <div
@@ -119,27 +103,6 @@ export default function AdPage() {
         >
           {currentFact}
         </p>
-
-        {/* 👇 Centered ad container */}
-        <div
-          id="monetag-ad-slot"
-          style={{
-            width: "100%",
-            minHeight: "120px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            border: "1px solid #ddd",
-            borderRadius: "12px",
-            overflow: "hidden",
-            backgroundColor: "#fafafa",
-            marginBottom: "20px",
-          }}
-        >
-          <span style={{ fontSize: "0.9rem", color: "#aaa" }}>
-            Loading ad...
-          </span>
-        </div>
 
         <p style={{ color: "#666" }}>Your results will appear shortly...</p>
       </div>
