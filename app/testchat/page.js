@@ -13,14 +13,37 @@ function TestChatInner() {
   const [selected, setSelected] = useState(null);
   const [adIndexes, setAdIndexes] = useState([]);
 
-  // Load test data and compute adIndexes
+  // Load test data, shuffle answers per question, compute adIndexes
   useEffect(() => {
     const stored = sessionStorage.getItem("testData");
     if (stored) {
-      const parsed = JSON.parse(stored).map(q => ({ ...q, topic }));
+      // Shuffle answers for each question and track correct index
+      const parsed = JSON.parse(stored).map(q => {
+        const answers = [...q.answers];
+        for (let i = answers.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [answers[i], answers[j]] = [answers[j], answers[i]];
+        }
+
+        // Determine correct answer index in shuffled array
+        let correctIndex = q.correct;
+        if (typeof correctIndex === "string" && /^[A-D]$/i.test(correctIndex)) {
+          correctIndex = correctIndex.toUpperCase().charCodeAt(0) - 65;
+        }
+        const correctAnswerText = q.answers[correctIndex];
+        const shuffledCorrectIndex = answers.indexOf(correctAnswerText);
+
+        return {
+          ...q,
+          answers, // shuffled answers
+          shuffledCorrectIndex, // index in shuffled array
+        };
+      });
+
       setQuestions(parsed);
       sessionStorage.setItem("testData", JSON.stringify(parsed));
 
+      // compute ad indexes
       if (!sessionStorage.getItem("adIndexes")) {
         const total = parsed.length;
         const eligible = Array.from({ length: total - 11 }, (_, i) => i + 10).slice(0, total - 1 - 10);
@@ -60,15 +83,9 @@ function TestChatInner() {
   const handleCheckAnswer = () => {
     if (!currentQuestion || selected === null) return;
 
+    const isCorrect = selected === currentQuestion.shuffledCorrectIndex;
     const userAnswer = currentQuestion.answers[selected];
-    let correctAnswerText = currentQuestion.correct;
-
-    if (typeof currentQuestion.correct === "string" && /^[A-D]$/i.test(currentQuestion.correct)) {
-      const letterIndex = currentQuestion.correct.toUpperCase().charCodeAt(0) - 65;
-      correctAnswerText = currentQuestion.answers[letterIndex] || currentQuestion.correct;
-    }
-
-    const isCorrect = userAnswer === correctAnswerText;
+    const correctAnswerText = currentQuestion.answers[currentQuestion.shuffledCorrectIndex];
 
     // Save answer
     try {
@@ -211,42 +228,45 @@ function TestChatInner() {
           maxWidth: "500px",
         }}
       >
-        {currentQuestion.answers.map((ans, i) => (
-          <button
-            key={i}
-            onClick={() => setSelected(i)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start",
-              gap: "10px",
-              padding: "10px 16px",
-              borderRadius: "12px",
-              border:
-                selected === i
-                  ? "3px solid #1976d2"
-                  : "2px solid rgba(0,0,0,0.1)",
-              backgroundColor:
-                selected === i ? "rgba(25,118,210,0.1)" : "white",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              fontWeight: 500,
-            }}
-          >
-            <div
+        {currentQuestion.answers.map((ans, i) => {
+          const letter = String.fromCharCode(65 + i);
+          return (
+            <button
+              key={i}
+              onClick={() => setSelected(i)}
               style={{
-                height: "16px",
-                width: "16px",
-                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                gap: "10px",
+                padding: "10px 16px",
+                borderRadius: "12px",
                 border:
                   selected === i
-                    ? "6px solid #1976d2"
-                    : "2px solid rgba(0,0,0,0.3)",
+                    ? "3px solid #1976d2"
+                    : "2px solid rgba(0,0,0,0.1)",
+                backgroundColor:
+                  selected === i ? "rgba(25,118,210,0.1)" : "white",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                fontWeight: 500,
               }}
-            ></div>
-            {ans}
-          </button>
-        ))}
+            >
+              <div
+                style={{
+                  height: "16px",
+                  width: "16px",
+                  borderRadius: "50%",
+                  border:
+                    selected === i
+                      ? "6px solid #1976d2"
+                      : "2px solid rgba(0,0,0,0.3)",
+                }}
+              ></div>
+              <strong>{letter}.</strong> {ans}
+            </button>
+          );
+        })}
       </div>
 
       <div
