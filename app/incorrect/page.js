@@ -17,33 +17,20 @@ function IncorrectContent() {
   const [canClick, setCanClick] = useState(false);
   const [showAd, setShowAd] = useState(false);
 
-  // Load test data
   useEffect(() => {
     const stored = sessionStorage.getItem("testData");
     if (stored) setQuestions(JSON.parse(stored));
-
-    // Enable click after 2.5 seconds
     const t = setTimeout(() => setCanClick(true), 2500);
     return () => clearTimeout(t);
   }, []);
 
-  // Show ad if current index is in adIndexes
+  // Show ad if this question is an ad index
   useEffect(() => {
     const adIndexes = (sessionStorage.getItem("adIndexes") || "")
       .split(",")
       .map(Number);
     if (adIndexes.includes(index)) {
       setShowAd(true);
-
-      // Inject Monetag script once
-      const existing = document.querySelector("script[data-zone='10137448']");
-      if (!existing) {
-        const script = document.createElement("script");
-        script.dataset.zone = "10137448";
-        script.src = "https://groleegni.net/vignette.min.js";
-        document.body.appendChild(script);
-      }
-
       const t = setTimeout(() => setShowAd(false), 5000);
       return () => clearTimeout(t);
     }
@@ -80,17 +67,14 @@ function IncorrectContent() {
     >
       <div style={{ fontSize: 72, marginBottom: 12 }}>❌</div>
       <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>Incorrect</h1>
-
-      <div style={{ maxWidth: 760, marginBottom: 10 }}>
+      <div style={{ maxWidth: 760, marginBottom: 10, textAlign: "left" }}>
         <p><strong>Question:</strong> {question}</p>
         <p><strong>Your answer:</strong> {userAnswer}</p>
         <p><strong>Correct answer:</strong> {correctAnswer}</p>
       </div>
-
       {explanation && (
         <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>💡 {explanation}</p>
       )}
-
       {showAd && (
         <div style={{
           position: "fixed",
@@ -106,7 +90,6 @@ function IncorrectContent() {
           Loading ad...
         </div>
       )}
-
       <div style={{ marginTop: 30 }}>
         {canClick ? (
           <small style={{ opacity: 0.95 }}>
