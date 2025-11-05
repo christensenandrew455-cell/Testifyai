@@ -11,55 +11,66 @@ function TestChatInner() {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState(null);
+  const [adIndexes, setAdIndexes] = useState([]);
 
+  // Load test data and compute adIndexes
   useEffect(() => {
     const stored = sessionStorage.getItem("testData");
     if (stored) {
       const parsed = JSON.parse(stored).map(q => ({ ...q, topic }));
       setQuestions(parsed);
       sessionStorage.setItem("testData", JSON.stringify(parsed));
+
+      if (!sessionStorage.getItem("adIndexes")) {
+        const total = parsed.length;
+        const eligible = Array.from({ length: total - 11 }, (_, i) => i + 10).slice(0, total - 1 - 10);
+        const numAds = Math.floor(total / 15);
+        const adSlots = [];
+
+        if (eligible.length > 0 && numAds > 0) {
+          for (let i = 0; i < numAds; i++) {
+            const segment = Math.floor(eligible.length / numAds);
+            const start = i * segment;
+            const end = (i === numAds - 1) ? eligible.length : (i + 1) * segment;
+            const segmentSlots = eligible.slice(start, end);
+            const pick = segmentSlots[Math.floor(Math.random() * segmentSlots.length)];
+            adSlots.push(pick);
+          }
+        }
+
+        sessionStorage.setItem("adIndexes", adSlots.join(","));
+        setAdIndexes(adSlots);
+      } else {
+        setAdIndexes(sessionStorage.getItem("adIndexes").split(",").map(Number));
+      }
+    }
+  }, []);
+
+  // Resume previous index
+  useEffect(() => {
+    const resumeIndex = sessionStorage.getItem("resumeIndex");
+    if (resumeIndex) {
+      setCurrentIndex(parseInt(resumeIndex));
+      sessionStorage.removeItem("resumeIndex");
     }
   }, []);
 
   const currentQuestion = questions[currentIndex];
 
-  // ✅ Ad logic (1 ad per 15 questions, never before question 10 or on last question)
-  useEffect(() => {
-    if (
-      questions.length > 0 &&
-      currentIndex + 1 > 10 && // no ads before 10
-      (currentIndex + 1) % 15 === 0 && // one ad every 15
-      currentIndex + 1 < questions.length // not on last
-    ) {
-      const existingAd = document.querySelector("script[data-zone='10137448']");
-      if (!existingAd) {
-        const script = document.createElement("script");
-        script.dataset.zone = "10137448";
-        script.src = "https://groleegni.net/vignette.min.js";
-        document.body.appendChild(script);
-      }
-    }
-  }, [currentIndex, questions.length]);
-
   const handleCheckAnswer = () => {
     if (!currentQuestion || selected === null) return;
 
     const userAnswer = currentQuestion.answers[selected];
-
-    // ✅ Resolve full correct answer text even if letter
     let correctAnswerText = currentQuestion.correct;
-    if (
-      typeof currentQuestion.correct === "string" &&
-      currentQuestion.correct.length === 1 &&
-      /^[A-D]$/i.test(currentQuestion.correct)
-    ) {
+
+    if (typeof currentQuestion.correct === "string" && /^[A-D]$/i.test(currentQuestion.correct)) {
       const letterIndex = currentQuestion.correct.toUpperCase().charCodeAt(0) - 65;
       correctAnswerText = currentQuestion.answers[letterIndex] || currentQuestion.correct;
     }
 
     const isCorrect = userAnswer === correctAnswerText;
 
-    // Save progress
+    // Save answer
     try {
       const stored = sessionStorage.getItem("testData");
       if (stored) {
@@ -75,7 +86,7 @@ function TestChatInner() {
       console.error("Error saving answer:", err);
     }
 
-    // Go to result screen
+    // Push to /correct or /incorrect
     const query = new URLSearchParams({
       question: currentQuestion.question,
       userAnswer,
@@ -88,13 +99,18 @@ function TestChatInner() {
     router.push(isCorrect ? `/correct?${query}` : `/incorrect?${query}`);
   };
 
+  // Inject Monetag ad on currentIndex if it's an ad slot
   useEffect(() => {
-    const resumeIndex = sessionStorage.getItem("resumeIndex");
-    if (resumeIndex) {
-      setCurrentIndex(parseInt(resumeIndex));
-      sessionStorage.removeItem("resumeIndex");
+    if (adIndexes.includes(currentIndex)) {
+      const existing = document.querySelector("script[data-zone='10137448']");
+      if (!existing) {
+        const script = document.createElement("script");
+        script.dataset.zone = "10137448";
+        script.src = "https://groleegni.net/vignette.min.js";
+        document.body.appendChild(script);
+      }
     }
-  }, []);
+  }, [currentIndex, adIndexes]);
 
   useEffect(() => {
     sessionStorage.setItem("resumeIndex", currentIndex);
