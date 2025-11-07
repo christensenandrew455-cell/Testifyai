@@ -29,7 +29,9 @@ export default function HomePage() {
   // Toggle type selection
   const toggleType = (key) => {
     setSelectedTypes((prev) => {
-      const next = prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key];
+      const next = prev.includes(key)
+        ? prev.filter((t) => t !== key)
+        : [...prev, key];
       return next;
     });
   };
@@ -37,12 +39,10 @@ export default function HomePage() {
   // When selectedTypes changes and there are 2+ types, auto-fill typeQuestions evenly if empty
   useEffect(() => {
     if (selectedTypes.length <= 1) {
-      // Clear per-type inputs when only one or zero selected (we'll use questionCount)
       setTypeQuestions({});
       return;
     }
 
-    // If per-type not set, set defaults evenly
     const missing = selectedTypes.filter((t) => !(t in typeQuestions));
     if (missing.length > 0) {
       const base = Math.floor(questionCount / selectedTypes.length);
@@ -55,29 +55,9 @@ export default function HomePage() {
         }
       });
       setTypeQuestions(next);
-    } else {
-      // if all present but sum is different than questionCount, we leave user values intact,
-      // but we could optionally auto-adjust — keep it manual for now as you requested.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTypes]);
-
-  // Keep per-type totals in sync if questionCount changes and user hasn't manually set values:
-  useEffect(() => {
-    if (selectedTypes.length <= 1) return;
-    // if all typeQuestions are zero or missing, refill evenly on total change
-    const allMissingOrZero = selectedTypes.every((t) => !(t in typeQuestions) || Number(typeQuestions[t]) === 0);
-    if (allMissingOrZero) {
-      const base = Math.floor(questionCount / selectedTypes.length);
-      const remainder = questionCount - base * selectedTypes.length;
-      const next = {};
-      selectedTypes.forEach((t, idx) => {
-        next[t] = base + (idx === selectedTypes.length - 1 ? remainder : 0);
-      });
-      setTypeQuestions(next);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionCount]);
 
   const handleTypeQuestionChange = (key, value) => {
     const num = Number(value);
@@ -89,7 +69,10 @@ export default function HomePage() {
     setAnswerCounts((prev) => ({ ...prev, [key]: value }));
   };
 
-  const distributedTotal = Object.values(typeQuestions).reduce((acc, v) => acc + (Number(v) || 0), 0);
+  const distributedTotal = Object.values(typeQuestions).reduce(
+    (acc, v) => acc + (Number(v) || 0),
+    0
+  );
 
   const handleGenerateTest = async () => {
     if (!topic.trim()) {
@@ -102,26 +85,27 @@ export default function HomePage() {
       return;
     }
 
-    // If multiple types selected, ensure the per-type total > 0
-    if (selectedTypes.length > 1) {
-      if (distributedTotal <= 0) {
-        alert("Please assign at least one question across the selected test types.");
-        return;
-      }
+    if (selectedTypes.length > 1 && distributedTotal <= 0) {
+      alert("Please assign at least one question across the selected test types.");
+      return;
     }
 
     setLoading(true);
 
     try {
-      // construct payload
       const payload = {
         topic,
         difficulty,
-        // When multiple types, send total derived from per-type sum; else send questionCount
-        numQuestions: selectedTypes.length > 1 ? distributedTotal : Math.max(1, questionCount),
+        numQuestions:
+          selectedTypes.length > 1
+            ? distributedTotal
+            : Math.max(1, questionCount),
         types: selectedTypes,
-        typeDistribution: selectedTypes.length > 1 ? typeQuestions : { [selectedTypes[0] || "default"]: Math.max(1, questionCount) },
-        answerCounts, // include for generation logic later
+        typeDistribution:
+          selectedTypes.length > 1
+            ? typeQuestions
+            : { [selectedTypes[0] || "default"]: Math.max(1, questionCount) },
+        answerCounts,
       };
 
       const res = await fetch("/api/generate-test", {
@@ -136,7 +120,10 @@ export default function HomePage() {
       sessionStorage.setItem("testData", JSON.stringify(data.questions));
       sessionStorage.setItem("resumeIndex", "0");
       sessionStorage.setItem("testTypes", JSON.stringify(selectedTypes));
-      sessionStorage.setItem("typeDistribution", JSON.stringify(payload.typeDistribution));
+      sessionStorage.setItem(
+        "typeDistribution",
+        JSON.stringify(payload.typeDistribution)
+      );
 
       router.push(`/test?topic=${encodeURIComponent(topic)}`);
     } catch (err) {
@@ -147,26 +134,31 @@ export default function HomePage() {
     }
   };
 
-  // small helper for rendering button styles (keeps same look as original)
   const typeButtonStyle = (active) => ({
     padding: "10px 18px",
     borderRadius: "12px",
-    border: active ? "3px solid rgba(255,255,255,0.95)" : "2px solid rgba(255,255,255,0.6)",
-    backgroundColor: active ? "rgba(255,255,255,0.12)" : "transparent",
-    color: "white",
+    border: active
+      ? "3px solid rgba(255,255,255,0.95)"
+      : "2px solid rgba(255,255,255,0.6)",
+    backgroundColor: active ? "#1976d2" : "transparent",
+    color: active ? "white" : "white",
     cursor: "pointer",
     fontWeight: 700,
+    transition: "all 0.2s ease",
   });
 
   const smallPickerStyle = (active) => ({
     padding: "6px 10px",
     borderRadius: "10px",
-    border: active ? "2px solid rgba(255,255,255,0.95)" : "1px solid rgba(255,255,255,0.6)",
-    backgroundColor: active ? "rgba(255,255,255,0.08)" : "transparent",
+    border: active
+      ? "2px solid rgba(255,255,255,0.95)"
+      : "1px solid rgba(255,255,255,0.6)",
+    backgroundColor: active ? "#2196f3" : "transparent",
     color: "white",
     cursor: "pointer",
     fontSize: "0.9rem",
     marginRight: "8px",
+    transition: "all 0.2s ease",
   });
 
   return (
@@ -184,7 +176,7 @@ export default function HomePage() {
         padding: "40px 20px",
       }}
     >
-      {/* --- Header Section --- */}
+      {/* Header */}
       <h1
         style={{
           fontSize: "clamp(2rem, 6vw, 3.25rem)",
@@ -208,7 +200,7 @@ export default function HomePage() {
         Instantly generate an AI-powered test on any topic — free, fast, and fun.
       </p>
 
-      {/* --- Test Setup Card --- */}
+      {/* Card */}
       <div
         style={{
           backgroundColor: "rgba(255,255,255,0.1)",
@@ -278,58 +270,77 @@ export default function HomePage() {
           }}
         />
 
-        {/* Number of questions (Total) */}
-        <label
-          style={{
-            display: "block",
-            marginBottom: "8px",
-            fontWeight: 600,
-          }}
-        >
-          Number of questions (Total)
-        </label>
-        <input
-          type="number"
-          min="1"
-          max="100"
-          value={questionCount}
-          onChange={(e) => setQuestionCount(Number(e.target.value))}
-          style={{
-            width: "100px",
-            padding: "8px",
-            borderRadius: "10px",
-            border: "none",
-            textAlign: "center",
-            fontSize: "1rem",
-            marginBottom: "18px",
-          }}
-        />
+        {/* Number of questions (hide when multi selected) */}
+        {selectedTypes.length <= 1 && (
+          <>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                fontWeight: 600,
+              }}
+            >
+              Number of questions (Total)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="100"
+              value={questionCount}
+              onChange={(e) => setQuestionCount(Number(e.target.value))}
+              style={{
+                width: "100px",
+                padding: "8px",
+                borderRadius: "10px",
+                border: "none",
+                textAlign: "center",
+                fontSize: "1rem",
+                marginBottom: "18px",
+              }}
+            />
+          </>
+        )}
 
-        {/* Test Type Section */}
+        {/* Test Type */}
         <div style={{ marginBottom: "18px" }}>
           <div style={{ fontWeight: 800, marginBottom: "10px" }}>Test Type</div>
 
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              flexWrap: "wrap",
+              justifyContent: "center",
+            }}
+          >
             {testTypeList.map((t) => {
               const active = selectedTypes.includes(t.key);
               return (
-                <div key={t.key} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <div
+                  key={t.key}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
                   <button
                     onClick={() => toggleType(t.key)}
                     style={typeButtonStyle(active)}
-                    aria-pressed={active}
                   >
                     {t.label}
                   </button>
 
-                  {/* Conditional small pickers for MC and Multi Select */}
+                  {/* Conditional pickers */}
                   {active && t.key === "multipleChoice" && (
                     <div style={{ marginTop: "8px" }}>
                       {[3, 4, 5].map((n) => (
                         <button
                           key={n}
                           onClick={() => handleAnswerCount("multipleChoice", n)}
-                          style={smallPickerStyle(answerCounts.multipleChoice === n)}
+                          style={smallPickerStyle(
+                            answerCounts.multipleChoice === n
+                          )}
                         >
                           {n}
                         </button>
@@ -356,22 +367,43 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Per-type question boxes (show only if multiple types selected) */}
+        {/* Per-type questions */}
         {selectedTypes.length > 1 && (
           <div style={{ marginTop: "6px", marginBottom: "18px" }}>
-            <div style={{ fontWeight: 800, marginBottom: "10px" }}>Questions per Test Type</div>
+            <div style={{ fontWeight: 800, marginBottom: "10px" }}>
+              Questions per Test Type
+            </div>
 
-            <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
               {selectedTypes.map((key) => {
-                const label = testTypeList.find((t) => t.key === key)?.label ?? key;
+                const label =
+                  testTypeList.find((t) => t.key === key)?.label ?? key;
                 return (
-                  <div key={key} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <div style={{ fontWeight: 700, marginBottom: "6px" }}>{label}</div>
+                  <div
+                    key={key}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, marginBottom: "6px" }}>
+                      {label}
+                    </div>
                     <input
                       type="number"
                       min="0"
                       value={typeQuestions[key] ?? ""}
-                      onChange={(e) => handleTypeQuestionChange(key, e.target.value)}
+                      onChange={(e) =>
+                        handleTypeQuestionChange(key, e.target.value)
+                      }
                       style={{
                         width: "90px",
                         padding: "8px",
@@ -387,7 +419,10 @@ export default function HomePage() {
             </div>
 
             <div style={{ marginTop: "12px", fontWeight: 700 }}>
-              Total: <span style={{ color: "white", opacity: 0.95 }}>{distributedTotal}</span>
+              Total:{" "}
+              <span style={{ color: "white", opacity: 0.95 }}>
+                {distributedTotal}
+              </span>
             </div>
           </div>
         )}
@@ -413,7 +448,7 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* --- Learn More Button Below Card --- */}
+      {/* Learn More */}
       <div style={{ marginTop: "30px" }}>
         <Link
           href="/learn"
@@ -432,7 +467,7 @@ export default function HomePage() {
         </Link>
       </div>
 
-      {/* --- Logo in corner --- */}
+      {/* Logo */}
       <div
         style={{
           position: "absolute",
