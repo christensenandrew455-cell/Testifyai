@@ -106,7 +106,7 @@ function ResultsInner() {
 
         {/* Buttons */}
         <div style={{ display: "flex", justifyContent: "center", gap: "16px" }}>
-          <Link href="/test">
+          <Link href="/">
             <button
               style={{
                 backgroundColor: "#1976d2",
