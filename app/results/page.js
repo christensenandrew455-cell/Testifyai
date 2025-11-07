@@ -109,23 +109,6 @@ function ResultsInner() {
           <Link href="/">
             <button
               style={{
-                backgroundColor: "#1976d2",
-                color: "white",
-                border: "none",
-                borderRadius: "12px",
-                padding: "10px 20px",
-                fontWeight: "700",
-                cursor: "pointer",
-                fontSize: "1rem",
-              }}
-            >
-              Try Again
-            </button>
-          </Link>
-
-          <Link href="/">
-            <button
-              style={{
                 backgroundColor: "#e0e0e0",
                 color: "#333",
                 border: "none",
