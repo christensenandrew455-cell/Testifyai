@@ -175,7 +175,7 @@ function TestChatInner() {
         }}
       >
         <button
-          onClick={() => router.push("/test")}
+          onClick={() => router.push("/")}
           style={{
             backgroundColor: "#1976d2",
             color: "white",
