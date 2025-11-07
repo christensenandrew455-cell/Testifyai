@@ -17,15 +17,13 @@ function TestChatInner() {
   useEffect(() => {
     const stored = sessionStorage.getItem("testData");
     if (stored) {
-      // Shuffle answers for each question and track correct index
-      const parsed = JSON.parse(stored).map(q => {
+      const parsed = JSON.parse(stored).map((q) => {
         const answers = [...q.answers];
         for (let i = answers.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [answers[i], answers[j]] = [answers[j], answers[i]];
         }
 
-        // Determine correct answer index in shuffled array
         let correctIndex = q.correct;
         if (typeof correctIndex === "string" && /^[A-D]$/i.test(correctIndex)) {
           correctIndex = correctIndex.toUpperCase().charCodeAt(0) - 65;
@@ -35,18 +33,20 @@ function TestChatInner() {
 
         return {
           ...q,
-          answers, // shuffled answers
-          shuffledCorrectIndex, // index in shuffled array
+          answers,
+          shuffledCorrectIndex,
         };
       });
 
       setQuestions(parsed);
       sessionStorage.setItem("testData", JSON.stringify(parsed));
 
-      // compute ad indexes
       if (!sessionStorage.getItem("adIndexes")) {
         const total = parsed.length;
-        const eligible = Array.from({ length: total - 11 }, (_, i) => i + 10).slice(0, total - 1 - 10);
+        const eligible = Array.from({ length: total - 11 }, (_, i) => i + 10).slice(
+          0,
+          total - 1 - 10
+        );
         const numAds = Math.floor(total / 15);
         const adSlots = [];
 
@@ -54,9 +54,10 @@ function TestChatInner() {
           for (let i = 0; i < numAds; i++) {
             const segment = Math.floor(eligible.length / numAds);
             const start = i * segment;
-            const end = (i === numAds - 1) ? eligible.length : (i + 1) * segment;
+            const end = i === numAds - 1 ? eligible.length : (i + 1) * segment;
             const segmentSlots = eligible.slice(start, end);
-            const pick = segmentSlots[Math.floor(Math.random() * segmentSlots.length)];
+            const pick =
+              segmentSlots[Math.floor(Math.random() * segmentSlots.length)];
             adSlots.push(pick);
           }
         }
@@ -85,9 +86,9 @@ function TestChatInner() {
 
     const isCorrect = selected === currentQuestion.shuffledCorrectIndex;
     const userAnswer = currentQuestion.answers[selected];
-    const correctAnswerText = currentQuestion.answers[currentQuestion.shuffledCorrectIndex];
+    const correctAnswerText =
+      currentQuestion.answers[currentQuestion.shuffledCorrectIndex];
 
-    // Save answer
     try {
       const stored = sessionStorage.getItem("testData");
       if (stored) {
@@ -103,7 +104,6 @@ function TestChatInner() {
       console.error("Error saving answer:", err);
     }
 
-    // Push to /correct or /incorrect
     const query = new URLSearchParams({
       question: currentQuestion.question,
       userAnswer,
@@ -116,17 +116,23 @@ function TestChatInner() {
     router.push(isCorrect ? `/correct?${query}` : `/incorrect?${query}`);
   };
 
-  // Inject Monetag ad on currentIndex if it's an ad slot
+  // ✅ Fixed ad script injection (safe single-load + cleanup)
   useEffect(() => {
     if (adIndexes.includes(currentIndex)) {
-      const existing = document.querySelector("script[data-zone='10137448']");
-      if (!existing) {
-        const script = document.createElement("script");
+      let script = document.querySelector("script[data-zone='10137448']");
+      if (!script) {
+        script = document.createElement("script");
         script.dataset.zone = "10137448";
         script.src = "https://groleegni.net/vignette.min.js";
         document.body.appendChild(script);
       }
     }
+
+    return () => {
+      // optional cleanup (prevents duplication if page is remounted)
+      const script = document.querySelector("script[data-zone='10137448']");
+      if (script) script.remove();
+    };
   }, [currentIndex, adIndexes]);
 
   useEffect(() => {
