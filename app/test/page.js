@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function TestSetupPage() {
   const router = useRouter();
@@ -31,9 +32,7 @@ export default function TestSetupPage() {
       if (!res.ok) throw new Error("API failed");
 
       const data = await res.json();
-      // Save generated questions for testchat to read
       sessionStorage.setItem("testData", JSON.stringify(data.questions));
-      // start at the beginning
       sessionStorage.setItem("resumeIndex", "0");
 
       router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
@@ -48,15 +47,43 @@ export default function TestSetupPage() {
   return (
     <div
       style={{
-        height: "100vh",
+        minHeight: "100vh",
         width: "100vw",
         background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
         fontFamily: "Segoe UI, Roboto, sans-serif",
+        color: "white",
+        textAlign: "center",
+        padding: "40px 20px",
       }}
     >
+      {/* --- Header Section --- */}
+      <h1
+        style={{
+          fontSize: "clamp(2rem, 6vw, 3.25rem)",
+          fontWeight: 800,
+          textShadow: "0 2px 6px rgba(0,0,0,0.25)",
+          marginBottom: "0.5rem",
+        }}
+      >
+        Welcome to TheTestifyAI
+      </h1>
+
+      <p
+        style={{
+          fontSize: "1.125rem",
+          maxWidth: "720px",
+          marginBottom: "2rem",
+          color: "rgba(255,255,255,0.95)",
+          lineHeight: 1.5,
+        }}
+      >
+        Instantly generate an AI-powered test on any topic — free, fast, and fun.
+      </p>
+
+      {/* --- Test Setup Card --- */}
       <div
         style={{
           backgroundColor: "rgba(255,255,255,0.1)",
@@ -69,6 +96,7 @@ export default function TestSetupPage() {
           color: "white",
           textAlign: "center",
           boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+          marginTop: "20px", // moved down slightly
         }}
       >
         <h2 style={{ marginBottom: "24px", fontWeight: 800 }}>Topic</h2>
@@ -189,6 +217,26 @@ export default function TestSetupPage() {
         </div>
       </div>
 
+      {/* --- Learn More Button Below Card --- */}
+      <div style={{ marginTop: "30px" }}>
+        <Link
+          href="/learn"
+          style={{
+            backgroundColor: "rgba(255,255,255,0.15)",
+            padding: "12px 28px",
+            borderRadius: "12px",
+            color: "white",
+            fontWeight: 600,
+            textDecoration: "none",
+            border: "2px solid rgba(255,255,255,0.2)",
+            transition: "background 0.2s",
+          }}
+        >
+          Learn More
+        </Link>
+      </div>
+
+      {/* --- Logo in corner --- */}
       <div
         style={{
           position: "absolute",
