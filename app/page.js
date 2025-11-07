@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function TestSetupPage() {
+export default function HomePage() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
@@ -96,7 +96,7 @@ export default function TestSetupPage() {
           color: "white",
           textAlign: "center",
           boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-          marginTop: "20px", // moved down slightly
+          marginTop: "20px",
         }}
       >
         <h2 style={{ marginBottom: "24px", fontWeight: 800 }}>Topic</h2>
@@ -175,46 +175,24 @@ export default function TestSetupPage() {
           }}
         />
 
-        <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
-          <button
-            onClick={() => router.push("/")}
-            style={{
-              flex: 1,
-              padding: "12px 0",
-              borderRadius: "12px",
-              border: "none",
-              backgroundColor: "#1976d2",
-              color: "white",
-              fontWeight: 700,
-              fontSize: "1rem",
-              cursor: "pointer",
-              transition: "background-color 0.2s",
-              width: "140px",
-            }}
-          >
-            Back
-          </button>
-
-          <button
-            onClick={handleGenerateTest}
-            disabled={loading}
-            style={{
-              flex: 1,
-              padding: "12px 0",
-              borderRadius: "12px",
-              border: "none",
-              backgroundColor: loading ? "#ccc" : "#1976d2",
-              color: "white",
-              fontWeight: 700,
-              fontSize: "1rem",
-              cursor: loading ? "not-allowed" : "pointer",
-              width: "140px",
-              transition: "background-color 0.2s",
-            }}
-          >
-            {loading ? "Generating..." : "Generate Test"}
-          </button>
-        </div>
+        <button
+          onClick={handleGenerateTest}
+          disabled={loading}
+          style={{
+            padding: "12px 0",
+            borderRadius: "12px",
+            border: "none",
+            backgroundColor: loading ? "#ccc" : "#1976d2",
+            color: "white",
+            fontWeight: 700,
+            fontSize: "1rem",
+            cursor: loading ? "not-allowed" : "pointer",
+            width: "100%",
+            transition: "background-color 0.2s",
+          }}
+        >
+          {loading ? "Generating..." : "Generate Test"}
+        </button>
       </div>
 
       {/* --- Learn More Button Below Card --- */}
