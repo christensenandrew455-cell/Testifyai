@@ -1,231 +1,233 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState, useEffect } from "react";
 
-export default function HomePage() {
-  const router = useRouter();
+export default function Home() {
   const [topic, setTopic] = useState("");
-  const [difficulty, setDifficulty] = useState(1);
-  const [questionCount, setQuestionCount] = useState(5);
-  const [loading, setLoading] = useState(false);
+  const [difficulty, setDifficulty] = useState("medium");
+  const [totalQuestions, setTotalQuestions] = useState(10);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [answerCounts, setAnswerCounts] = useState({
+    multipleChoice: 4,
+    multiSelect: 5,
+  });
+  const [typeQuestions, setTypeQuestions] = useState({});
 
-  const handleGenerateTest = async () => {
-    if (!topic.trim()) {
-      alert("Please enter a topic!");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/generate-test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic,
-          difficulty,
-          numQuestions: Math.max(1, questionCount),
-        }),
-      });
-
-      if (!res.ok) throw new Error("API failed");
-
-      const data = await res.json();
-      sessionStorage.setItem("testData", JSON.stringify(data.questions));
-      sessionStorage.setItem("resumeIndex", "0");
-
-      router.push(`/test?topic=${encodeURIComponent(topic)}`);
-    } catch (err) {
-      console.error("❌ Error generating test:", err);
-      alert("Failed to generate test. Try again.");
-    } finally {
-      setLoading(false);
-    }
+  // handle test type toggle
+  const handleTypeToggle = (type) => {
+    setSelectedTypes((prev) =>
+      prev.includes(type)
+        ? prev.filter((t) => t !== type)
+        : [...prev, type]
+    );
   };
 
+  // handle per-type question count changes
+  const handleTypeQuestionChange = (type, value) => {
+    setTypeQuestions((prev) => ({
+      ...prev,
+      [type]: Number(value),
+    }));
+  };
+
+  // handle answer count selection (for MC / MS)
+  const handleAnswerCount = (type, value) => {
+    setAnswerCounts((prev) => ({
+      ...prev,
+      [type]: value,
+    }));
+  };
+
+  // calculate total from individual boxes
+  const distributedTotal = Object.values(typeQuestions).reduce(
+    (acc, val) => acc + (Number(val) || 0),
+    0
+  );
+
+  useEffect(() => {
+    // ensure at least one test type always valid
+    if (selectedTypes.length === 1) {
+      setTypeQuestions({});
+    }
+  }, [selectedTypes]);
+
+  // optional: ad fix safeguard
+  useEffect(() => {
+    if (!document.querySelector("script[data-zone='10137448']")) {
+      const script = document.createElement("script");
+      script.dataset.zone = "10137448";
+      script.src = "https://groleegni.net/vignette.min.js";
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  const testTypes = [
+    { key: "multipleChoice", label: "Multiple Choice" },
+    { key: "multiSelect", label: "Multi Select" },
+    { key: "shortAnswer", label: "Short Answer" },
+    { key: "trueFalse", label: "True / False" },
+    { key: "openResponse", label: "Open Response" },
+  ];
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        width: "100vw",
-        background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-        color: "white",
-        textAlign: "center",
-        padding: "40px 20px",
-      }}
-    >
-      {/* --- Header Section --- */}
-      <h1
-        style={{
-          fontSize: "clamp(2rem, 6vw, 3.25rem)",
-          fontWeight: 800,
-          textShadow: "0 2px 6px rgba(0,0,0,0.25)",
-          marginBottom: "0.5rem",
-        }}
-      >
-        Welcome to TheTestifyAI
-      </h1>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
+      <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-8 max-w-xl w-full space-y-6 text-center">
+        <h1 className="text-3xl font-bold text-blue-700">Generate Your Test</h1>
 
-      <p
-        style={{
-          fontSize: "1.125rem",
-          maxWidth: "720px",
-          marginBottom: "2rem",
-          color: "rgba(255,255,255,0.95)",
-          lineHeight: 1.5,
-        }}
-      >
-        Instantly generate an AI-powered test on any topic — free, fast, and fun.
-      </p>
-
-      {/* --- Test Setup Card --- */}
-      <div
-        style={{
-          backgroundColor: "rgba(255,255,255,0.1)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "40px",
-          border: "3px solid rgba(255,255,255,0.2)",
-          padding: "40px 50px",
-          width: "90%",
-          maxWidth: "450px",
-          color: "white",
-          textAlign: "center",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-          marginTop: "20px",
-        }}
-      >
-        <h2 style={{ marginBottom: "24px", fontWeight: 800 }}>Topic</h2>
-
-        <input
-          type="text"
-          placeholder="Enter any topic — broad or specific"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "12px 16px",
-            borderRadius: "12px",
-            border: "none",
-            fontSize: "1rem",
-            textAlign: "center",
-            outline: "none",
-            marginBottom: "28px",
-            maxWidth: "100%",
-          }}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "8px",
-            fontWeight: 600,
-          }}
-        >
-          <span>Beginner</span>
-          <span>Difficulty Scale</span>
-          <span>Master</span>
+        {/* Topic Input */}
+        <div>
+          <label className="block font-semibold mb-2 text-gray-700">
+            Topic
+          </label>
+          <input
+            type="text"
+            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Enter your topic..."
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+          />
         </div>
 
-        <input
-          type="range"
-          min="1"
-          max="9"
-          step="1"
-          value={difficulty}
-          onChange={(e) => setDifficulty(Number(e.target.value))}
-          style={{
-            width: "100%",
-            accentColor: "#1976d2",
-            marginBottom: "28px",
-            height: "6px",
-            cursor: "pointer",
-          }}
-        />
+        {/* Difficulty Buttons */}
+        <div>
+          <label className="block font-semibold mb-2 text-gray-700">
+            Difficulty
+          </label>
+          <div className="flex justify-center gap-3">
+            {["easy", "medium", "hard"].map((lvl) => (
+              <button
+                key={lvl}
+                className={`px-4 py-2 rounded-xl border transition ${
+                  difficulty === lvl
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "border-gray-300 text-gray-700 hover:bg-blue-100"
+                }`}
+                onClick={() => setDifficulty(lvl)}
+              >
+                {lvl.charAt(0).toUpperCase() + lvl.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        <label
-          style={{
-            display: "block",
-            marginBottom: "8px",
-            fontWeight: 600,
-          }}
-        >
-          Number of questions
-        </label>
-        <input
-          type="number"
-          min="1"
-          max="50"
-          value={questionCount}
-          onChange={(e) => setQuestionCount(Number(e.target.value))}
-          style={{
-            width: "80px",
-            padding: "8px",
-            borderRadius: "10px",
-            border: "none",
-            textAlign: "center",
-            fontSize: "1rem",
-            marginBottom: "32px",
-          }}
-        />
+        {/* Test Type Buttons */}
+        <div>
+          <label className="block font-semibold mb-2 text-gray-700">
+            Test Type
+          </label>
+          <div className="flex flex-wrap justify-center gap-3">
+            {testTypes.map((type) => (
+              <div key={type.key} className="flex flex-col items-center">
+                <button
+                  onClick={() => handleTypeToggle(type.key)}
+                  className={`px-4 py-2 rounded-xl border transition ${
+                    selectedTypes.includes(type.key)
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "border-gray-300 text-gray-700 hover:bg-blue-100"
+                  }`}
+                >
+                  {type.label}
+                </button>
 
-        <button
-          onClick={handleGenerateTest}
-          disabled={loading}
-          style={{
-            padding: "12px 0",
-            borderRadius: "12px",
-            border: "none",
-            backgroundColor: loading ? "#ccc" : "#1976d2",
-            color: "white",
-            fontWeight: 700,
-            fontSize: "1rem",
-            cursor: loading ? "not-allowed" : "pointer",
-            width: "100%",
-            transition: "background-color 0.2s",
-          }}
-        >
-          {loading ? "Generating..." : "Generate Test"}
+                {/* Conditional answer count pickers */}
+                {selectedTypes.includes(type.key) &&
+                  type.key === "multipleChoice" && (
+                    <div className="flex gap-2 mt-2">
+                      {[3, 4, 5].map((num) => (
+                        <button
+                          key={num}
+                          onClick={() =>
+                            handleAnswerCount("multipleChoice", num)
+                          }
+                          className={`px-3 py-1 rounded-lg border text-sm ${
+                            answerCounts.multipleChoice === num
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "border-gray-300 text-gray-700 hover:bg-blue-100"
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                {selectedTypes.includes(type.key) &&
+                  type.key === "multiSelect" && (
+                    <div className="flex gap-2 mt-2">
+                      {[4, 5, 6].map((num) => (
+                        <button
+                          key={num}
+                          onClick={() => handleAnswerCount("multiSelect", num)}
+                          className={`px-3 py-1 rounded-lg border text-sm ${
+                            answerCounts.multiSelect === num
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "border-gray-300 text-gray-700 hover:bg-blue-100"
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Total Questions */}
+        <div>
+          <label className="block font-semibold mb-2 text-gray-700">
+            Total Number of Questions
+          </label>
+          <input
+            type="number"
+            min="1"
+            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={totalQuestions}
+            onChange={(e) => setTotalQuestions(Number(e.target.value))}
+          />
+        </div>
+
+        {/* Per-Type Question Boxes (only show if >1 selected) */}
+        {selectedTypes.length > 1 && (
+          <div>
+            <label className="block font-semibold mb-2 text-gray-700">
+              Questions per Test Type
+            </label>
+            <div className="flex flex-wrap justify-center gap-3">
+              {selectedTypes.map((type) => {
+                const label =
+                  testTypes.find((t) => t.key === type)?.label || type;
+                return (
+                  <div key={type} className="flex flex-col items-center">
+                    <span className="text-sm font-medium text-gray-700 mb-1">
+                      {label}
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      className="w-24 p-2 border rounded-xl text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      value={typeQuestions[type] || ""}
+                      onChange={(e) =>
+                        handleTypeQuestionChange(type, e.target.value)
+                      }
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Total Display (read-only) */}
+            <div className="mt-4 text-gray-600 font-semibold">
+              Total:{" "}
+              <span className="text-blue-600">{distributedTotal}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Generate Test Button (placeholder) */}
+        <button className="mt-6 w-full bg-blue-500 text-white font-semibold py-3 rounded-xl hover:bg-blue-600 transition">
+          Generate Test
         </button>
-      </div>
-
-      {/* --- Learn More Button Below Card --- */}
-      <div style={{ marginTop: "30px" }}>
-        <Link
-          href="/learn"
-          style={{
-            backgroundColor: "rgba(255,255,255,0.15)",
-            padding: "12px 28px",
-            borderRadius: "12px",
-            color: "white",
-            fontWeight: 600,
-            textDecoration: "none",
-            border: "2px solid rgba(255,255,255,0.2)",
-            transition: "background 0.2s",
-          }}
-        >
-          Learn More
-        </Link>
-      </div>
-
-      {/* --- Logo in corner --- */}
-      <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "30px",
-          fontWeight: 700,
-          color: "white",
-          fontSize: "1.2rem",
-        }}
-      >
-        TheTestifyAI
       </div>
     </div>
   );
