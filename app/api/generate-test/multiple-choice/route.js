@@ -38,11 +38,19 @@ Rules:
       content = content.replace(/```(json)?/g, "").trim();
     }
 
-    const questions = JSON.parse(content);
+    let questions;
+    try {
+      questions = JSON.parse(content);
+    } catch (e) {
+      console.error("Failed to parse OpenAI MC JSON:", content);
+      throw e;
+    }
 
     // Shuffle answers per question
     for (const q of questions) {
-      q.answers = q.answers.sort(() => Math.random() - 0.5);
+      if (q.answers && Array.isArray(q.answers)) {
+        q.answers = q.answers.sort(() => Math.random() - 0.5);
+      }
     }
 
     return new Response(JSON.stringify({ questions }), {
