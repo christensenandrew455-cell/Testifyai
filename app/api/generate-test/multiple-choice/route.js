@@ -8,20 +8,14 @@ export async function POST(req) {
 
     const prompt = `
 You are TestifyAI — generate ${numQuestions} multiple-choice questions on "${topic}".
-
 Rules:
-1. Each question must have exactly ${numAnswers} answers labeled A, B, C, D, E (use as many as needed if numAnswers < 5).
+1. Each question must have exactly ${numAnswers} answers.
 2. Only one correct answer per question.
 3. Make all incorrect answers plausible.
-4. Include a one-sentence educational explanation for the correct answer.
-5. Output ONLY valid JSON like this:
+4. Include a one-sentence explanation.
+Output JSON like:
 [
-  {
-    "question": "string",
-    "answers": ["A", "B", "C", "D", "E"],
-    "correct": "string",
-    "explanation": "string"
-  }
+  { "question": "string", "answers": ["A","B","C","D"], "correct": "string", "explanation": "string" }
 ]
 `;
 
@@ -32,12 +26,9 @@ Rules:
     });
 
     let content = response.choices[0].message.content.trim();
-    content = content.replace(/```(json)?/g, "").trim();
-    content = content.replace(/'/g, '"'); // Ensure valid JSON
-
+    content = content.replace(/```(json)?/g, "").trim().replace(/'/g, '"');
     const questions = JSON.parse(content);
 
-    // Shuffle answers per question
     for (const q of questions) {
       q.answers = q.answers.sort(() => Math.random() - 0.5);
     }
