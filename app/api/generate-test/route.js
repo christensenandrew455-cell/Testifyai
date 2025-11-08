@@ -1,4 +1,5 @@
-import fetch from "node-fetch"; // Only needed for server environments, Next 14+ supports fetch natively
+import { NextResponse } from "next/server";
+import multipleChoice from "./multiple-choice/route";
 
 export async function POST(req) {
   try {
@@ -12,56 +13,35 @@ export async function POST(req) {
     } = await req.json();
 
     if (!selectedTypes || selectedTypes.length === 0) {
-      return new Response(JSON.stringify({ error: "No test types selected." }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return NextResponse.json({ error: "No test types selected." }, { status: 400 });
     }
 
-    // Helper: call subroutes relative
-    async function fetchQuestions(type) {
-      const count = typeDistribution?.[type] || numQuestions || 1;
-      const numAnswers = answerCounts?.[type] || 4;
+    let allQuestions = [];
 
-      const res = await fetch(`/api/generate-test/${type}`, {
+    // For now, we only support multiple-choice to test the full flow
+    if (selectedTypes.includes("multiple-choice")) {
+      const count = typeDistribution?.["multiple-choice"] || numQuestions || 1;
+      const numAnswers = answerCounts?.["multiple-choice"] || 4;
+
+      // 👇 Call directly into the multiple-choice generator
+      const subReq = new Request("http://localhost", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic, difficulty, numQuestions: count, numAnswers }),
       });
+      const subRes = await multipleChoice.POST(subReq);
+      const data = await subRes.json();
 
-      const data = await res.json();
-      if (data.questions) return data.questions.map((q) => ({ ...q, type }));
-      return [];
+      if (data.questions) {
+        allQuestions = data.questions.map((q) => ({
+          ...q,
+          type: "multiple-choice",
+        }));
+      }
     }
 
-    // Generate all types
-    const results = await Promise.all(selectedTypes.map((t) => fetchQuestions(t)));
-    const allQuestions = results.flat();
-
-    // Optional: shuffle objective questions
-    const objective = allQuestions.filter((q) =>
-      ["multiple-choice", "multi-select", "true-false"].includes(q.type)
-    );
-
-    for (let i = objective.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [objective[i], objective[j]] = [objective[j], objective[i]];
-    }
-
-    const other = allQuestions.filter((q) =>
-      !["multiple-choice", "multi-select", "true-false"].includes(q.type)
-    );
-
-    const finalQuestions = [...objective, ...other];
-
-    return new Response(JSON.stringify({ questions: finalQuestions }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json({ questions: allQuestions });
   } catch (err) {
     console.error("❌ Unified test generation error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
