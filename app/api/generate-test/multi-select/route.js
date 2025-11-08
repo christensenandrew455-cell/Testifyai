@@ -1,20 +1,18 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
   try {
-    const { topic, difficulty, numQuestions, minCorrect, maxAnswers } = await req.json();
+    const { topic, difficulty, numQuestions = 5, numAnswers = 5 } = await req.json();
 
     const prompt = `
 You are TestifyAI — generate ${numQuestions} multi-select questions on "${topic}".
 
 Rules:
-1. Each question must have between 1 and ${maxAnswers} answers labeled A–F (use as many as needed).
-2. The number of correct answers should be random for each question (min 1, max all answers).
-3. Include a one-sentence educational explanation for why each correct answer is correct.
+1. Each question must have between 2 and ${numAnswers} answers labeled A–F (min 2 answers per question).
+2. Each question can have 1 or more correct answers (random per question).
+3. Include a one-sentence educational explanation for the correct answers.
 4. Output ONLY valid JSON like this:
 [
   {
@@ -33,9 +31,8 @@ Rules:
     });
 
     let content = response.choices[0].message.content.trim();
-    if (content.startsWith("```")) {
-      content = content.replace(/```(json)?/g, "").trim();
-    }
+    content = content.replace(/```(json)?/g, "").trim();
+    content = content.replace(/'/g, '"'); // Ensure valid JSON
 
     const questions = JSON.parse(content);
 
@@ -48,7 +45,7 @@ Rules:
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Multi-select generation error:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
