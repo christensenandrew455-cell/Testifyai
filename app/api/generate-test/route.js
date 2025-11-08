@@ -2,7 +2,14 @@ import OpenAI from "openai";
 
 export async function POST(req) {
   try {
-    const { topic, difficulty, numQuestions, selectedTypes, answerCounts } = await req.json();
+    const {
+      topic,
+      difficulty,
+      numQuestions,
+      selectedTypes,
+      typeDistribution,
+      answerCounts,
+    } = await req.json();
 
     if (!selectedTypes || selectedTypes.length === 0) {
       return new Response(
@@ -13,24 +20,19 @@ export async function POST(req) {
 
     // Helper: call your existing subroutes
     async function fetchQuestions(type) {
-      const bodyPayload = { topic, difficulty, numQuestions };
-
-      // Include numAnswers if multiple-choice
-      if (type === "multiple-choice") {
-        bodyPayload.numAnswers = answerCounts?.["multiple-choice"] || 4;
-      }
+      const count = typeDistribution?.[type] || numQuestions || 1;
+      const numAnswers = answerCounts?.[type] || 4; // default 4 for multiple-choice
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/generate-test/${type}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bodyPayload),
+          body: JSON.stringify({ topic, difficulty, numQuestions: count, numAnswers }),
         }
       );
 
       const data = await res.json();
-
       if (data.questions) {
         return data.questions.map((q) => ({ ...q, type }));
       } else if (data.question) {
@@ -40,18 +42,20 @@ export async function POST(req) {
       }
     }
 
-    // Collect all types
+    // Collect all questions
     const results = await Promise.all(selectedTypes.map((t) => fetchQuestions(t)));
+
+    // Flatten array
     const allQuestions = results.flat();
 
-    // Group + order
+    // Group + order by type
     const objective = allQuestions.filter((q) =>
       ["multiple-choice", "multi-select", "true-false"].includes(q.type)
     );
     const openResponse = allQuestions.filter((q) => q.type === "open-response");
     const shortAnswer = allQuestions.filter((q) => q.type === "short-answer");
 
-    // Shuffle objective questions
+    // Shuffle objective section
     for (let i = objective.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [objective[i], objective[j]] = [objective[j], objective[i]];
