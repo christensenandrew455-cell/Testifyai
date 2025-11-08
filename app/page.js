@@ -13,30 +13,27 @@ export default function HomePage() {
   // New UI states
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [answerCounts, setAnswerCounts] = useState({
-    multipleChoice: 4,
-    multiSelect: 5,
+    "multiple-choice": 4,
+    "multi-select": 5,
   });
   const [typeQuestions, setTypeQuestions] = useState({}); // per-type question counts
 
   const testTypeList = [
-    { key: "multipleChoice", label: "Multiple Choice" },
-    { key: "multiSelect", label: "Multi Select" },
-    { key: "shortAnswer", label: "Short Answer" },
-    { key: "trueFalse", label: "True / False" },
-    { key: "openResponse", label: "Open Response" },
+    { key: "multiple-choice", label: "Multiple Choice" },
+    { key: "multi-select", label: "Multi Select" },
+    { key: "short-answer", label: "Short Answer" },
+    { key: "true-false", label: "True / False" },
+    { key: "open-response", label: "Open Response" },
   ];
 
   // Toggle type selection
   const toggleType = (key) => {
-    setSelectedTypes((prev) => {
-      const next = prev.includes(key)
-        ? prev.filter((t) => t !== key)
-        : [...prev, key];
-      return next;
-    });
+    setSelectedTypes((prev) =>
+      prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]
+    );
   };
 
-  // When selectedTypes changes and there are 2+ types, auto-fill typeQuestions evenly if empty
+  // Auto-fill distribution if multiple types
   useEffect(() => {
     if (selectedTypes.length <= 1) {
       setTypeQuestions({});
@@ -100,11 +97,11 @@ export default function HomePage() {
           selectedTypes.length > 1
             ? distributedTotal
             : Math.max(1, questionCount),
-        types: selectedTypes,
+        selectedTypes,
         typeDistribution:
           selectedTypes.length > 1
             ? typeQuestions
-            : { [selectedTypes[0] || "default"]: Math.max(1, questionCount) },
+            : { [selectedTypes[0] || "multiple-choice"]: Math.max(1, questionCount) },
         answerCounts,
       };
 
@@ -134,6 +131,7 @@ export default function HomePage() {
     }
   };
 
+  // --- Styles ---
   const typeButtonStyle = (active) => ({
     padding: "10px 18px",
     borderRadius: "12px",
@@ -141,7 +139,7 @@ export default function HomePage() {
       ? "3px solid rgba(255,255,255,0.95)"
       : "2px solid rgba(255,255,255,0.6)",
     backgroundColor: active ? "#1976d2" : "transparent",
-    color: active ? "white" : "white",
+    color: "white",
     cursor: "pointer",
     fontWeight: 700,
     transition: "all 0.2s ease",
@@ -176,7 +174,6 @@ export default function HomePage() {
         padding: "40px 20px",
       }}
     >
-      {/* Header */}
       <h1
         style={{
           fontSize: "clamp(2rem, 6vw, 3.25rem)",
@@ -200,7 +197,6 @@ export default function HomePage() {
         Instantly generate an AI-powered test on any topic — free, fast, and fun.
       </p>
 
-      {/* Card */}
       <div
         style={{
           backgroundColor: "rgba(255,255,255,0.1)",
@@ -216,8 +212,8 @@ export default function HomePage() {
           marginTop: "20px",
         }}
       >
+        {/* Topic Input */}
         <h2 style={{ marginBottom: "18px", fontWeight: 800 }}>Topic</h2>
-
         <input
           type="text"
           placeholder="Enter any topic — broad or specific"
@@ -232,7 +228,6 @@ export default function HomePage() {
             textAlign: "center",
             outline: "none",
             marginBottom: "18px",
-            maxWidth: "100%",
           }}
         />
 
@@ -245,8 +240,7 @@ export default function HomePage() {
             marginBottom: "8px",
             fontWeight: 600,
             maxWidth: "560px",
-            marginLeft: "auto",
-            marginRight: "auto",
+            margin: "0 auto 8px",
           }}
         >
           <span>Beginner</span>
@@ -270,16 +264,10 @@ export default function HomePage() {
           }}
         />
 
-        {/* Number of questions (hide when multi selected) */}
+        {/* Question count */}
         {selectedTypes.length <= 1 && (
           <>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                fontWeight: 600,
-              }}
-            >
+            <label style={{ display: "block", fontWeight: 600 }}>
               Number of questions (Total)
             </label>
             <input
@@ -301,10 +289,9 @@ export default function HomePage() {
           </>
         )}
 
-        {/* Test Type */}
+        {/* Test Types */}
         <div style={{ marginBottom: "18px" }}>
           <div style={{ fontWeight: 800, marginBottom: "10px" }}>Test Type</div>
-
           <div
             style={{
               display: "flex",
@@ -331,15 +318,15 @@ export default function HomePage() {
                     {t.label}
                   </button>
 
-                  {/* Conditional pickers */}
-                  {active && t.key === "multipleChoice" && (
+                  {/* Option Pickers */}
+                  {active && t.key === "multiple-choice" && (
                     <div style={{ marginTop: "8px" }}>
                       {[3, 4, 5].map((n) => (
                         <button
                           key={n}
-                          onClick={() => handleAnswerCount("multipleChoice", n)}
+                          onClick={() => handleAnswerCount("multiple-choice", n)}
                           style={smallPickerStyle(
-                            answerCounts.multipleChoice === n
+                            answerCounts["multiple-choice"] === n
                           )}
                         >
                           {n}
@@ -348,13 +335,15 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {active && t.key === "multiSelect" && (
+                  {active && t.key === "multi-select" && (
                     <div style={{ marginTop: "8px" }}>
                       {[4, 5, 6].map((n) => (
                         <button
                           key={n}
-                          onClick={() => handleAnswerCount("multiSelect", n)}
-                          style={smallPickerStyle(answerCounts.multiSelect === n)}
+                          onClick={() => handleAnswerCount("multi-select", n)}
+                          style={smallPickerStyle(
+                            answerCounts["multi-select"] === n
+                          )}
                         >
                           {n}
                         </button>
@@ -367,13 +356,12 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Per-type questions */}
+        {/* Per-type question counts */}
         {selectedTypes.length > 1 && (
-          <div style={{ marginTop: "6px", marginBottom: "18px" }}>
+          <div style={{ marginBottom: "18px" }}>
             <div style={{ fontWeight: 800, marginBottom: "10px" }}>
               Questions per Test Type
             </div>
-
             <div
               style={{
                 display: "flex",
@@ -417,7 +405,6 @@ export default function HomePage() {
                 );
               })}
             </div>
-
             <div style={{ marginTop: "12px", fontWeight: 700 }}>
               Total:{" "}
               <span style={{ color: "white", opacity: 0.95 }}>
@@ -441,14 +428,12 @@ export default function HomePage() {
             cursor: loading ? "not-allowed" : "pointer",
             width: "100%",
             transition: "background-color 0.2s",
-            marginTop: "6px",
           }}
         >
           {loading ? "Generating..." : "Generate Test"}
         </button>
       </div>
 
-      {/* Learn More */}
       <div style={{ marginTop: "30px" }}>
         <Link
           href="/learn"
@@ -460,21 +445,18 @@ export default function HomePage() {
             fontWeight: 600,
             textDecoration: "none",
             border: "2px solid rgba(255,255,255,0.2)",
-            transition: "background 0.2s",
           }}
         >
           Learn More
         </Link>
       </div>
 
-      {/* Logo */}
       <div
         style={{
           position: "absolute",
           top: "20px",
           right: "30px",
           fontWeight: 700,
-          color: "white",
           fontSize: "1.2rem",
         }}
       >
