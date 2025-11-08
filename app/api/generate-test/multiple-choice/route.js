@@ -1,21 +1,19 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
   try {
-    const { topic, difficulty, numQuestions, numAnswers = 4 } = await req.json();
+    const { topic, difficulty, numQuestions = 5, numAnswers = 4 } = await req.json();
 
     const prompt = `
 You are TestifyAI — generate ${numQuestions} multiple-choice questions on "${topic}".
 
 Rules:
-1. Each question must have exactly ${numAnswers} answers labeled A, B, C, D, E (use only what is needed if ${numAnswers}<5).
+1. Each question must have exactly ${numAnswers} answers labeled A, B, C, D, E (use as many as needed if numAnswers < 5).
 2. Only one correct answer per question.
 3. Make all incorrect answers plausible.
-4. Include a one-sentence educational explanation for why the correct answer is right.
+4. Include a one-sentence educational explanation for the correct answer.
 5. Output ONLY valid JSON like this:
 [
   {
@@ -34,9 +32,8 @@ Rules:
     });
 
     let content = response.choices[0].message.content.trim();
-    if (content.startsWith("```")) {
-      content = content.replace(/```(json)?/g, "").trim();
-    }
+    content = content.replace(/```(json)?/g, "").trim();
+    content = content.replace(/'/g, '"'); // Ensure valid JSON
 
     const questions = JSON.parse(content);
 
