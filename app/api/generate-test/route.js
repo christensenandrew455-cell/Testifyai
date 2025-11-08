@@ -1,56 +1,60 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const { topic, difficulty, numQuestions } = body;
+    const { topic, difficulty, numQuestions, selectedTypes } = await req.json();
 
-    if (!topic || !numQuestions || !difficulty) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
-        status: 400,
+    if (!selectedTypes || selectedTypes.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "No test types selected." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Helper: call your existing subroutes
+    async function fetchQuestions(type) {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/generate-test/${type}`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, difficulty, numQuestions }),
       });
+      const data = await res.json();
+      if (data.questions) {
+        return data.questions.map((q) => ({ ...q, type }));
+      } else if (data.question) {
+        // For single-question routes like open/short
+        return [{ ...data, type }];
+      } else {
+        return [];
+      }
     }
 
-    console.log("🎯 Base test generation request:", topic, "Difficulty:", difficulty);
+    // Collect all types
+    const results = await Promise.all(selectedTypes.map((t) => fetchQuestions(t)));
 
-    // Base prompt for now — returns placeholder JSON structure
-    const basePrompt = `
-Generate ${numQuestions} generic questions on the topic "${topic}" with difficulty ${difficulty}.
-Do NOT specify test type yet — just return a placeholder structure like this:
+    // Flatten
+    const allQuestions = results.flat();
 
-[
-  {
-    "question": "string",
-    "answers": ["string", "string", "string", "string"],
-    "correct": "string",
-    "explanation": "string"
-  }
-]
-`;
+    // Group + order
+    const objective = allQuestions.filter((q) =>
+      ["multiple-choice", "multi-select", "true-false"].includes(q.type)
+    );
+    const openResponse = allQuestions.filter((q) => q.type === "open-response");
+    const shortAnswer = allQuestions.filter((q) => q.type === "short-answer");
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: basePrompt }],
-      temperature: 0.7,
-    });
-
-    let content = response.choices[0].message.content.trim();
-    if (content.startsWith("```")) {
-      content = content.replace(/```(json)?/g, "").trim();
+    // Shuffle objective section
+    for (let i = objective.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [objective[i], objective[j]] = [objective[j], objective[i]];
     }
 
-    const questions = JSON.parse(content);
+    const finalQuestions = [...objective, ...openResponse, ...shortAnswer];
 
-    return new Response(JSON.stringify({ questions }), {
+    return new Response(JSON.stringify({ questions: finalQuestions }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("❌ Error in base API:", err);
+    console.error("❌ Error generating unified test:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
