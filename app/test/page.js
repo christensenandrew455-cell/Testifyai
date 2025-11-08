@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import MultipleChoice from "@/components/MultipleChoice";
+import MultipleChoice from "@/multiple-choice";
 
 export default function TestPage() {
   const [questions, setQuestions] = useState([]);
