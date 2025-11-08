@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import MultipleChoice from "@/multiple-choice.js";
+import MultipleChoice from "./multiple-choice"; // ✅ fixed import
 
 export default function TestPage() {
   const [questions, setQuestions] = useState([]);
@@ -8,7 +8,13 @@ export default function TestPage() {
 
   useEffect(() => {
     const stored = sessionStorage.getItem("testData");
-    if (stored) setQuestions(JSON.parse(stored));
+    if (stored) {
+      try {
+        setQuestions(JSON.parse(stored));
+      } catch (err) {
+        console.error("Failed to parse stored test data:", err);
+      }
+    }
   }, []);
 
   const current = questions[currentIndex];
@@ -33,24 +39,32 @@ export default function TestPage() {
       }}
     >
       <h2 style={{ color: "#1976d2", fontWeight: 800 }}>
-        {current.question}
+        Question {currentIndex + 1} of {questions.length}
       </h2>
 
       <MultipleChoice question={current} />
 
       <button
         onClick={() => setCurrentIndex((i) => i + 1)}
+        disabled={currentIndex >= questions.length - 1}
         style={{
           marginTop: "30px",
           padding: "10px 20px",
-          backgroundColor: "#1976d2",
+          backgroundColor:
+            currentIndex >= questions.length - 1
+              ? "gray"
+              : "#1976d2",
           color: "white",
           border: "none",
           borderRadius: "12px",
           fontWeight: 700,
+          cursor:
+            currentIndex >= questions.length - 1
+              ? "not-allowed"
+              : "pointer",
         }}
       >
-        Next
+        {currentIndex >= questions.length - 1 ? "Done" : "Next"}
       </button>
     </div>
   );
