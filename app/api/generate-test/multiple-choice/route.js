@@ -6,7 +6,7 @@ const openai = new OpenAI({
 
 export async function POST(req) {
   try {
-    const { topic, difficulty, numQuestions, numAnswers } = await req.json();
+    const { topic, difficulty, numQuestions, numAnswers = 4 } = await req.json();
 
     const prompt = `
 You are TestifyAI — generate ${numQuestions} multiple-choice questions on "${topic}".
@@ -38,26 +38,18 @@ Rules:
       content = content.replace(/```(json)?/g, "").trim();
     }
 
-    let questions;
-    try {
-      questions = JSON.parse(content);
-    } catch (e) {
-      console.error("Failed to parse OpenAI MC JSON:", content);
-      throw e;
-    }
+    const questions = JSON.parse(content);
 
     // Shuffle answers per question
     for (const q of questions) {
-      if (q.answers && Array.isArray(q.answers)) {
-        q.answers = q.answers.sort(() => Math.random() - 0.5);
-      }
+      q.answers = q.answers.sort(() => Math.random() - 0.5);
     }
 
     return new Response(JSON.stringify({ questions }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Multiple-choice generation error:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
