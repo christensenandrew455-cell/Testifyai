@@ -1,19 +1,47 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export default function HomePage() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
-  const [selectedTestTypes, setSelectedTestTypes] = useState([]);
-  const [questionsPerType, setQuestionsPerType] = useState({});
+
+  // Track selected test types and their question counts
+  const [selectedTypes, setSelectedTypes] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const testTypeOptions = [
+    "multiple-choice",
+    "multi-select",
+    "true-false",
+    "open-response",
+    "short-answer",
+  ];
+
+  const handleToggleType = (type) => {
+    setSelectedTypes((prev) => {
+      if (prev[type]) {
+        const updated = { ...prev };
+        delete updated[type];
+        return updated;
+      } else {
+        return { ...prev, [type]: 5 }; // default 5 questions per type
+      }
+    });
+  };
+
+  const handleQuestionCountChange = (type, value) => {
+    setSelectedTypes((prev) => ({ ...prev, [type]: Math.max(1, value) }));
+  };
+
   const handleGenerateTest = async () => {
-    if (!topic.trim() || selectedTestTypes.length === 0) {
-      alert("Please enter a topic and select at least one test type!");
+    if (!topic.trim()) {
+      alert("Please enter a topic!");
+      return;
+    }
+    if (Object.keys(selectedTypes).length === 0) {
+      alert("Please select at least one test type!");
       return;
     }
 
@@ -25,8 +53,7 @@ export default function HomePage() {
         body: JSON.stringify({
           topic,
           difficulty,
-          selectedTestTypes,
-          questionsPerType,
+          questionsPerType: selectedTypes,
         }),
       });
 
@@ -45,12 +72,7 @@ export default function HomePage() {
     }
   };
 
-  const testTypes = ["multiple-choice", "multi-select", "true-false", "open-response", "short-answer"];
-
-  const totalQuestions = selectedTestTypes.reduce(
-    (total, type) => total + (questionsPerType[type] || 0),
-    0
-  );
+  const totalQuestions = Object.values(selectedTypes).reduce((a, b) => a + b, 0);
 
   return (
     <div
@@ -104,6 +126,7 @@ export default function HomePage() {
         Instantly generate an AI-powered test on any topic — free, fast, and fun.
       </p>
 
+      {/* Test Setup Card */}
       <div
         style={{
           backgroundColor: "rgba(255,255,255,0.08)",
@@ -119,7 +142,10 @@ export default function HomePage() {
           marginTop: "20px",
         }}
       >
-        <h2 style={{ marginBottom: "20px", fontWeight: 800, fontSize: "1.25rem" }}>Topic</h2>
+        <h2 style={{ marginBottom: "20px", fontWeight: 800, fontSize: "1.25rem" }}>
+          Topic
+        </h2>
+
         <input
           type="text"
           placeholder="Enter any topic — broad or specific"
@@ -134,10 +160,10 @@ export default function HomePage() {
             textAlign: "center",
             outline: "none",
             marginBottom: "26px",
+            maxWidth: "100%",
           }}
         />
 
-        {/* Difficulty Slider */}
         <div
           style={{
             display: "flex",
@@ -170,129 +196,56 @@ export default function HomePage() {
           }}
         />
 
-        {/* Test Type Selector */}
-        <div style={{ marginBottom: "18px", textAlign: "center" }}>
-          <h3 style={{ margin: "8px 0", fontWeight: 700 }}>Select Test Types</h3>
-          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            {testTypes.map((type) => {
-              const isSelected = selectedTestTypes.includes(type);
-              return (
-                <button
-                  key={type}
-                  onClick={() => {
-                    if (isSelected) {
-                      setSelectedTestTypes(selectedTestTypes.filter((t) => t !== type));
-                      const newQuestions = { ...questionsPerType };
-                      delete newQuestions[type];
-                      setQuestionsPerType(newQuestions);
-                    } else {
-                      setSelectedTestTypes([...selectedTestTypes, type]);
-                      setQuestionsPerType({ ...questionsPerType, [type]: 5 });
-                    }
-                  }}
-                  style={{
-                    padding: "10px 16px",
-                    borderRadius: "12px",
-                    border: isSelected ? "3px solid #1976d2" : "2px solid rgba(255,255,255,0.3)",
-                    backgroundColor: isSelected ? "rgba(25,118,210,0.14)" : "rgba(255,255,255,0.05)",
-                    color: "white",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    minWidth: "130px",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {type.replace("-", " ")}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Questions per Type Inputs */}
-        {selectedTestTypes.length > 1 &&
-          selectedTestTypes.map((type) => (
-            <div key={type} style={{ marginBottom: "16px" }}>
-              <label
-                style={{
-                  display: "block",
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,0.95)",
-                  marginBottom: "6px",
-                }}
-              >
-                {type.replace("-", " ")} Questions
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="50"
-                value={questionsPerType[type]}
-                onChange={(e) =>
-                  setQuestionsPerType({
-                    ...questionsPerType,
-                    [type]: Number(e.target.value),
-                  })
-                }
-                style={{
-                  width: "84px",
-                  padding: "8px",
-                  borderRadius: "10px",
-                  border: "none",
-                  textAlign: "center",
-                  fontSize: "1rem",
-                }}
-              />
-            </div>
-          ))}
-
-        {/* Total Questions Display (only if multiple types) */}
-        {selectedTestTypes.length > 1 && (
-          <div
-            style={{
-              marginBottom: "26px",
-              fontWeight: 700,
-              color: "rgba(255,255,255,0.95)",
-              fontSize: "1rem",
-            }}
-          >
-            Total Questions: {totalQuestions}
-          </div>
-        )}
-
-        {/* Single Number of Questions if only one type */}
-        {selectedTestTypes.length === 1 && (
-          <div style={{ marginBottom: "26px" }}>
-            <label
+        <h3 style={{ margin: "8px 0", fontWeight: 700 }}>Test Types</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
+          {testTypeOptions.map((type) => (
+            <div
+              key={type}
               style={{
-                display: "block",
-                marginBottom: "8px",
-                fontWeight: 600,
-                color: "rgba(255,255,255,0.95)",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
               }}
             >
-              Number of questions
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="50"
-              value={questionsPerType[selectedTestTypes[0]] || 5}
-              onChange={(e) =>
-                setQuestionsPerType({
-                  ...questionsPerType,
-                  [selectedTestTypes[0]]: Number(e.target.value),
-                })
-              }
-              style={{
-                width: "84px",
-                padding: "8px",
-                borderRadius: "10px",
-                border: "none",
-                textAlign: "center",
-                fontSize: "1rem",
-              }}
-            />
+              <button
+                onClick={() => handleToggleType(type)}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "12px",
+                  border: selectedTypes[type] ? "3px solid #1976d2" : "2px solid rgba(255,255,255,0.3)",
+                  backgroundColor: selectedTypes[type] ? "rgba(25,118,210,0.14)" : "rgba(255,255,255,0.05)",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  width: "160px",
+                }}
+              >
+                {type.replace("-", " ").toUpperCase()}
+              </button>
+
+              {selectedTypes[type] && (
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={selectedTypes[type]}
+                  onChange={(e) => handleQuestionCountChange(type, Number(e.target.value))}
+                  style={{
+                    width: "60px",
+                    padding: "6px",
+                    borderRadius: "8px",
+                    border: "none",
+                    textAlign: "center",
+                    fontSize: "0.95rem",
+                  }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {Object.keys(selectedTypes).length > 1 && (
+          <div style={{ marginTop: "12px", fontWeight: 600 }}>
+            Total Questions: {totalQuestions}
           </div>
         )}
 
@@ -309,29 +262,12 @@ export default function HomePage() {
             fontSize: "1rem",
             cursor: loading ? "not-allowed" : "pointer",
             width: "100%",
+            marginTop: "20px",
             transition: "background-color 0.2s",
           }}
         >
           {loading ? "Generating..." : "Generate Test"}
         </button>
-      </div>
-
-      <div style={{ marginTop: "26px" }}>
-        <Link
-          href="/learn"
-          style={{
-            backgroundColor: "rgba(255,255,255,0.12)",
-            padding: "10px 24px",
-            borderRadius: "12px",
-            color: "white",
-            fontWeight: 600,
-            textDecoration: "none",
-            border: "2px solid rgba(255,255,255,0.18)",
-            transition: "background 0.2s",
-          }}
-        >
-          Learn More
-        </Link>
       </div>
     </div>
   );
