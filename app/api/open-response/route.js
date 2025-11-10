@@ -1,26 +1,21 @@
 import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
   try {
-    const { question, userAnswer } = await req.json();
+    const { topic, difficulty, numQuestions = 5 } = await req.json();
 
     const prompt = `
-You are a teacher AI. Evaluate the user's open response.
-
-Question: "${question}"
-User Answer: "${userAnswer}"
-
-- Determine if the answer is correct or partially correct.
-- Provide a brief explanation (1-2 sentences) highlighting why it is correct or what is missing.
-- Output ONLY valid JSON like this:
-{
-  "isCorrect": true,
-  "explanation": "string"
-}
+You are TestifyAI. Generate ${numQuestions} open-response questions on "${topic}".
+Rules:
+1. Provide questions only (no multiple-choice answers).
+2. Output ONLY valid JSON like this:
+[
+  {
+    "question": "string",
+    "explanation": "string"
+  }
+]
 `;
 
     const response = await openai.chat.completions.create({
@@ -30,17 +25,14 @@ User Answer: "${userAnswer}"
     });
 
     let content = response.choices[0].message.content.trim();
-    if (content.startsWith("```")) {
-      content = content.replace(/```(json)?/g, "").trim();
-    }
+    content = content.replace(/```(json)?/g, "").trim();
+    const questions = JSON.parse(content);
 
-    const result = JSON.parse(content);
-
-    return new Response(JSON.stringify(result), {
+    return new Response(JSON.stringify({ questions }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Open-response generation error:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
