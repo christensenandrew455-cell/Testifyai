@@ -7,13 +7,13 @@ export default function HomePage() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
-  const [questionCount, setQuestionCount] = useState(5);
-  const [testType, setTestType] = useState("multiple-choice"); // default
+  const [selectedTestTypes, setSelectedTestTypes] = useState([]);
+  const [questionsPerType, setQuestionsPerType] = useState({});
   const [loading, setLoading] = useState(false);
 
   const handleGenerateTest = async () => {
-    if (!topic.trim()) {
-      alert("Please enter a topic!");
+    if (!topic.trim() || selectedTestTypes.length === 0) {
+      alert("Please enter a topic and select at least one test type!");
       return;
     }
 
@@ -25,15 +25,14 @@ export default function HomePage() {
         body: JSON.stringify({
           topic,
           difficulty,
-          numQuestions: Math.max(1, questionCount),
-          testType,
+          selectedTestTypes,
+          questionsPerType,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "API failed");
 
-      // store final structured test
       sessionStorage.setItem("testData", JSON.stringify(data));
       sessionStorage.setItem("resumeIndex", "0");
 
@@ -45,6 +44,8 @@ export default function HomePage() {
       setLoading(false);
     }
   };
+
+  const testTypes = ["multiple-choice", "multi-select", "true-false", "open-response", "short-answer"];
 
   return (
     <div
@@ -62,7 +63,6 @@ export default function HomePage() {
         position: "relative",
       }}
     >
-      {/* Logo in corner */}
       <div
         style={{
           position: "absolute",
@@ -76,7 +76,6 @@ export default function HomePage() {
         TheTestifyAI
       </div>
 
-      {/* Header Section */}
       <h1
         style={{
           fontSize: "clamp(2rem, 6vw, 3.25rem)",
@@ -100,7 +99,6 @@ export default function HomePage() {
         Instantly generate an AI-powered test on any topic — free, fast, and fun.
       </p>
 
-      {/* Test Setup Card */}
       <div
         style={{
           backgroundColor: "rgba(255,255,255,0.08)",
@@ -116,10 +114,7 @@ export default function HomePage() {
           marginTop: "20px",
         }}
       >
-        <h2 style={{ marginBottom: "20px", fontWeight: 800, fontSize: "1.25rem" }}>
-          Topic
-        </h2>
-
+        <h2 style={{ marginBottom: "20px", fontWeight: 800, fontSize: "1.25rem" }}>Topic</h2>
         <input
           type="text"
           placeholder="Enter any topic — broad or specific"
@@ -134,7 +129,6 @@ export default function HomePage() {
             textAlign: "center",
             outline: "none",
             marginBottom: "26px",
-            maxWidth: "100%",
           }}
         />
 
@@ -171,62 +165,118 @@ export default function HomePage() {
           }}
         />
 
-        {/* Number of questions */}
-        <label
-          style={{
-            display: "block",
-            marginBottom: "8px",
-            fontWeight: 600,
-            color: "rgba(255,255,255,0.95)",
-          }}
-        >
-          Number of questions
-        </label>
-        <input
-          type="number"
-          min="1"
-          max="50"
-          value={questionCount}
-          onChange={(e) => setQuestionCount(Number(e.target.value))}
-          style={{
-            width: "84px",
-            padding: "8px",
-            borderRadius: "10px",
-            border: "none",
-            textAlign: "center",
-            fontSize: "1rem",
-            marginBottom: "26px",
-          }}
-        />
-
-        {/* --- Test Type selector (text buttons) --- */}
+        {/* Test Type Selector */}
         <div style={{ marginBottom: "18px", textAlign: "center" }}>
-          <h3 style={{ margin: "8px 0", fontWeight: 700 }}>Test Type</h3>
-
+          <h3 style={{ margin: "8px 0", fontWeight: 700 }}>Select Test Types</h3>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            {["multiple-choice", "true-false", "multi-select"].map((type) => (
-              <button
-                key={type}
-                onClick={() => setTestType(type)}
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: "12px",
-                  border: testType === type ? "3px solid #1976d2" : "2px solid rgba(255,255,255,0.3)",
-                  backgroundColor: testType === type ? "rgba(25,118,210,0.14)" : "rgba(255,255,255,0.05)",
-                  color: "white",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  minWidth: "130px",
-                  textTransform: "capitalize",
-                }}
-              >
-                {type.replace("-", " ")}
-              </button>
-            ))}
+            {testTypes.map((type) => {
+              const isSelected = selectedTestTypes.includes(type);
+              return (
+                <button
+                  key={type}
+                  onClick={() => {
+                    if (isSelected) {
+                      setSelectedTestTypes(selectedTestTypes.filter((t) => t !== type));
+                      const newQuestions = { ...questionsPerType };
+                      delete newQuestions[type];
+                      setQuestionsPerType(newQuestions);
+                    } else {
+                      setSelectedTestTypes([...selectedTestTypes, type]);
+                      setQuestionsPerType({ ...questionsPerType, [type]: 5 });
+                    }
+                  }}
+                  style={{
+                    padding: "10px 16px",
+                    borderRadius: "12px",
+                    border: isSelected ? "3px solid #1976d2" : "2px solid rgba(255,255,255,0.3)",
+                    backgroundColor: isSelected ? "rgba(25,118,210,0.14)" : "rgba(255,255,255,0.05)",
+                    color: "white",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    minWidth: "130px",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {type.replace("-", " ")}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Generate Test Button */}
+        {/* Questions per Type Inputs */}
+        {selectedTestTypes.length > 1 &&
+          selectedTestTypes.map((type) => (
+            <div key={type} style={{ marginBottom: "16px" }}>
+              <label
+                style={{
+                  display: "block",
+                  fontWeight: 600,
+                  color: "rgba(255,255,255,0.95)",
+                  marginBottom: "6px",
+                }}
+              >
+                {type.replace("-", " ")} Questions
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="50"
+                value={questionsPerType[type]}
+                onChange={(e) =>
+                  setQuestionsPerType({
+                    ...questionsPerType,
+                    [type]: Number(e.target.value),
+                  })
+                }
+                style={{
+                  width: "84px",
+                  padding: "8px",
+                  borderRadius: "10px",
+                  border: "none",
+                  textAlign: "center",
+                  fontSize: "1rem",
+                }}
+              />
+            </div>
+          ))}
+
+        {/* Single Number of Questions if only one type */}
+        {selectedTestTypes.length === 1 && (
+          <div style={{ marginBottom: "26px" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                fontWeight: 600,
+                color: "rgba(255,255,255,0.95)",
+              }}
+            >
+              Number of questions
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="50"
+              value={questionsPerType[selectedTestTypes[0]] || 5}
+              onChange={(e) =>
+                setQuestionsPerType({
+                  ...questionsPerType,
+                  [selectedTestTypes[0]]: Number(e.target.value),
+                })
+              }
+              style={{
+                width: "84px",
+                padding: "8px",
+                borderRadius: "10px",
+                border: "none",
+                textAlign: "center",
+                fontSize: "1rem",
+              }}
+            />
+          </div>
+        )}
+
         <button
           onClick={handleGenerateTest}
           disabled={loading}
@@ -247,7 +297,6 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* Learn More Button */}
       <div style={{ marginTop: "26px" }}>
         <Link
           href="/learn"
