@@ -39,7 +39,7 @@ function CorrectContent() {
       router.push(`/ad?topic=${encodeURIComponent(topic)}`);
     } else {
       sessionStorage.setItem("resumeIndex", String(index + 1));
-      router.push(`/test?topic=${encodeURIComponent(topic)}`);
+      router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
     }
   };
 
@@ -63,7 +63,7 @@ function CorrectContent() {
     >
       <div style={{ fontSize: 72, marginBottom: 12 }}>✅</div>
       <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>Correct!</h1>
-      <div style={{ maxWidth: 760, marginBottom: 10, textAlign: "left" }}>
+      <div style={{ maxWidth: 760, marginBottom: 10 }}>
         <p><strong>Question:</strong> {question}</p>
         <p><strong>Your answer:</strong> {userAnswer}</p>
         <p><strong>Correct answer:</strong> {correctAnswer}</p>
