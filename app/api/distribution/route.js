@@ -16,19 +16,19 @@ export async function POST(req) {
 
     switch (testType) {
       case "multiple-choice":
-        apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/mcq-generator`;
+        apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/mutiple-choice`;
         break;
 
-      // 🔜 add more here later
+      // 🔜 Add other test types here later
       // case "true-false":
-      //   apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/true-false-generator`;
+      //   apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/true-false`;
       //   break;
 
       default:
         return NextResponse.json({ error: "Invalid testType" }, { status: 400 });
     }
 
-    // Forward request to the right generator API
+    // Forward the request to the right test type API
     const res = await fetch(apiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
