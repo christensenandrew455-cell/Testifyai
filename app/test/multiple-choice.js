@@ -1,91 +1,99 @@
 "use client";
+
 import { useEffect, useState } from "react";
 
-export default function MultipleChoice({ question, onAnswer }) {
-  const [answers, setAnswers] = useState([]);
+export default function MultipleChoiceTest() {
+  const [test, setTest] = useState(null);
+  const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
 
-  // Handle missing or invalid question data
-  if (!question || !question.answers || !Array.isArray(question.answers)) {
-    return <p>Loading question...</p>;
+  useEffect(() => {
+    const stored = sessionStorage.getItem("testData");
+    if (!stored) return;
+    setTest(JSON.parse(stored));
+  }, []);
+
+  if (!test) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
+        <p>Loading test...</p>
+      </div>
+    );
   }
 
-  // Shuffle answers once when question changes
-  useEffect(() => {
-    const shuffled = [...question.answers];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    setAnswers(shuffled);
-    setSelected(null);
-  }, [question]);
+  const question = test.questions[index];
 
-  // Send selected answer to parent
-  useEffect(() => {
-    if (selected !== null && onAnswer) {
-      onAnswer({
-        selected: answers[selected],
-        correct: question.correct,
-        explanation: question.explanation,
-      });
+  const handleAnswer = (option) => {
+    const correct = option === question.correctAnswer;
+    setSelected(option);
+    setIsCorrect(correct);
+    setShowFeedback(true);
+  };
+
+  const handleNext = () => {
+    setShowFeedback(false);
+    setSelected(null);
+    if (index < test.questions.length - 1) {
+      setIndex((prev) => prev + 1);
+    } else {
+      alert("✅ Test complete!");
     }
-  }, [selected]);
+  };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-        marginTop: "24px",
-        width: "100%",
-        maxWidth: "500px",
-      }}
-    >
-      <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>
-        {question.question}
-      </h2>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 text-white p-6">
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-xl shadow-lg">
+        <h2 className="text-xl font-bold mb-4">
+          Question {question.questionNumber} of {test.totalQuestions}
+        </h2>
+        <p className="text-lg mb-6">{question.question}</p>
 
-      {answers.map((ans, i) => {
-        const letter = String.fromCharCode(65 + i);
-        const isSelected = selected === i;
-        return (
+        <div className="grid gap-3 mb-6">
+          {question.options.map((opt, i) => (
+            <button
+              key={i}
+              onClick={() => handleAnswer(opt)}
+              disabled={showFeedback}
+              className={`p-3 rounded-md border text-left transition-all ${
+                selected === opt
+                  ? isCorrect
+                    ? "bg-green-500 border-green-300"
+                    : "bg-red-500 border-red-300"
+                  : "bg-white/10 border-white/30 hover:bg-white/20"
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+
+        {showFeedback && (
+          <div className="text-center mb-4">
+            <p
+              className={`font-semibold ${
+                isCorrect ? "text-green-300" : "text-red-300"
+              }`}
+            >
+              {isCorrect ? "✅ Correct!" : "❌ Incorrect"}
+            </p>
+            <p className="mt-2 text-sm text-gray-200">
+              {question.explanation}
+            </p>
+          </div>
+        )}
+
+        {showFeedback && (
           <button
-            key={i}
-            onClick={() => setSelected(i)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start",
-              gap: "10px",
-              padding: "10px 16px",
-              borderRadius: "12px",
-              border: isSelected
-                ? "3px solid #1976d2"
-                : "2px solid rgba(0,0,0,0.1)",
-              backgroundColor: isSelected
-                ? "rgba(25,118,210,0.1)"
-                : "white",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              fontWeight: 500,
-            }}
+            onClick={handleNext}
+            className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-md text-white font-semibold"
           >
-            <div
-              style={{
-                height: "16px",
-                width: "16px",
-                borderRadius: "50%",
-                border: isSelected
-                  ? "6px solid #1976d2"
-                  : "2px solid rgba(0,0,0,0.3)",
-              }}
-            ></div>
-            <strong>{letter}.</strong> {ans}
+            Next Question
           </button>
-        );
-      })}
+        )}
+      </div>
     </div>
   );
 }
+
