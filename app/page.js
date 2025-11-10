@@ -76,7 +76,7 @@ export default function HomePage() {
         TheTestifyAI
       </div>
 
-      {/* --- Header Section --- */}
+      {/* Header Section */}
       <h1
         style={{
           fontSize: "clamp(2rem, 6vw, 3.25rem)",
@@ -100,7 +100,7 @@ export default function HomePage() {
         Instantly generate an AI-powered test on any topic — free, fast, and fun.
       </p>
 
-      {/* --- Test Setup Card --- */}
+      {/* Test Setup Card */}
       <div
         style={{
           backgroundColor: "rgba(255,255,255,0.08)",
@@ -138,6 +138,7 @@ export default function HomePage() {
           }}
         />
 
+        {/* Difficulty Slider */}
         <div
           style={{
             display: "flex",
@@ -170,6 +171,7 @@ export default function HomePage() {
           }}
         />
 
+        {/* Number of questions */}
         <label
           style={{
             display: "block",
@@ -197,75 +199,34 @@ export default function HomePage() {
           }}
         />
 
-        {/* --- Test Type selector (visual) --- */}
-        <div style={{ marginBottom: "18px", textAlign: "left" }}>
+        {/* --- Test Type selector (text buttons) --- */}
+        <div style={{ marginBottom: "18px", textAlign: "center" }}>
           <h3 style={{ margin: "8px 0", fontWeight: 700 }}>Test Type</h3>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              alignItems: "center",
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
-            {/* Multiple Choice - active */}
-            <button
-              onClick={() => setTestType("multiple-choice")}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "8px",
-                padding: "8px",
-                borderRadius: "14px",
-                border:
-                  testType === "multiple-choice"
-                    ? "3px solid #1976d2"
-                    : "2px solid rgba(255,255,255,0.12)",
-                backgroundColor:
-                  testType === "multiple-choice"
-                    ? "rgba(25,118,210,0.14)"
-                    : "rgba(255,255,255,0.03)",
-                cursor: "pointer",
-                width: "150px",
-              }}
-            >
-              {/* Replace src with your actual image path */}
-              <img
-                src="/images/multiple-choice.png"
-                alt="Multiple choice"
-                style={{ width: "100%", height: "88px", objectFit: "cover", borderRadius: 10 }}
-              />
-              <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>Multiple Choice</div>
-            </button>
-
-            {/* Placeholder for other test types (disabled/greyed) */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "8px",
-                padding: "8px",
-                borderRadius: "14px",
-                border: "2px dashed rgba(255,255,255,0.08)",
-                backgroundColor: "rgba(255,255,255,0.02)",
-                width: "150px",
-                opacity: 0.45,
-              }}
-            >
-              <img
-                src="/images/placeholder.png"
-                alt="Other"
-                style={{ width: "100%", height: "88px", objectFit: "cover", borderRadius: 10 }}
-              />
-              <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>Other Types (Soon)</div>
-            </div>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+            {["multiple-choice", "true-false", "multi-select"].map((type) => (
+              <button
+                key={type}
+                onClick={() => setTestType(type)}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "12px",
+                  border: testType === type ? "3px solid #1976d2" : "2px solid rgba(255,255,255,0.3)",
+                  backgroundColor: testType === type ? "rgba(25,118,210,0.14)" : "rgba(255,255,255,0.05)",
+                  color: "white",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  minWidth: "130px",
+                  textTransform: "capitalize",
+                }}
+              >
+                {type.replace("-", " ")}
+              </button>
+            ))}
           </div>
         </div>
 
+        {/* Generate Test Button */}
         <button
           onClick={handleGenerateTest}
           disabled={loading}
@@ -286,7 +247,7 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* --- Learn More Button Below Card --- */}
+      {/* Learn More Button */}
       <div style={{ marginTop: "26px" }}>
         <Link
           href="/learn"
@@ -307,4 +268,3 @@ export default function HomePage() {
     </div>
   );
 }
-
