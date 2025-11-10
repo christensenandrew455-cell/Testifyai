@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
@@ -7,12 +6,11 @@ export async function POST(req) {
     const { topic, difficulty, numQuestions = 5 } = await req.json();
 
     const prompt = `
-You are TestifyAI — generate ${numQuestions} true/false questions on the topic "${topic}".
-
+You are TestifyAI. Generate ${numQuestions} true/false questions on "${topic}".
 Rules:
-1. Each question has two answers: "True" and "False".
+1. Each question has two options: "True" and "False".
 2. Only one correct answer per question.
-3. Include a one-sentence educational explanation for the correct answer.
+3. Include a one-sentence educational explanation.
 4. Output ONLY valid JSON like this:
 [
   {
@@ -32,8 +30,6 @@ Rules:
 
     let content = response.choices[0].message.content.trim();
     content = content.replace(/```(json)?/g, "").trim();
-    content = content.replace(/'/g, '"');
-
     const questions = JSON.parse(content);
 
     return new Response(JSON.stringify({ questions }), {
