@@ -39,7 +39,7 @@ function CorrectContent() {
       router.push(`/ad?topic=${encodeURIComponent(topic)}`);
     } else {
       sessionStorage.setItem("resumeIndex", String(index + 1));
-      router.push(`/testchat?topic=${encodeURIComponent(topic)}`);
+      router.push(`/test?topic=${encodeURIComponent(topic)}`);
     }
   };
 
