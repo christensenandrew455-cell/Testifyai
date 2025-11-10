@@ -1,231 +1,116 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
-export default function HomePage() {
+export default function Home() {
   const router = useRouter();
+
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
-  const [questionCount, setQuestionCount] = useState(5);
+  const [numQuestions, setNumQuestions] = useState(5);
+  const [testType, setTestType] = useState("multiple-choice");
   const [loading, setLoading] = useState(false);
 
-  const handleGenerateTest = async () => {
-    if (!topic.trim()) {
-      alert("Please enter a topic!");
-      return;
-    }
+  const handleGenerate = async () => {
+    if (!topic) return alert("Please enter a topic.");
 
     setLoading(true);
 
     try {
-      const res = await fetch("/api/generate-test", {
+      const res = await fetch("/api/distribution", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           topic,
           difficulty,
-          numQuestions: Math.max(1, questionCount),
+          numQuestions,
+          testType,
         }),
       });
 
-      if (!res.ok) throw new Error("API failed");
-
       const data = await res.json();
-      sessionStorage.setItem("testData", JSON.stringify(data.questions));
-      sessionStorage.setItem("resumeIndex", "0");
 
-      router.push(`/test?topic=${encodeURIComponent(topic)}`);
+      if (!res.ok) throw new Error(data.error || "Failed to generate test");
+
+      // 🔁 Go to controller to structure and route test
+      const controllerRes = await fetch("/test/controller.js", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const finalTest = await controllerRes.json();
+      if (!controllerRes.ok) throw new Error(finalTest.error);
+
+      // ✅ Send structured test data to /test page
+      router.push("/test");
     } catch (err) {
       console.error("❌ Error generating test:", err);
-      alert("Failed to generate test. Try again.");
+      alert("There was an error generating the test.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        width: "100vw",
-        background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-        color: "white",
-        textAlign: "center",
-        padding: "40px 20px",
-      }}
-    >
-      {/* --- Header Section --- */}
-      <h1
-        style={{
-          fontSize: "clamp(2rem, 6vw, 3.25rem)",
-          fontWeight: 800,
-          textShadow: "0 2px 6px rgba(0,0,0,0.25)",
-          marginBottom: "0.5rem",
-        }}
-      >
-        Welcome to TheTestifyAI
-      </h1>
-
-      <p
-        style={{
-          fontSize: "1.125rem",
-          maxWidth: "720px",
-          marginBottom: "2rem",
-          color: "rgba(255,255,255,0.95)",
-          lineHeight: 1.5,
-        }}
-      >
-        Instantly generate an AI-powered test on any topic — free, fast, and fun.
-      </p>
-
-      {/* --- Test Setup Card --- */}
-      <div
-        style={{
-          backgroundColor: "rgba(255,255,255,0.1)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "40px",
-          border: "3px solid rgba(255,255,255,0.2)",
-          padding: "40px 50px",
-          width: "90%",
-          maxWidth: "450px",
-          color: "white",
-          textAlign: "center",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-          marginTop: "20px",
-        }}
-      >
-        <h2 style={{ marginBottom: "24px", fontWeight: 800 }}>Topic</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+      <div className="bg-white/10 p-8 rounded-2xl shadow-2xl w-[400px] text-center backdrop-blur-md">
+        <h1 className="text-2xl mb-6 font-semibold text-white">Topic</h1>
 
         <input
           type="text"
-          placeholder="Enter any topic — broad or specific"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "12px 16px",
-            borderRadius: "12px",
-            border: "none",
-            fontSize: "1rem",
-            textAlign: "center",
-            outline: "none",
-            marginBottom: "28px",
-            maxWidth: "100%",
-          }}
+          placeholder="Enter any topic — broad or specific"
+          className="w-full p-2 rounded-md text-black mb-4"
         />
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "8px",
-            fontWeight: 600,
-          }}
-        >
-          <span>Beginner</span>
-          <span>Difficulty Scale</span>
-          <span>Master</span>
-        </div>
-
+        <label className="block text-sm mb-2 text-gray-200">
+          Difficulty Scale
+        </label>
         <input
           type="range"
           min="1"
-          max="9"
-          step="1"
+          max="5"
           value={difficulty}
-          onChange={(e) => setDifficulty(Number(e.target.value))}
-          style={{
-            width: "100%",
-            accentColor: "#1976d2",
-            marginBottom: "28px",
-            height: "6px",
-            cursor: "pointer",
-          }}
+          onChange={(e) => setDifficulty(e.target.value)}
+          className="w-full mb-4"
         />
 
-        <label
-          style={{
-            display: "block",
-            marginBottom: "8px",
-            fontWeight: 600,
-          }}
-        >
-          Number of questions
+        <label className="block text-sm mb-2 text-gray-200">
+          Number of Questions
         </label>
         <input
           type="number"
+          value={numQuestions}
+          onChange={(e) => setNumQuestions(e.target.value)}
+          className="w-full p-2 rounded-md text-black mb-6"
           min="1"
-          max="50"
-          value={questionCount}
-          onChange={(e) => setQuestionCount(Number(e.target.value))}
-          style={{
-            width: "80px",
-            padding: "8px",
-            borderRadius: "10px",
-            border: "none",
-            textAlign: "center",
-            fontSize: "1rem",
-            marginBottom: "32px",
-          }}
+          max="20"
         />
 
+        <h2 className="mb-2 text-gray-200 text-sm">Test Type</h2>
+        <div className="flex justify-center gap-2 mb-6">
+          <button
+            onClick={() => setTestType("multiple-choice")}
+            className={`px-3 py-1 rounded-md border transition-all ${
+              testType === "multiple-choice"
+                ? "bg-blue-500 border-blue-300 text-white"
+                : "bg-transparent border-gray-400 text-gray-200 hover:bg-gray-700"
+            }`}
+          >
+            Multiple Choice
+          </button>
+        </div>
+
         <button
-          onClick={handleGenerateTest}
+          onClick={handleGenerate}
           disabled={loading}
-          style={{
-            padding: "12px 0",
-            borderRadius: "12px",
-            border: "none",
-            backgroundColor: loading ? "#ccc" : "#1976d2",
-            color: "white",
-            fontWeight: 700,
-            fontSize: "1rem",
-            cursor: loading ? "not-allowed" : "pointer",
-            width: "100%",
-            transition: "background-color 0.2s",
-          }}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md transition-all"
         >
           {loading ? "Generating..." : "Generate Test"}
         </button>
-      </div>
-
-      {/* --- Learn More Button Below Card --- */}
-      <div style={{ marginTop: "30px" }}>
-        <Link
-          href="/learn"
-          style={{
-            backgroundColor: "rgba(255,255,255,0.15)",
-            padding: "12px 28px",
-            borderRadius: "12px",
-            color: "white",
-            fontWeight: 600,
-            textDecoration: "none",
-            border: "2px solid rgba(255,255,255,0.2)",
-            transition: "background 0.2s",
-          }}
-        >
-          Learn More
-        </Link>
-      </div>
-
-      {/* --- Logo in corner --- */}
-      <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "30px",
-          fontWeight: 700,
-          color: "white",
-          fontSize: "1.2rem",
-        }}
-      >
-        TheTestifyAI
       </div>
     </div>
   );
