@@ -1,4 +1,3 @@
-// app/api/distribution/route.js
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -12,35 +11,40 @@ export async function POST(req) {
       );
     }
 
-    let apiUrl = "";
+    let testData;
 
     switch (testType) {
-      case "multiple-choice":
-        apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/mutiple-choice`;
-        break;
+      case "multiple-choice": {
+        const genRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/mutiple-choice`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic, difficulty, numQuestions }),
+        });
 
-      // 🔜 Add other test types here later
-      // case "true-false":
-      //   apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/true-false`;
-      //   break;
+        if (!genRes.ok)
+          throw new Error(`Failed to generate multiple-choice questions`);
+
+        const generated = await genRes.json();
+        testData = generated;
+        break;
+      }
 
       default:
         return NextResponse.json({ error: "Invalid testType" }, { status: 400 });
     }
 
-    // Forward the request to the right test type API
-    const res = await fetch(apiUrl, {
+    // ✅ Send data to test controller
+    const controllerRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/test/controller.js`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic, difficulty, numQuestions }),
+      body: JSON.stringify({ ...testData, testType }),
     });
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch from ${testType} generator`);
-    }
+    if (!controllerRes.ok)
+      throw new Error(`Controller failed: ${controllerRes.status}`);
 
-    const data = await res.json();
-    return NextResponse.json({ ...data, testType });
+    const finalData = await controllerRes.json();
+    return NextResponse.json(finalData);
   } catch (err) {
     console.error("❌ Distribution error:", err);
     return NextResponse.json(
