@@ -1,9 +1,12 @@
 // app/test/controller.js
 
 /**
- * Controller for managing test state and flow.
- * Handles question ordering, format normalization,
- * and moving through questions.
+ * TestController
+ * ----------------------------
+ * Core logic for test execution and tracking.
+ * - Normalizes raw questions into consistent structure.
+ * - Tracks current question, answers, correctness, progress.
+ * - Can later sync results to server (via /api/progress).
  */
 
 export default class TestController {
@@ -13,9 +16,12 @@ export default class TestController {
     this.currentIndex = 0;
   }
 
-  // ✅ Normalize all questions into a consistent format
+  /**
+   * Normalize questions into consistent internal format
+   */
   formatQuestions(questions) {
     return questions.map((q, i) => ({
+      id: crypto.randomUUID?.() || `q_${i}`,
       testType: this.testType,
       questionNumber: i + 1,
       question: q.question,
@@ -24,27 +30,36 @@ export default class TestController {
       explanation: q.explanation || "",
       userAnswer: null,
       isCorrect: null,
+      timestamp: null,
     }));
   }
 
-  // ✅ Get the current question
+  /**
+   * Return current question object
+   */
   getCurrentQuestion() {
     return this.questions[this.currentIndex] || null;
   }
 
-  // ✅ Submit an answer
+  /**
+   * Submit an answer for current question
+   */
   answerCurrentQuestion(answer) {
     const current = this.getCurrentQuestion();
     if (!current) return null;
 
     const isCorrect = answer === current.correctAnswer;
+
     current.userAnswer = answer;
     current.isCorrect = isCorrect;
+    current.timestamp = new Date().toISOString();
 
     return isCorrect;
   }
 
-  // ✅ Go to the next question (returns false if at end)
+  /**
+   * Advance to the next question (returns false if at end)
+   */
   nextQuestion() {
     if (this.currentIndex < this.questions.length - 1) {
       this.currentIndex++;
@@ -53,12 +68,16 @@ export default class TestController {
     return false;
   }
 
-  // ✅ Check if test is complete
+  /**
+   * Check if the test is complete
+   */
   isComplete() {
     return this.currentIndex >= this.questions.length - 1;
   }
 
-  // ✅ Get overall progress
+  /**
+   * Return overall test progress
+   */
   getProgress() {
     return {
       current: this.currentIndex + 1,
@@ -67,5 +86,46 @@ export default class TestController {
         ((this.currentIndex + 1) / this.questions.length) * 100
       ),
     };
+  }
+
+  /**
+   * Save progress locally (client-side)
+   */
+  saveProgress() {
+    if (typeof window === "undefined") return;
+    sessionStorage.setItem("testProgress", JSON.stringify(this.questions));
+  }
+
+  /**
+   * Load progress from storage (client-side)
+   */
+  loadProgress() {
+    if (typeof window === "undefined") return;
+    const stored = sessionStorage.getItem("testProgress");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      this.questions = parsed;
+      this.currentIndex =
+        parsed.findIndex((q) => q.userAnswer === null) || 0;
+    }
+  }
+
+  /**
+   * 🔜 (Future-ready) Sync progress with server
+   */
+  async syncProgressToServer(userId) {
+    try {
+      await fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          testType: this.testType,
+          questions: this.questions,
+        }),
+      });
+    } catch (err) {
+      console.error("❌ Failed to sync progress:", err);
+    }
   }
 }
