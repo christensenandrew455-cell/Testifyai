@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
@@ -7,18 +6,17 @@ export async function POST(req) {
     const { topic, difficulty, numQuestions = 5, numAnswers = 5 } = await req.json();
 
     const prompt = `
-You are TestifyAI — generate ${numQuestions} multi-select questions on "${topic}".
-
+You are TestifyAI. Generate ${numQuestions} multi-select questions on "${topic}".
 Rules:
-1. Each question must have between 2 and ${numAnswers} answers labeled A–F (min 2 answers per question).
-2. Each question can have 1 or more correct answers (random per question).
-3. Include a one-sentence educational explanation for the correct answers.
+1. Each question has 2-${numAnswers} options labeled A–F.
+2. Each question can have 1 or more correct answers.
+3. Include a one-sentence educational explanation.
 4. Output ONLY valid JSON like this:
 [
   {
     "question": "string",
-    "answers": ["A", "B", "C", "D", "E", "F"],
-    "correct": ["string", "string"], 
+    "answers": ["A","B","C","D","E","F"],
+    "correct": ["string","string"],
     "explanation": "string"
   }
 ]
@@ -32,14 +30,9 @@ Rules:
 
     let content = response.choices[0].message.content.trim();
     content = content.replace(/```(json)?/g, "").trim();
-    content = content.replace(/'/g, '"'); // Ensure valid JSON
-
     const questions = JSON.parse(content);
 
-    // Shuffle answers per question
-    for (const q of questions) {
-      q.answers = q.answers.sort(() => Math.random() - 0.5);
-    }
+    for (const q of questions) q.answers = q.answers.sort(() => Math.random() - 0.5);
 
     return new Response(JSON.stringify({ questions }), {
       headers: { "Content-Type": "application/json" },
