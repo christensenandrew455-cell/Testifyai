@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -10,158 +10,39 @@ export default function HomePage() {
   const [questionCount, setQuestionCount] = useState(5);
   const [loading, setLoading] = useState(false);
 
-  const [selectedTypes, setSelectedTypes] = useState([]);
-  const [answerCounts, setAnswerCounts] = useState({
-    "multiple-choice": 4,
-    "multi-select": 5,
-  });
-  const [typeQuestions, setTypeQuestions] = useState({});
-
-  const testTypeList = [
-    { key: "multiple-choice", label: "Multiple Choice" },
-    { key: "multi-select", label: "Multi Select" },
-    { key: "short-answer", label: "Short Answer" },
-    { key: "true-false", label: "True / False" },
-    { key: "open-response", label: "Open Response" },
-  ];
-
-  const toggleType = (key) => {
-    setSelectedTypes((prev) =>
-      prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]
-    );
-  };
-
-  useEffect(() => {
-    if (selectedTypes.length <= 1) {
-      setTypeQuestions({});
-      return;
-    }
-
-    const missing = selectedTypes.filter((t) => !(t in typeQuestions));
-    if (missing.length > 0) {
-      const base = Math.floor(questionCount / selectedTypes.length);
-      const remainder = questionCount - base * selectedTypes.length;
-      const next = { ...typeQuestions };
-
-      selectedTypes.forEach((t, idx) => {
-        if (!(t in next)) {
-          next[t] = base + (idx === selectedTypes.length - 1 ? remainder : 0);
-        }
-      });
-      setTypeQuestions(next);
-    }
-  }, [selectedTypes, questionCount, typeQuestions]);
-
-  const handleTypeQuestionChange = (key, value) => {
-    const num = Number(value);
-    if (!Number.isNaN(num) && num >= 0) {
-      setTypeQuestions((prev) => ({ ...prev, [key]: num }));
-    }
-  };
-
-  const handleAnswerCount = (key, value) => {
-    setAnswerCounts((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const distributedTotal = Object.values(typeQuestions).reduce(
-    (acc, v) => acc + (Number(v) || 0),
-    0
-  );
-
   const handleGenerateTest = async () => {
-    console.log("🧠 Starting test generation...");
-
     if (!topic.trim()) {
       alert("Please enter a topic!");
       return;
     }
 
-    if (selectedTypes.length === 0) {
-      alert("Please select at least one test type.");
-      return;
-    }
-
     setLoading(true);
-
-    const payload = {
-      topic,
-      difficulty,
-      numQuestions:
-        selectedTypes.length > 1 ? distributedTotal : questionCount,
-      selectedTypes,
-      typeDistribution:
-        selectedTypes.length > 1
-          ? typeQuestions
-          : { [selectedTypes[0] || "multiple-choice"]: questionCount },
-      answerCounts,
-    };
-
-    console.log("📦 Payload being sent to API:", payload);
 
     try {
       const res = await fetch("/api/generate-test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          topic,
+          difficulty,
+          numQuestions: Math.max(1, questionCount),
+        }),
       });
 
-      console.log("📬 API response:", res.status);
-
-      if (!res.ok) {
-        throw new Error(`API returned status ${res.status}`);
-      }
+      if (!res.ok) throw new Error("API failed");
 
       const data = await res.json();
-      console.log("✅ API response data:", data);
-
-      if (!data.questions || !Array.isArray(data.questions)) {
-        throw new Error("Invalid questions data from API");
-      }
-
       sessionStorage.setItem("testData", JSON.stringify(data.questions));
       sessionStorage.setItem("resumeIndex", "0");
-      sessionStorage.setItem("testTypes", JSON.stringify(selectedTypes));
-      sessionStorage.setItem(
-        "typeDistribution",
-        JSON.stringify(payload.typeDistribution)
-      );
 
-      console.log("🚀 Navigating to /test...");
       router.push(`/test?topic=${encodeURIComponent(topic)}`);
     } catch (err) {
       console.error("❌ Error generating test:", err);
-      alert("Failed to generate test. Check the console for details.");
+      alert("Failed to generate test. Try again.");
     } finally {
       setLoading(false);
     }
   };
-
-  const typeButtonStyle = (active) => ({
-    padding: "10px 18px",
-    borderRadius: "12px",
-    border: active
-      ? "3px solid rgba(255,255,255,0.95)"
-      : "2px solid rgba(255,255,255,0.6)",
-    backgroundColor: active ? "#1976d2" : "transparent",
-    color: "white",
-    cursor: "pointer",
-    fontWeight: 700,
-    transition: "all 0.2s ease",
-  });
-
-  const smallPickerStyle = (active) => ({
-    padding: "6px 10px",
-    borderRadius: "10px",
-    border: active
-      ? "2px solid rgba(255,255,255,0.95)"
-      : "1px solid rgba(255,255,255,0.6)",
-    backgroundColor: active ? "#2196f3" : "transparent",
-    color: "white",
-    cursor: "pointer",
-    fontSize: "0.9rem",
-    marginRight: "8px",
-    transition: "all 0.2s ease",
-  });
 
   return (
     <div
@@ -178,6 +59,7 @@ export default function HomePage() {
         padding: "40px 20px",
       }}
     >
+      {/* --- Header Section --- */}
       <h1
         style={{
           fontSize: "clamp(2rem, 6vw, 3.25rem)",
@@ -201,48 +83,119 @@ export default function HomePage() {
         Instantly generate an AI-powered test on any topic — free, fast, and fun.
       </p>
 
-      {/* Type selection buttons */}
+      {/* --- Test Setup Card --- */}
       <div
         style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "12px",
-          justifyContent: "center",
-          marginBottom: "20px",
+          backgroundColor: "rgba(255,255,255,0.1)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "40px",
+          border: "3px solid rgba(255,255,255,0.2)",
+          padding: "40px 50px",
+          width: "90%",
+          maxWidth: "450px",
+          color: "white",
+          textAlign: "center",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+          marginTop: "20px",
         }}
       >
-        {testTypeList.map((t) => {
-          const active = selectedTypes.includes(t.key);
-          return (
-            <button
-              key={t.key}
-              onClick={() => toggleType(t.key)}
-              style={typeButtonStyle(active)}
-            >
-              {t.label}
-            </button>
-          );
-        })}
+        <h2 style={{ marginBottom: "24px", fontWeight: 800 }}>Topic</h2>
+
+        <input
+          type="text"
+          placeholder="Enter any topic — broad or specific"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: "12px",
+            border: "none",
+            fontSize: "1rem",
+            textAlign: "center",
+            outline: "none",
+            marginBottom: "28px",
+            maxWidth: "100%",
+          }}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "8px",
+            fontWeight: 600,
+          }}
+        >
+          <span>Beginner</span>
+          <span>Difficulty Scale</span>
+          <span>Master</span>
+        </div>
+
+        <input
+          type="range"
+          min="1"
+          max="9"
+          step="1"
+          value={difficulty}
+          onChange={(e) => setDifficulty(Number(e.target.value))}
+          style={{
+            width: "100%",
+            accentColor: "#1976d2",
+            marginBottom: "28px",
+            height: "6px",
+            cursor: "pointer",
+          }}
+        />
+
+        <label
+          style={{
+            display: "block",
+            marginBottom: "8px",
+            fontWeight: 600,
+          }}
+        >
+          Number of questions
+        </label>
+        <input
+          type="number"
+          min="1"
+          max="50"
+          value={questionCount}
+          onChange={(e) => setQuestionCount(Number(e.target.value))}
+          style={{
+            width: "80px",
+            padding: "8px",
+            borderRadius: "10px",
+            border: "none",
+            textAlign: "center",
+            fontSize: "1rem",
+            marginBottom: "32px",
+          }}
+        />
+
+        <button
+          onClick={handleGenerateTest}
+          disabled={loading}
+          style={{
+            padding: "12px 0",
+            borderRadius: "12px",
+            border: "none",
+            backgroundColor: loading ? "#ccc" : "#1976d2",
+            color: "white",
+            fontWeight: 700,
+            fontSize: "1rem",
+            cursor: loading ? "not-allowed" : "pointer",
+            width: "100%",
+            transition: "background-color 0.2s",
+          }}
+        >
+          {loading ? "Generating..." : "Generate Test"}
+        </button>
       </div>
 
-      <button
-        onClick={handleGenerateTest}
-        disabled={loading}
-        style={{
-          padding: "12px 28px",
-          borderRadius: "12px",
-          border: "none",
-          backgroundColor: loading ? "#ccc" : "#1976d2",
-          color: "white",
-          fontWeight: 700,
-          fontSize: "1rem",
-          cursor: loading ? "not-allowed" : "pointer",
-          marginTop: "10px",
-        }}
-      >
-        {loading ? "Generating..." : "Generate Test"}
-      </button>
-
+      {/* --- Learn More Button Below Card --- */}
       <div style={{ marginTop: "30px" }}>
         <Link
           href="/learn"
@@ -254,12 +207,26 @@ export default function HomePage() {
             fontWeight: 600,
             textDecoration: "none",
             border: "2px solid rgba(255,255,255,0.2)",
+            transition: "background 0.2s",
           }}
         >
           Learn More
         </Link>
       </div>
+
+      {/* --- Logo in corner --- */}
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "30px",
+          fontWeight: 700,
+          color: "white",
+          fontSize: "1.2rem",
+        }}
+      >
+        TheTestifyAI
+      </div>
     </div>
   );
 }
-
