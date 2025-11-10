@@ -47,23 +47,10 @@ export default function HomePage() {
 
   const testTypes = ["multiple-choice", "multi-select", "true-false", "open-response", "short-answer"];
 
-  {/* Total Questions Display (only if multiple types) */}
-{selectedTestTypes.length > 1 && (
-  <div
-    style={{
-      marginBottom: "26px",
-      fontWeight: 700,
-      color: "rgba(255,255,255,0.95)",
-      fontSize: "1rem",
-    }}
-  >
-    Total Questions:{" "}
-    {selectedTestTypes.reduce(
-      (total, type) => total + (questionsPerType[type] || 0),
-      0
-    )}
-  </div>
-)}
+  const totalQuestions = selectedTestTypes.reduce(
+    (total, type) => total + (questionsPerType[type] || 0),
+    0
+  );
 
   return (
     <div
@@ -258,6 +245,20 @@ export default function HomePage() {
               />
             </div>
           ))}
+
+        {/* Total Questions Display (only if multiple types) */}
+        {selectedTestTypes.length > 1 && (
+          <div
+            style={{
+              marginBottom: "26px",
+              fontWeight: 700,
+              color: "rgba(255,255,255,0.95)",
+              fontSize: "1rem",
+            }}
+          >
+            Total Questions: {totalQuestions}
+          </div>
+        )}
 
         {/* Single Number of Questions if only one type */}
         {selectedTestTypes.length === 1 && (
