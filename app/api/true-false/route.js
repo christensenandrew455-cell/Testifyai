@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
@@ -7,6 +8,8 @@ export async function POST(req) {
 
     const prompt = `
 You are TestifyAI. Generate ${numQuestions} true/false questions on "${topic}".
+Difficulty level: ${difficulty}
+
 Rules:
 1. Each question has two options: "True" and "False".
 2. Only one correct answer per question.
