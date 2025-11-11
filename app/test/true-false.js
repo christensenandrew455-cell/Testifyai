@@ -6,13 +6,14 @@ export default function TrueFalse({ question, onAnswer }) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [correct, setCorrect] = useState(false);
 
-  const handleSubmit = () => {
-    if (selected === null) return;
-    const userAnswer = selected === 0 ? "True" : "False";
-    const isCorrect = userAnswer === question.correct;
+  const handleSelect = (value) => {
+    if (showFeedback) return;
+    setSelected(value);
+    const isCorrect =
+      value.toString().toLowerCase() === question.correct?.toString().toLowerCase();
     setCorrect(isCorrect);
     setShowFeedback(true);
-    setTimeout(() => onAnswer({ correct: isCorrect, answer: userAnswer }), 2000);
+    setTimeout(() => onAnswer({ correct: isCorrect, answer: value }), 2000);
   };
 
   return (
@@ -29,49 +30,38 @@ export default function TrueFalse({ question, onAnswer }) {
         {question.question}
       </div>
 
-      <div style={{ display: "flex", gap: 20, justifyContent: "center" }}>
-        {["True", "False"].map((opt, i) => (
+      <div style={{ display: "flex", justifyContent: "center", gap: 20 }}>
+        {["True", "False"].map((val) => (
           <button
-            key={i}
-            onClick={() => setSelected(i)}
-            disabled={showFeedback}
+            key={val}
+            onClick={() => handleSelect(val)}
             style={{
-              background: selected === i ? "#0ea5e9" : "rgba(255,255,255,0.1)",
+              background:
+                showFeedback && val === question.correct
+                  ? "rgba(16,185,129,0.25)"
+                  : selected === val
+                  ? "rgba(255,255,255,0.2)"
+                  : "rgba(255,255,255,0.1)",
               color: "#fff",
-              padding: "10px 16px",
+              padding: "10px 18px",
               borderRadius: 10,
               border: "none",
               fontWeight: 600,
               cursor: showFeedback ? "not-allowed" : "pointer",
             }}
           >
-            {opt}
+            {val}
           </button>
         ))}
       </div>
-
-      <button
-        onClick={handleSubmit}
-        disabled={selected === null || showFeedback}
-        style={{
-          marginTop: 20,
-          background: "#1976d2",
-          color: "#fff",
-          border: "none",
-          padding: "10px 18px",
-          borderRadius: 10,
-          fontWeight: 700,
-          cursor: selected === null ? "not-allowed" : "pointer",
-        }}
-      >
-        Check Answer
-      </button>
 
       {showFeedback && (
         <div
           style={{
             marginTop: 24,
-            background: correct ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+            background: correct
+              ? "rgba(16,185,129,0.15)"
+              : "rgba(239,68,68,0.15)",
             border: `2px solid ${
               correct ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.6)"
             }`,
