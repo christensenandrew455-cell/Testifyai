@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
 
-// Example placeholder — later you can wire this up to your actual GPT logic.
 export async function POST(req) {
   try {
     const body = await req.json();
     const { topic, difficulty, questionsPerType } = body;
 
+    if (!topic || !questionsPerType) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
     console.log("✅ API received:", body);
 
-    // Simulate per-type question data (like what your GPT would return)
-    const testData = Object.entries(questionsPerType).map(([type, count]) => ({
-      type,
-      questions: Array.from({ length: count }, (_, i) => ({
+    // Build unified question list
+    const questions = Object.entries(questionsPerType).flatMap(([type, count]) =>
+      Array.from({ length: count }, (_, i) => ({
+        id: `${type}-${i + 1}`,
+        type,
         question: `Sample ${type} question ${i + 1} about ${topic}`,
         options:
           type !== "open-response" && type !== "short-answer"
@@ -25,14 +29,16 @@ export async function POST(req) {
           type !== "open-response" && type !== "short-answer"
             ? `Because it's question ${i + 1} on ${topic}`
             : undefined,
-      })),
-    }));
+      }))
+    );
 
-    return NextResponse.json({
+    const responseData = {
       topic,
       difficulty,
-      testData,
-    });
+      questions,
+    };
+
+    return NextResponse.json(responseData);
   } catch (err) {
     console.error("❌ Error in /api/distribution:", err);
     return NextResponse.json({ error: "Failed to generate test" }, { status: 500 });
