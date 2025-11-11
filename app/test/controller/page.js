@@ -11,24 +11,31 @@ export default function TestController() {
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Load generated test (mock fallback if none)
+  // Load generated test (from sessionStorage)
   useEffect(() => {
-    const stored = sessionStorage.getItem("testData");
-    if (stored) {
-      setQuestions(JSON.parse(stored).questions || []);
-    } else {
-      // fallback sample
-      setQuestions([
-        {
-          type: "multiple-choice",
-          question: "What color is the sky?",
-          answers: ["Blue", "Green", "Red", "Yellow"],
-          correct: "Blue",
-          explanation: "The sky appears blue due to Rayleigh scattering.",
-        },
-      ]);
+    try {
+      const stored = sessionStorage.getItem("testData");
+      if (stored) {
+        const data = JSON.parse(stored);
+        console.log("✅ Loaded test data:", data);
+        setQuestions(data.questions || []);
+      } else {
+        console.warn("⚠️ No test data found in sessionStorage, using fallback.");
+        setQuestions([
+          {
+            type: "multiple-choice",
+            question: "What color is the sky?",
+            answers: ["Blue", "Green", "Red", "Yellow"],
+            correct: "Blue",
+            explanation: "The sky appears blue due to Rayleigh scattering.",
+          },
+        ]);
+      }
+    } catch (err) {
+      console.error("❌ Failed to load test data:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const handleAnswer = ({ correct }) => {
@@ -71,18 +78,39 @@ export default function TestController() {
       </div>
     );
 
+  // Map your mock data fields to expected component props
+  const normalizedQuestion = {
+    ...question,
+    answers: question.answers || question.options || ["A", "B", "C", "D"],
+    correct: question.correct || question.answer || "A",
+    question: question.question || "No question text",
+  };
+
   const renderComponent = () => {
     switch (question.type) {
       case "multiple-choice":
-        return <MultipleChoice question={question} onAnswer={handleAnswer} />;
+        return (
+          <MultipleChoice
+            question={normalizedQuestion}
+            onAnswer={handleAnswer}
+          />
+        );
       case "true-false":
-        return <TrueFalse question={question} onAnswer={handleAnswer} />;
+        return (
+          <TrueFalse question={normalizedQuestion} onAnswer={handleAnswer} />
+        );
       case "multi-select":
-        return <MultiSelect question={question} onAnswer={handleAnswer} />;
+        return (
+          <MultiSelect question={normalizedQuestion} onAnswer={handleAnswer} />
+        );
       case "short-answer":
-        return <ShortAnswer question={question} onAnswer={handleAnswer} />;
+        return (
+          <ShortAnswer question={normalizedQuestion} onAnswer={handleAnswer} />
+        );
       case "open-response":
-        return <OpenResponse question={question} onAnswer={handleAnswer} />;
+        return (
+          <OpenResponse question={normalizedQuestion} onAnswer={handleAnswer} />
+        );
       default:
         return (
           <div style={{ color: "#fff" }}>
