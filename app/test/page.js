@@ -1,4 +1,9 @@
 "use client";
+import TestController from "./controller";
+
+export default function TestPage() {
+  return <TestController />;
+}
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
