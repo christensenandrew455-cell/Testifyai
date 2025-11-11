@@ -2,50 +2,68 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const { topic, difficulty, questionsPerType } = body;
+    const { topic, difficulty, questionsPerType } = await req.json();
 
     if (!topic || !questionsPerType) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json({ error: "Missing data" }, { status: 400 });
     }
 
-    console.log("✅ Generating real test for:", topic, difficulty, questionsPerType);
+    // Base URL fix — works in local + deployed
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000");
 
-    // Helper: calls the right sub-generator
+    console.log("🧩 Test distribution starting...");
+    console.log("➡️ Topic:", topic);
+    console.log("➡️ Difficulty:", difficulty);
+    console.log("➡️ Types:", questionsPerType);
+
+    // Function to get questions per type
     async function generateForType(type, count) {
-      const endpoint = `/api/${type}`;
+      const endpoint = `${baseUrl}/api/${type}`;
+      console.log(`📡 Fetching: ${endpoint} (${count} questions)`);
+
       try {
         const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ topic, difficulty, numQuestions: count }),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Sub-generator failed");
-        // Add type field if not present
-        return data.questions.map((q) => ({ ...q, type }));
+
+        const text = await res.text();
+        console.log(`🔍 Raw response for ${type}:`, text);
+
+        if (!res.ok) throw new Error(text || "Failed response");
+
+        const data = JSON.parse(text);
+        return data.questions?.map((q) => ({ ...q, type })) || [];
       } catch (err) {
-        console.error(`❌ Error generating ${type}:`, err);
+        console.error(`❌ Error fetching ${type}:`, err);
         return [];
       }
     }
 
-    // Loop through each test type and generate
+    // Generate all question types
     const allQuestions = [];
     for (const [type, count] of Object.entries(questionsPerType)) {
-      const qSet = await generateForType(type, count);
-      allQuestions.push(...qSet);
+      const q = await generateForType(type, count);
+      allQuestions.push(...q);
     }
 
-    const responseData = {
+    if (allQuestions.length === 0) {
+      console.warn("⚠️ No questions were returned — likely a path or generation issue.");
+    }
+
+    return NextResponse.json({
       topic,
       difficulty,
       questions: allQuestions,
-    };
-
-    return NextResponse.json(responseData);
+    });
   } catch (err) {
-    console.error("❌ Error in /api/distribution:", err);
-    return NextResponse.json({ error: "Failed to generate test" }, { status: 500 });
+    console.error("❌ Controller failed:", err);
+    return NextResponse.json({ error: "Controller failed" }, { status: 500 });
   }
 }
+
