@@ -1,20 +1,17 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function ShortAnswer({ question, onAnswer }) {
-  const [text, setText] = useState("");
-  const router = useRouter();
+  const [answer, setAnswer] = useState("");
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [correct, setCorrect] = useState(false);
 
   const handleSubmit = () => {
-    onAnswer({ answer: text });
-    const query = new URLSearchParams({
-      question: question.question,
-      userAnswer: text,
-      correctAnswer: question.correct || "",
-      explanation: question.explanation || "",
-    }).toString();
-    router.push(`/incorrect?${query}`);
+    const isCorrect =
+      answer.trim().toLowerCase() === question.correct?.toLowerCase();
+    setCorrect(isCorrect);
+    setShowFeedback(true);
+    setTimeout(() => onAnswer({ correct: isCorrect, answer }), 2000);
   };
 
   return (
@@ -31,39 +28,61 @@ export default function ShortAnswer({ question, onAnswer }) {
         {question.question}
       </div>
 
-      <textarea
-        rows={3}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
+      <input
+        type="text"
         placeholder="Type your answer..."
+        value={answer}
+        onChange={(e) => setAnswer(e.target.value)}
+        disabled={showFeedback}
         style={{
-          width: "100%",
-          maxWidth: 600,
-          padding: 12,
+          padding: "10px 16px",
           borderRadius: 10,
-          background: "rgba(255,255,255,0.1)",
           border: "none",
+          width: "60%",
+          background: "rgba(255,255,255,0.1)",
           color: "#fff",
-          fontSize: 16,
+          outline: "none",
+          textAlign: "center",
         }}
       />
 
       <button
         onClick={handleSubmit}
-        disabled={!text.trim()}
+        disabled={!answer || showFeedback}
         style={{
-          marginTop: 20,
+          marginLeft: 10,
           background: "#1976d2",
           color: "#fff",
           border: "none",
           padding: "10px 18px",
           borderRadius: 10,
           fontWeight: 700,
-          cursor: !text.trim() ? "not-allowed" : "pointer",
+          cursor: !answer ? "not-allowed" : "pointer",
         }}
       >
-        Submit Answer
+        Submit
       </button>
+
+      {showFeedback && (
+        <div
+          style={{
+            marginTop: 24,
+            background: correct
+              ? "rgba(16,185,129,0.15)"
+              : "rgba(239,68,68,0.15)",
+            border: `2px solid ${
+              correct ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.6)"
+            }`,
+            borderRadius: 10,
+            padding: 16,
+          }}
+        >
+          {correct ? "✅ Correct!" : "❌ Incorrect."}
+          <div style={{ marginTop: 6, opacity: 0.9 }}>
+            {question.explanation || "No explanation provided."}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
