@@ -17,11 +17,11 @@ export async function POST(req) {
         id: `${type}-${i + 1}`,
         type,
         question: `Sample ${type} question ${i + 1} about ${topic}`,
-        options:
+        answers:
           type !== "open-response" && type !== "short-answer"
             ? ["A", "B", "C", "D"]
             : undefined,
-        answer:
+        correct:
           type !== "open-response" && type !== "short-answer"
             ? "A"
             : undefined,
