@@ -9,33 +9,38 @@ export async function POST(req) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    console.log("✅ API received:", body);
+    console.log("✅ Generating real test for:", topic, difficulty, questionsPerType);
 
-    // Build unified question list
-    const questions = Object.entries(questionsPerType).flatMap(([type, count]) =>
-      Array.from({ length: count }, (_, i) => ({
-        id: `${type}-${i + 1}`,
-        type,
-        question: `Sample ${type} question ${i + 1} about ${topic}`,
-        answers:
-          type !== "open-response" && type !== "short-answer"
-            ? ["A", "B", "C", "D"]
-            : undefined,
-        correct:
-          type !== "open-response" && type !== "short-answer"
-            ? "A"
-            : undefined,
-        explanation:
-          type !== "open-response" && type !== "short-answer"
-            ? `Because it's question ${i + 1} on ${topic}`
-            : undefined,
-      }))
-    );
+    // Helper: calls the right sub-generator
+    async function generateForType(type, count) {
+      const endpoint = `/api/${type}`;
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic, difficulty, numQuestions: count }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Sub-generator failed");
+        // Add type field if not present
+        return data.questions.map((q) => ({ ...q, type }));
+      } catch (err) {
+        console.error(`❌ Error generating ${type}:`, err);
+        return [];
+      }
+    }
+
+    // Loop through each test type and generate
+    const allQuestions = [];
+    for (const [type, count] of Object.entries(questionsPerType)) {
+      const qSet = await generateForType(type, count);
+      allQuestions.push(...qSet);
+    }
 
     const responseData = {
       topic,
       difficulty,
-      questions,
+      questions: allQuestions,
     };
 
     return NextResponse.json(responseData);
