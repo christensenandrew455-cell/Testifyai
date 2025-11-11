@@ -5,34 +5,58 @@ export async function POST(req) {
     const { topic, difficulty, questionsPerType } = await req.json();
 
     if (!topic || !questionsPerType || Object.keys(questionsPerType).length === 0) {
-      return NextResponse.json({ error: "Missing topic or test types" }, { status: 400 });
+      return NextResponse.json({ error: "Missing topic or question type selections" }, { status: 400 });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+    // Build promises to fetch each question type's generator
+    const typeEntries = Object.entries(questionsPerType);
 
-    const finalQuestions = [];
+    const results = await Promise.all(
+      typeEntries.map(async ([type, numQuestions]) => {
+        try {
+          const genRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/${type}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ topic, difficulty, numQuestions }),
+          });
 
-    for (const [type, numQuestions] of Object.entries(questionsPerType)) {
-      const res = await fetch(`${baseUrl}/api/${type}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, difficulty, numQuestions }),
-      });
+          if (!genRes.ok) {
+            throw new Error(`${type} generator failed`);
+          }
 
-      if (!res.ok) {
-        throw new Error(`Failed to generate ${type} questions`);
-      }
+          const data = await genRes.json();
+          return { type, questions: data.questions || [] };
+        } catch (err) {
+          console.error(`❌ Error fetching ${type}:`, err);
+          return { type, questions: [], error: err.message };
+        }
+      })
+    );
 
-      const data = await res.json();
+    // Combine into a single testData array
+    const testData = results.flatMap((r) =>
+      r.questions.map((q, i) => ({
+        id: `${r.type}-${i + 1}`,
+        type: r.type,
+        topic,
+        difficulty,
+        ...q,
+      }))
+    );
 
-      if (data.questions && Array.isArray(data.questions)) {
-        finalQuestions.push(...data.questions.map((q) => ({ ...q, type })));
-      }
-    }
+    // Send to controller
+    const controllerRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/test/controller`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ testData, topic, difficulty }),
+    });
 
-    return NextResponse.json({ questions: finalQuestions });
+    if (!controllerRes.ok) throw new Error(`Controller failed: ${controllerRes.status}`);
+
+    const finalData = await controllerRes.json();
+    return NextResponse.json(finalData);
   } catch (err) {
     console.error("❌ Distribution error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
