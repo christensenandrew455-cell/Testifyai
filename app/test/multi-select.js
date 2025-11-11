@@ -6,31 +6,30 @@ export default function MultiSelect({ question, onAnswer }) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [correct, setCorrect] = useState(false);
 
-  const toggleSelect = (i) => {
+  const toggleSelect = (opt) => {
     if (showFeedback) return;
     setSelected((prev) =>
-      prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
+      prev.includes(opt) ? prev.filter((x) => x !== opt) : [...prev, opt]
     );
   };
 
   const handleSubmit = () => {
-    const selectedTexts = selected.map((i) => question.answers[i]);
+    // Normalize correct answers into a Set
     const correctSet = new Set(
       question.correct.map((c) =>
         /^[A-D]$/.test(c) ? question.answers[c.charCodeAt(0) - 65] : c
       )
     );
-    const userSet = new Set(selectedTexts);
+
+    const selectedSet = new Set(selected);
     const isCorrect =
-      correctSet.size === userSet.size &&
-      [...correctSet].every((v) => userSet.has(v));
+      correctSet.size === selectedSet.size &&
+      [...correctSet].every((v) => selectedSet.has(v));
 
     setCorrect(isCorrect);
     setShowFeedback(true);
-    setTimeout(
-      () => onAnswer({ correct: isCorrect, answer: selectedTexts }),
-      2000
-    );
+
+    setTimeout(() => onAnswer({ correct: isCorrect, answer: selected }), 2000);
   };
 
   return (
@@ -51,10 +50,10 @@ export default function MultiSelect({ question, onAnswer }) {
         {question.answers.map((opt, i) => (
           <button
             key={i}
-            onClick={() => toggleSelect(i)}
+            onClick={() => toggleSelect(opt)}
             style={{
-              background: selected.includes(i)
-                ? "rgba(16,185,129,0.25)"
+              background: selected.includes(opt)
+                ? "rgba(59,130,246,0.3)"
                 : "rgba(255,255,255,0.1)",
               color: "#fff",
               padding: "10px 16px",
@@ -90,7 +89,9 @@ export default function MultiSelect({ question, onAnswer }) {
         <div
           style={{
             marginTop: 24,
-            background: correct ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+            background: correct
+              ? "rgba(16,185,129,0.15)"
+              : "rgba(239,68,68,0.15)",
             border: `2px solid ${
               correct ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.6)"
             }`,
