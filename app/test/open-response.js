@@ -1,20 +1,13 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function OpenResponse({ question, onAnswer }) {
   const [text, setText] = useState("");
-  const router = useRouter();
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = () => {
-    onAnswer({ answer: text });
-    const query = new URLSearchParams({
-      question: question.question,
-      userAnswer: text,
-      correctAnswer: question.correct || "",
-      explanation: question.explanation || "",
-    }).toString();
-    router.push(`/incorrect?${query}`);
+    setSubmitted(true);
+    setTimeout(() => onAnswer({ correct: true, answer: text }), 2000);
   };
 
   return (
@@ -32,38 +25,59 @@ export default function OpenResponse({ question, onAnswer }) {
       </div>
 
       <textarea
-        rows={5}
+        placeholder="Write your response..."
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Type your response..."
+        disabled={submitted}
         style={{
-          width: "100%",
-          maxWidth: 700,
+          width: "80%",
+          height: 120,
           padding: 12,
           borderRadius: 10,
           background: "rgba(255,255,255,0.1)",
-          border: "none",
           color: "#fff",
-          fontSize: 16,
+          border: "none",
+          resize: "none",
+          outline: "none",
         }}
       />
 
-      <button
-        onClick={handleSubmit}
-        disabled={!text.trim()}
-        style={{
-          marginTop: 20,
-          background: "#1976d2",
-          color: "#fff",
-          border: "none",
-          padding: "10px 18px",
-          borderRadius: 10,
-          fontWeight: 700,
-          cursor: !text.trim() ? "not-allowed" : "pointer",
-        }}
-      >
-        Submit Answer
-      </button>
+      <div>
+        <button
+          onClick={handleSubmit}
+          disabled={!text || submitted}
+          style={{
+            marginTop: 16,
+            background: "#1976d2",
+            color: "#fff",
+            border: "none",
+            padding: "10px 18px",
+            borderRadius: 10,
+            fontWeight: 700,
+            cursor: !text ? "not-allowed" : "pointer",
+          }}
+        >
+          Submit
+        </button>
+      </div>
+
+      {submitted && (
+        <div
+          style={{
+            marginTop: 24,
+            background: "rgba(16,185,129,0.15)",
+            border: "2px solid rgba(16,185,129,0.6)",
+            borderRadius: 10,
+            padding: 16,
+          }}
+        >
+          ✅ Response submitted!
+          <div style={{ marginTop: 6, opacity: 0.9 }}>
+            {question.explanation ||
+              "Your answer will be reviewed manually or scored later."}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
