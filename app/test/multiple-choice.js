@@ -6,15 +6,18 @@ export default function MultipleChoice({ question, onAnswer }) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [correct, setCorrect] = useState(false);
 
-  const handleSubmit = () => {
-    if (selected === null) return;
-    const userAnswer = question.answers[selected];
+  const handleSelect = (choice) => {
+    if (showFeedback) return;
+    setSelected(choice);
+
     const isCorrect =
-      userAnswer === question.correct ||
-      String.fromCharCode(65 + selected) === question.correct;
+      choice === question.correct ||
+      choice.toLowerCase() === question.correct?.toLowerCase();
+
     setCorrect(isCorrect);
     setShowFeedback(true);
-    setTimeout(() => onAnswer({ correct: isCorrect, answer: userAnswer }), 2000);
+
+    setTimeout(() => onAnswer({ correct: isCorrect, answer: choice }), 2000);
   };
 
   return (
@@ -35,10 +38,14 @@ export default function MultipleChoice({ question, onAnswer }) {
         {question.answers.map((opt, i) => (
           <button
             key={i}
-            onClick={() => setSelected(i)}
-            disabled={showFeedback}
+            onClick={() => handleSelect(opt)}
             style={{
-              background: selected === i ? "#0ea5e9" : "rgba(255,255,255,0.1)",
+              background:
+                showFeedback && opt === question.correct
+                  ? "rgba(16,185,129,0.25)"
+                  : selected === opt
+                  ? "rgba(255,255,255,0.2)"
+                  : "rgba(255,255,255,0.1)",
               color: "#fff",
               padding: "10px 16px",
               borderRadius: 10,
@@ -52,28 +59,13 @@ export default function MultipleChoice({ question, onAnswer }) {
         ))}
       </div>
 
-      <button
-        onClick={handleSubmit}
-        disabled={selected === null || showFeedback}
-        style={{
-          marginTop: 20,
-          background: "#1976d2",
-          color: "#fff",
-          border: "none",
-          padding: "10px 18px",
-          borderRadius: 10,
-          fontWeight: 700,
-          cursor: selected === null ? "not-allowed" : "pointer",
-        }}
-      >
-        Check Answer
-      </button>
-
       {showFeedback && (
         <div
           style={{
             marginTop: 24,
-            background: correct ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+            background: correct
+              ? "rgba(16,185,129,0.15)"
+              : "rgba(239,68,68,0.15)",
             border: `2px solid ${
               correct ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.6)"
             }`,
