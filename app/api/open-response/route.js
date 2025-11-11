@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
@@ -7,8 +8,10 @@ export async function POST(req) {
 
     const prompt = `
 You are TestifyAI. Generate ${numQuestions} open-response questions on "${topic}".
+Difficulty level: ${difficulty}
+
 Rules:
-1. Provide questions only (no multiple-choice answers).
+1. Provide questions only (no multiple-choice answers or correct answers).
 2. Output ONLY valid JSON like this:
 [
   {
