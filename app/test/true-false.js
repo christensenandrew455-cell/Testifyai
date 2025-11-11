@@ -1,106 +1,90 @@
 "use client";
+import React, { useState } from "react";
 
-import { useState } from "react";
-
-export default function TrueFalseTest({ questionData, onSelectionChange }) {
+export default function TrueFalse({ question, onAnswer }) {
   const [selected, setSelected] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [correct, setCorrect] = useState(false);
 
-  const answers = ["True", "False"];
-
-  const handleSelect = (index) => {
-    setSelected(index);
-    if (onSelectionChange) onSelectionChange(index);
+  const handleSubmit = () => {
+    if (selected === null) return;
+    const userAnswer = selected === 0 ? "True" : "False";
+    const isCorrect = userAnswer === question.correct;
+    setCorrect(isCorrect);
+    setShowFeedback(true);
+    setTimeout(() => onAnswer({ correct: isCorrect, answer: userAnswer }), 2000);
   };
 
-  if (!questionData) {
-    return (
-      <div style={{ textAlign: "center", padding: "40px", color: "#555" }}>
-        Loading question...
-      </div>
-    );
-  }
-
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "#f8fafc",
-        color: "#222",
-        padding: "40px 20px",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-      }}
-    >
-      {/* Question */}
+    <div style={{ textAlign: "center", color: "#fff" }}>
       <div
         style={{
-          border: "3px solid #1976d2",
-          borderRadius: "16px",
-          backgroundColor: "white",
-          width: "100%",
-          maxWidth: "700px",
-          padding: "24px",
-          fontSize: "1.1rem",
-          fontWeight: 500,
-          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          background: "rgba(0,0,0,0.3)",
+          border: "2px solid rgba(255,255,255,0.15)",
+          borderRadius: 14,
+          padding: 24,
+          marginBottom: 20,
         }}
       >
-        {questionData.question}
+        {question.question}
       </div>
 
-      {/* True / False options */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-          marginTop: "24px",
-          width: "100%",
-          maxWidth: "400px",
-        }}
-      >
-        {answers.map((ans, i) => (
+      <div style={{ display: "flex", gap: 20, justifyContent: "center" }}>
+        {["True", "False"].map((opt, i) => (
           <button
             key={i}
-            onClick={() => handleSelect(i)}
+            onClick={() => setSelected(i)}
+            disabled={showFeedback}
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start",
-              gap: "10px",
+              background: selected === i ? "#0ea5e9" : "rgba(255,255,255,0.1)",
+              color: "#fff",
               padding: "10px 16px",
-              borderRadius: "12px",
-              border:
-                selected === i
-                  ? "3px solid #1976d2"
-                  : "2px solid rgba(0,0,0,0.1)",
-              backgroundColor:
-                selected === i ? "rgba(25,118,210,0.1)" : "white",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              fontWeight: 500,
+              borderRadius: 10,
+              border: "none",
+              fontWeight: 600,
+              cursor: showFeedback ? "not-allowed" : "pointer",
             }}
           >
-            {/* Radio circle */}
-            <div
-              style={{
-                height: "16px",
-                width: "16px",
-                borderRadius: "50%",
-                border:
-                  selected === i
-                    ? "6px solid #1976d2"
-                    : "2px solid rgba(0,0,0,0.3)",
-                transition: "all 0.2s",
-              }}
-            ></div>
-            <strong>{ans}</strong>
+            {opt}
           </button>
         ))}
       </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={selected === null || showFeedback}
+        style={{
+          marginTop: 20,
+          background: "#1976d2",
+          color: "#fff",
+          border: "none",
+          padding: "10px 18px",
+          borderRadius: 10,
+          fontWeight: 700,
+          cursor: selected === null ? "not-allowed" : "pointer",
+        }}
+      >
+        Check Answer
+      </button>
+
+      {showFeedback && (
+        <div
+          style={{
+            marginTop: 24,
+            background: correct ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+            border: `2px solid ${
+              correct ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.6)"
+            }`,
+            borderRadius: 10,
+            padding: 16,
+          }}
+        >
+          {correct ? "✅ Correct!" : "❌ Incorrect."}
+          <div style={{ marginTop: 6, opacity: 0.9 }}>
+            {question.explanation || "No explanation provided."}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
