@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
@@ -7,8 +8,10 @@ export async function POST(req) {
 
     const prompt = `
 You are TestifyAI. Generate ${numQuestions} multi-select questions on "${topic}".
+Difficulty level: ${difficulty}
+
 Rules:
-1. Each question has 2-${numAnswers} options labeled A–F.
+1. Each question has 2-${numAnswers} answer options labeled A-F.
 2. Each question can have 1 or more correct answers.
 3. Include a one-sentence educational explanation.
 4. Output ONLY valid JSON like this:
