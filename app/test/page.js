@@ -92,7 +92,7 @@ function MultiSelectChoices({ answers = [], selectedIndexes = [], onToggle, disa
   );
 }
 
-export default function TestControllerPage() {
+export default function TestController() {
   const router = useRouter();
   const [test, setTest] = useState(null);
   const [orderedQuestions, setOrderedQuestions] = useState([]);
