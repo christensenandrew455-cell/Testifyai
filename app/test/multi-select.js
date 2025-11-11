@@ -1,124 +1,109 @@
 "use client";
+import React, { useState } from "react";
 
-import { useState, useEffect } from "react";
-
-export default function MultiSelectTest({ questionData, onSelectionChange }) {
-  const [answers, setAnswers] = useState([]);
+export default function MultiSelect({ question, onAnswer }) {
   const [selected, setSelected] = useState([]);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [correct, setCorrect] = useState(false);
 
-  // Shuffle answers but keep letters A–F fixed order
-  useEffect(() => {
-    if (questionData?.answers?.length) {
-      const shuffled = [...questionData.answers];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      setAnswers(shuffled);
-    }
-  }, [questionData]);
-
-  const toggleSelect = (index) => {
-    setSelected((prev) => {
-      const exists = prev.includes(index);
-      const updated = exists
-        ? prev.filter((i) => i !== index)
-        : [...prev, index];
-      if (onSelectionChange) onSelectionChange(updated);
-      return updated;
-    });
+  const toggleSelect = (i) => {
+    if (showFeedback) return;
+    setSelected((prev) =>
+      prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
+    );
   };
 
-  if (!questionData) {
-    return (
-      <div style={{ textAlign: "center", padding: "40px", color: "#555" }}>
-        Loading question...
-      </div>
+  const handleSubmit = () => {
+    const selectedTexts = selected.map((i) => question.answers[i]);
+    const correctSet = new Set(
+      question.correct.map((c) =>
+        /^[A-D]$/.test(c) ? question.answers[c.charCodeAt(0) - 65] : c
+      )
     );
-  }
+    const userSet = new Set(selectedTexts);
+    const isCorrect =
+      correctSet.size === userSet.size &&
+      [...correctSet].every((v) => userSet.has(v));
+
+    setCorrect(isCorrect);
+    setShowFeedback(true);
+    setTimeout(
+      () => onAnswer({ correct: isCorrect, answer: selectedTexts }),
+      2000
+    );
+  };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "#f8fafc",
-        color: "#222",
-        padding: "40px 20px",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-      }}
-    >
+    <div style={{ textAlign: "center", color: "#fff" }}>
       <div
         style={{
-          border: "3px solid #1976d2",
-          borderRadius: "16px",
-          backgroundColor: "white",
-          width: "100%",
-          maxWidth: "700px",
-          padding: "24px",
-          fontSize: "1.1rem",
-          fontWeight: 500,
-          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          background: "rgba(0,0,0,0.3)",
+          border: "2px solid rgba(255,255,255,0.15)",
+          borderRadius: 14,
+          padding: 24,
+          marginBottom: 20,
         }}
       >
-        {questionData.question}
+        {question.question}
       </div>
 
-      <div
+      <div style={{ display: "grid", gap: 12, maxWidth: 600, margin: "0 auto" }}>
+        {question.answers.map((opt, i) => (
+          <button
+            key={i}
+            onClick={() => toggleSelect(i)}
+            style={{
+              background: selected.includes(i)
+                ? "rgba(16,185,129,0.25)"
+                : "rgba(255,255,255,0.1)",
+              color: "#fff",
+              padding: "10px 16px",
+              borderRadius: 10,
+              border: "none",
+              fontWeight: 600,
+              cursor: showFeedback ? "not-allowed" : "pointer",
+            }}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={selected.length === 0 || showFeedback}
         style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-          marginTop: "24px",
-          width: "100%",
-          maxWidth: "500px",
+          marginTop: 20,
+          background: "#1976d2",
+          color: "#fff",
+          border: "none",
+          padding: "10px 18px",
+          borderRadius: 10,
+          fontWeight: 700,
+          cursor: selected.length === 0 ? "not-allowed" : "pointer",
         }}
       >
-        {answers.map((ans, i) => {
-          const letter = String.fromCharCode(65 + i); // A–F
-          const isChecked = selected.includes(i);
+        Check Answer
+      </button>
 
-          return (
-            <button
-              key={i}
-              onClick={() => toggleSelect(i)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-start",
-                gap: "12px",
-                padding: "10px 16px",
-                borderRadius: "12px",
-                border: isChecked
-                  ? "3px solid #1976d2"
-                  : "2px solid rgba(0,0,0,0.1)",
-                backgroundColor: isChecked ? "rgba(25,118,210,0.1)" : "white",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                fontWeight: 500,
-              }}
-            >
-              {/* Checkbox */}
-              <div
-                style={{
-                  height: "18px",
-                  width: "18px",
-                  borderRadius: "4px",
-                  border: isChecked
-                    ? "5px solid #1976d2"
-                    : "2px solid rgba(0,0,0,0.3)",
-                  backgroundColor: isChecked ? "#1976d2" : "white",
-                  transition: "all 0.2s",
-                }}
-              ></div>
-              <strong>{letter}.</strong> {ans}
-            </button>
-          );
-        })}
-      </div>
+      {showFeedback && (
+        <div
+          style={{
+            marginTop: 24,
+            background: correct ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+            border: `2px solid ${
+              correct ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.6)"
+            }`,
+            borderRadius: 10,
+            padding: 16,
+          }}
+        >
+          {correct ? "✅ Correct!" : "❌ Incorrect."}
+          <div style={{ marginTop: 6, opacity: 0.9 }}>
+            {question.explanation || "No explanation provided."}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
