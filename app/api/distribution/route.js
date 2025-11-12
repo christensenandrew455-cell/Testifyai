@@ -18,8 +18,11 @@ export async function POST(req) {
       return NextResponse.json({ error: "No test type specified" }, { status: 400 });
     }
 
-    const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const apiUrl = `${base}/api/${firstType}`;
+    // dynamically build full absolute URL for the same deployment
+    const { headers } = req;
+    const host = headers.get("host");
+    const protocol = process.env.VERCEL ? "https" : "http";
+    const apiUrl = `${protocol}://${host}/api/${firstType}`;
 
     console.log("➡️ Fetching from:", apiUrl);
 
