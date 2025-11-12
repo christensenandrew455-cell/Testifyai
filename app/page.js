@@ -63,7 +63,7 @@ export default function HomePage() {
       sessionStorage.setItem("testData", JSON.stringify(data));
       sessionStorage.setItem("resumeIndex", "0");
 
-      router.push(`/test?topic=${encodeURIComponent(topic)}`);
+      router.push(`/test/controller?topic=${encodeURIComponent(topic)}`);
     } catch (err) {
       console.error("❌ Error generating test:", err);
       alert("Failed to generate test. Try again.");
