@@ -1,80 +1,137 @@
-"use client";
-import React, { useState } from "react";
-
-export default function TrueFalse({ question, onAnswer }) {
-  const [selected, setSelected] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [correct, setCorrect] = useState(false);
-
-  const handleSelect = (value) => {
-    if (showFeedback) return;
-    setSelected(value);
-    const isCorrect =
-      value.toString().toLowerCase() === question.correct?.toString().toLowerCase();
-    setCorrect(isCorrect);
-    setShowFeedback(true);
-    setTimeout(() => onAnswer({ correct: isCorrect, answer: value }), 2000);
-  };
-
+export default function TrueFalsePage() {
   return (
-    <div style={{ textAlign: "center", color: "#fff" }}>
-      <div
+    <div
+      style={{
+        fontFamily: "Arial, sans-serif",
+        minHeight: "100vh",
+        backgroundColor: "#f9f9f9",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "20px",
+      }}
+    >
+      {/* Header */}
+      <header
         style={{
-          background: "rgba(0,0,0,0.3)",
-          border: "2px solid rgba(255,255,255,0.15)",
-          borderRadius: 14,
-          padding: 24,
-          marginBottom: 20,
+          width: "100%",
+          maxWidth: "600px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        {question.question}
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "center", gap: 20 }}>
-        {["True", "False"].map((val) => (
-          <button
-            key={val}
-            onClick={() => handleSelect(val)}
-            style={{
-              background:
-                showFeedback && val === question.correct
-                  ? "rgba(16,185,129,0.25)"
-                  : selected === val
-                  ? "rgba(255,255,255,0.2)"
-                  : "rgba(255,255,255,0.1)",
-              color: "#fff",
-              padding: "10px 18px",
-              borderRadius: 10,
-              border: "none",
-              fontWeight: 600,
-              cursor: showFeedback ? "not-allowed" : "pointer",
-            }}
-          >
-            {val}
-          </button>
-        ))}
-      </div>
-
-      {showFeedback && (
-        <div
+        <button
           style={{
-            marginTop: 24,
-            background: correct
-              ? "rgba(16,185,129,0.15)"
-              : "rgba(239,68,68,0.15)",
-            border: `2px solid ${
-              correct ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.6)"
-            }`,
-            borderRadius: 10,
-            padding: 16,
+            background: "none",
+            border: "1px solid #ccc",
+            padding: "6px 12px",
+            borderRadius: "6px",
+            cursor: "pointer",
           }}
         >
-          {correct ? "✅ Correct!" : "❌ Incorrect."}
-          <div style={{ marginTop: 6, opacity: 0.9 }}>
-            {question.explanation || "No explanation provided."}
+          ← Back
+        </button>
+        <h1 style={{ fontSize: "20px", fontWeight: "600" }}>thetestifyai</h1>
+        <div style={{ width: "50px" }}></div> {/* spacer for balance */}
+      </header>
+
+      {/* Question Box */}
+      <main
+        style={{
+          width: "100%",
+          maxWidth: "600px",
+          background: "white",
+          borderRadius: "12px",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          padding: "30px",
+          textAlign: "center",
+          marginTop: "20px",
+        }}
+      >
+        <h2 style={{ fontSize: "28px", margin: "0 0 20px 0" }}>Question</h2>
+
+        <div>
+          <h3
+            style={{
+              fontSize: "18px",
+              fontWeight: "600",
+              marginBottom: "20px",
+              textAlign: "center",
+            }}
+          >
+            True or False
+          </h3>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+              alignItems: "center",
+            }}
+          >
+            <button
+              disabled
+              style={{
+                width: "100%",
+                maxWidth: "400px",
+                padding: "12px",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                backgroundColor: "#f0f0f0",
+                cursor: "not-allowed",
+                fontSize: "16px",
+              }}
+            >
+              False
+            </button>
+
+            <button
+              disabled
+              style={{
+                width: "100%",
+                maxWidth: "400px",
+                padding: "12px",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                backgroundColor: "#f0f0f0",
+                cursor: "not-allowed",
+                fontSize: "16px",
+              }}
+            >
+              True
+            </button>
           </div>
         </div>
-      )}
+      </main>
+
+      {/* Footer */}
+      <footer
+        style={{
+          width: "100%",
+          maxWidth: "600px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "20px",
+        }}
+      >
+        <p style={{ fontSize: "14px" }}>1 out of 1</p>
+        <button
+          style={{
+            backgroundColor: "black",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            padding: "8px 16px",
+            cursor: "pointer",
+          }}
+        >
+          Check
+        </button>
+      </footer>
     </div>
   );
 }
