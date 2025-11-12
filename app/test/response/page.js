@@ -9,24 +9,40 @@ export default function Response({ question, onAnswer }) {
   if (!question) return null;
 
   const handleSubmit = () => {
-    // No auto-grading for open response
     onAnswer({ correct: null });
   };
 
   return (
     <div
       style={{
-        fontFamily: "Arial, sans-serif",
         minHeight: "100vh",
-        backgroundColor: "#f9f9f9",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
-        padding: "20px",
+        alignItems: "center",
+        backgroundColor: "#f8fafc",
+        color: "#222",
+        padding: "40px 20px",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
-      <h2 style={{ fontSize: "24px", marginBottom: "20px" }}>{question.question}</h2>
+      <div
+        style={{
+          border: "3px solid #1976d2",
+          borderRadius: "16px",
+          backgroundColor: "white",
+          width: "100%",
+          maxWidth: "700px",
+          padding: "24px",
+          fontSize: "1.1rem",
+          fontWeight: 500,
+          textAlign: "center",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          marginBottom: "24px",
+        }}
+      >
+        {question.question}
+      </div>
 
       <textarea
         value={answer}
@@ -36,22 +52,25 @@ export default function Response({ question, onAnswer }) {
           width: "100%",
           maxWidth: "600px",
           height: "120px",
-          border: "1px solid #ddd",
-          borderRadius: "8px",
+          border: "2px solid rgba(0,0,0,0.1)",
+          borderRadius: "12px",
           padding: "10px",
-          fontSize: "16px",
-          marginBottom: "20px",
+          fontSize: "1rem",
+          fontFamily: "inherit",
+          marginBottom: "24px",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
         }}
       />
 
       <button
         onClick={handleSubmit}
         style={{
-          padding: "10px 20px",
-          backgroundColor: "black",
+          backgroundColor: "#1976d2",
           color: "white",
           border: "none",
-          borderRadius: "6px",
+          borderRadius: "12px",
+          padding: "10px 20px",
+          fontWeight: 700,
           cursor: "pointer",
         }}
       >
