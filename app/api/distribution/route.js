@@ -13,11 +13,17 @@ export async function POST(req) {
 
     const allQuestions = [];
 
-    // Loop over each selected test type
     for (const [type, count] of Object.entries(questionsPerType)) {
       try {
-        // Use relative URL to avoid host/protocol issues
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/${type}`, {
+        // Build absolute URL for server-side fetch
+        const protocol = process.env.VERCEL ? "https" : "http";
+        const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+        if (!host) throw new Error("Cannot determine host for inner API request");
+        const apiUrl = `${protocol}://${host}/api/${type}`;
+
+        console.log("➡️ Fetching inner API:", apiUrl, { topic, difficulty, numQuestions: count });
+
+        const res = await fetch(apiUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ topic, difficulty, numQuestions: count }),
