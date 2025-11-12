@@ -11,20 +11,18 @@ export async function POST(req) {
 
     console.log("🧩 Distribution starting:", { topic, difficulty, questionsPerType });
 
-    // Pick the first test type
+    // pick the first test type
     const [firstType, count] = Object.entries(questionsPerType)[0];
     if (!firstType) {
-      console.error("❌ No test type found in questionsPerType");
       return NextResponse.json({ error: "No test type specified" }, { status: 400 });
     }
 
-    // dynamically build full absolute URL for the same deployment
     const { headers } = req;
     const host = headers.get("host");
     const protocol = process.env.VERCEL ? "https" : "http";
     const apiUrl = `${protocol}://${host}/api/${firstType}`;
 
-    console.log("➡️ Fetching from:", apiUrl);
+    console.log("➡️ Fetching questions from:", apiUrl);
 
     const res = await fetch(apiUrl, {
       method: "POST",
@@ -32,28 +30,15 @@ export async function POST(req) {
       body: JSON.stringify({ topic, difficulty, numQuestions: count }),
     });
 
-    const text = await res.text();
-    console.log("📦 Raw response text:", text.slice(0, 200));
-
-    // ✅ Handle redirect manually
-    if (text.includes("/test/controller?data=")) {
-      const match = text.match(/\/test\/controller\?data=[^"'}\]]+/);
-      if (match) {
-        console.log("🔁 Redirecting directly to:", match[0]);
-        return NextResponse.redirect(match[0]);
-      }
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("❌ Inner API failed:", text);
+      return NextResponse.json({ error: "Inner API failed" }, { status: 500 });
     }
 
-    // Otherwise parse as JSON and manually encode/redirect
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error("❌ Failed to parse JSON from inner API:", e);
-      return NextResponse.json({ error: "Invalid response from inner API" }, { status: 500 });
-    }
-
+    const data = await res.json();
     const encoded = encodeURIComponent(JSON.stringify(data));
+
     const redirectUrl = `/test/controller?data=${encoded}`;
     console.log("✅ Redirecting to:", redirectUrl);
 
