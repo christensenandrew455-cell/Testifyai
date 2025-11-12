@@ -1,83 +1,112 @@
-"use client";
-import React, { useState } from "react";
-
-export default function OpenResponse({ question, onAnswer }) {
-  const [text, setText] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = () => {
-    setSubmitted(true);
-    setTimeout(() => onAnswer({ correct: true, answer: text }), 2000);
-  };
-
+export default function ResponsePage() {
   return (
-    <div style={{ textAlign: "center", color: "#fff" }}>
-      <div
+    <div
+      style={{
+        fontFamily: "Arial, sans-serif",
+        minHeight: "100vh",
+        backgroundColor: "#f9f9f9",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "20px",
+      }}
+    >
+      {/* Header */}
+      <header
         style={{
-          background: "rgba(0,0,0,0.3)",
-          border: "2px solid rgba(255,255,255,0.15)",
-          borderRadius: 14,
-          padding: 24,
-          marginBottom: 20,
+          width: "100%",
+          maxWidth: "600px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        {question.question}
-      </div>
-
-      <textarea
-        placeholder="Write your response..."
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        disabled={submitted}
-        style={{
-          width: "80%",
-          height: 120,
-          padding: 12,
-          borderRadius: 10,
-          background: "rgba(255,255,255,0.1)",
-          color: "#fff",
-          border: "none",
-          resize: "none",
-          outline: "none",
-        }}
-      />
-
-      <div>
         <button
-          onClick={handleSubmit}
-          disabled={!text || submitted}
           style={{
-            marginTop: 16,
-            background: "#1976d2",
-            color: "#fff",
-            border: "none",
-            padding: "10px 18px",
-            borderRadius: 10,
-            fontWeight: 700,
-            cursor: !text ? "not-allowed" : "pointer",
+            background: "none",
+            border: "1px solid #ccc",
+            padding: "6px 12px",
+            borderRadius: "6px",
+            cursor: "pointer",
           }}
         >
-          Submit
+          ← Back
         </button>
-      </div>
+        <h1 style={{ fontSize: "20px", fontWeight: "600" }}>thetestifyai</h1>
+        <div style={{ width: "50px" }}></div> {/* spacer for symmetry */}
+      </header>
 
-      {submitted && (
-        <div
+      {/* Question Box */}
+      <main
+        style={{
+          width: "100%",
+          maxWidth: "600px",
+          background: "white",
+          borderRadius: "12px",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          padding: "30px",
+          textAlign: "center",
+          marginTop: "20px",
+        }}
+      >
+        <h2 style={{ fontSize: "28px", margin: "0 0 20px 0" }}>Question</h2>
+
+        <div style={{ textAlign: "left" }}>
+          <h3
+            style={{
+              fontSize: "18px",
+              fontWeight: "600",
+              marginBottom: "10px",
+              textAlign: "center",
+            }}
+          >
+            Short Answer
+          </h3>
+
+          <textarea
+            placeholder="Type your answer here..."
+            disabled
+            style={{
+              width: "100%",
+              height: "100px",
+              resize: "none",
+              border: "1px solid #ddd",
+              borderRadius: "8px",
+              padding: "10px",
+              fontSize: "16px",
+              fontFamily: "inherit",
+              backgroundColor: "#f0f0f0",
+            }}
+          ></textarea>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer
+        style={{
+          width: "100%",
+          maxWidth: "600px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "20px",
+        }}
+      >
+        <p style={{ fontSize: "14px" }}>1 out of 1</p>
+        <button
           style={{
-            marginTop: 24,
-            background: "rgba(16,185,129,0.15)",
-            border: "2px solid rgba(16,185,129,0.6)",
-            borderRadius: 10,
-            padding: 16,
+            backgroundColor: "black",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            padding: "8px 16px",
+            cursor: "pointer",
           }}
         >
-          ✅ Response submitted!
-          <div style={{ marginTop: 6, opacity: 0.9 }}>
-            {question.explanation ||
-              "Your answer will be reviewed manually or scored later."}
-          </div>
-        </div>
-      )}
+          Check
+        </button>
+      </footer>
     </div>
   );
 }
