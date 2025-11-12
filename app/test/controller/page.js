@@ -17,12 +17,23 @@ function TestControllerInner() {
     if (encoded) {
       try {
         const decoded = JSON.parse(decodeURIComponent(encoded));
-        sessionStorage.setItem("testData", JSON.stringify(decoded));
-        setQuestions(decoded.questions || []);
+
+        // ✅ Ensure each question has a type so renderComponent works properly
+        const normalized = (decoded.questions || []).map((q) => ({
+          type: q.type || "multiple-choice",
+          ...q,
+        }));
+
+        sessionStorage.setItem(
+          "testData",
+          JSON.stringify({ ...decoded, questions: normalized })
+        );
+        setQuestions(normalized);
       } catch (err) {
         console.error("❌ Failed to decode test data:", err);
       }
     } else {
+      // ✅ fallback if reloading the page
       const stored = sessionStorage.getItem("testData");
       if (stored) {
         const data = JSON.parse(stored);
@@ -49,7 +60,7 @@ function TestControllerInner() {
   };
 
   const renderComponent = () => {
-    switch (question.type || "multiple-choice") {
+    switch (question.type) {
       case "multiple-choice":
         return <MultipleChoice question={question} onAnswer={handleAnswer} />;
       case "true-false":
@@ -59,7 +70,7 @@ function TestControllerInner() {
       case "response":
         return <Response question={question} onAnswer={handleAnswer} />;
       default:
-        return <div>Unknown type</div>;
+        return <div>Unknown question type: {question.type}</div>;
     }
   };
 
