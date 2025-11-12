@@ -1,14 +1,17 @@
-"use client"; // ← add this
-
+"use client";
 import React from "react";
 
-export const dynamic = "force-dynamic";
-
-export default function TrueFalse({ question, onAnswer }) {
+export default function TrueFalse({
+  question,
+  onAnswer,
+  topic,
+  currentIndex,
+  totalQuestions,
+}) {
   if (!question) return null;
 
-  const handleAnswer = (answer) => {
-    onAnswer({ correct: answer === question.correct });
+  const handleCheck = (ans) => {
+    onAnswer({ correct: ans === question.correct });
   };
 
   return (
@@ -25,6 +28,16 @@ export default function TrueFalse({ question, onAnswer }) {
         fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
+      <div
+        style={{
+          fontWeight: 600,
+          fontSize: "1.1rem",
+          marginBottom: "16px",
+        }}
+      >
+        {topic}
+      </div>
+
       <div
         style={{
           border: "3px solid #1976d2",
@@ -52,30 +65,37 @@ export default function TrueFalse({ question, onAnswer }) {
           maxWidth: "400px",
         }}
       >
-        {["True", "False"].map((answer) => (
+        {["True", "False"].map((ans) => (
           <button
-            key={answer}
-            onClick={() => handleAnswer(answer)}
+            key={ans}
+            onClick={() => handleCheck(ans)}
             style={{
               padding: "12px 20px",
               borderRadius: "12px",
               border: "2px solid rgba(0,0,0,0.1)",
               backgroundColor: "white",
               cursor: "pointer",
-              transition: "all 0.2s",
               fontSize: "1rem",
               fontWeight: 600,
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "rgba(25,118,210,0.1)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "white")
-            }
           >
-            {answer}
+            {ans}
           </button>
         ))}
+      </div>
+
+      <div
+        style={{
+          marginTop: "24px",
+          width: "100%",
+          maxWidth: "700px",
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        <div style={{ fontWeight: 600, marginRight: "16px" }}>
+          Question {currentIndex + 1} of {totalQuestions}
+        </div>
       </div>
     </div>
   );
