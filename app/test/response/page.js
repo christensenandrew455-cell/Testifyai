@@ -1,9 +1,10 @@
-"use client";
+"use client"; // ← add this
+
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export default function Response({ question, onAnswer }) {
-  const router = useRouter();
   const [answer, setAnswer] = useState("");
 
   if (!question) return null;
@@ -18,45 +19,14 @@ export default function Response({ question, onAnswer }) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
+        justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#f8fafc",
+        color: "#222",
         padding: "40px 20px",
         fontFamily: "Segoe UI, Roboto, sans-serif",
-        color: "#222",
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          width: "100%",
-          maxWidth: "800px",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "16px",
-          borderBottom: "2px solid #1976d2",
-          paddingBottom: "10px",
-        }}
-      >
-        <button
-          onClick={() => router.push("/")}
-          style={{
-            backgroundColor: "#1976d2",
-            color: "#fff",
-            border: "none",
-            borderRadius: "10px",
-            padding: "6px 16px",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          Leave
-        </button>
-        <div style={{ fontWeight: 700, fontSize: "1.2rem" }}>{question.topic}</div>
-        <div style={{ fontWeight: 700, color: "#1976d2" }}>TheTestifyAI</div>
-      </div>
-
-      {/* Question Box */}
       <div
         style={{
           border: "3px solid #1976d2",
@@ -75,11 +45,10 @@ export default function Response({ question, onAnswer }) {
         {question.question}
       </div>
 
-      {/* Textarea */}
       <textarea
         value={answer}
         onChange={(e) => setAnswer(e.target.value)}
-        placeholder="Type your answer..."
+        placeholder="Type your answer here..."
         style={{
           width: "100%",
           maxWidth: "600px",
@@ -88,28 +57,26 @@ export default function Response({ question, onAnswer }) {
           borderRadius: "12px",
           padding: "10px",
           fontSize: "1rem",
-          marginBottom: "24px",
           fontFamily: "inherit",
+          marginBottom: "24px",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
         }}
       />
 
-      {/* Check Button */}
-      <div style={{ width: "100%", maxWidth: "700px", display: "flex", justifyContent: "flex-end" }}>
-        <button
-          onClick={handleCheck}
-          style={{
-            backgroundColor: "#1976d2",
-            color: "white",
-            border: "none",
-            borderRadius: "12px",
-            padding: "10px 20px",
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          Check
-        </button>
-      </div>
+      <button
+        onClick={handleCheck} // ← renamed Submit → Check
+        style={{
+          backgroundColor: "#1976d2",
+          color: "white",
+          border: "none",
+          borderRadius: "12px",
+          padding: "10px 20px",
+          fontWeight: 700,
+          cursor: "pointer",
+        }}
+      >
+        Check
+      </button>
     </div>
   );
 }
