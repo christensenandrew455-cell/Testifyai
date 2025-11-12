@@ -3,8 +3,7 @@ import React, { useState, useEffect } from "react";
 import MultipleChoice from "../multiple-choice/page";
 import TrueFalse from "../true-false/page";
 import MultiSelect from "../multi-select/page";
-import ShortAnswer from "../short-answer/page";
-import OpenResponse from "../open-response/page";
+import Response from "../response/page";
 
 export default function TestController() {
   const [questions, setQuestions] = useState([]);
