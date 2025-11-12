@@ -1,7 +1,6 @@
 "use client";
 
 export default function MultipleChoice({ question, onAnswer }) {
-  // Safe default to prevent undefined access during prerender
   const q =
     question || {
       question: "Sample question goes here.",
@@ -13,107 +12,98 @@ export default function MultipleChoice({ question, onAnswer }) {
   return (
     <div
       style={{
-        fontFamily: "Arial, sans-serif",
         minHeight: "100vh",
-        backgroundColor: "#f9f9f9",
         display: "flex",
         flexDirection: "column",
+        justifyContent: "center",
         alignItems: "center",
-        justifyContent: "space-between",
-        padding: "20px",
+        backgroundColor: "#f8fafc",
+        color: "#222",
+        padding: "40px 20px",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
-      {/* Header */}
-      <header
+      <div
         style={{
+          border: "3px solid #1976d2",
+          borderRadius: "16px",
+          backgroundColor: "white",
           width: "100%",
-          maxWidth: "600px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <button
-          style={{
-            background: "none",
-            border: "1px solid #ccc",
-            padding: "6px 12px",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
-          onClick={() => window.history.back()}
-        >
-          ← Back
-        </button>
-        <h1 style={{ fontSize: "20px", fontWeight: "600" }}>thetestifyai</h1>
-        <div style={{ width: "50px" }}></div>
-      </header>
-
-      {/* Question Box */}
-      <main
-        style={{
-          width: "100%",
-          maxWidth: "600px",
-          background: "white",
-          borderRadius: "12px",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          padding: "30px",
+          maxWidth: "700px",
+          padding: "24px",
+          fontSize: "1.1rem",
+          fontWeight: 500,
           textAlign: "center",
-          marginTop: "20px",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          marginBottom: "24px",
         }}
       >
-        <h2 style={{ fontSize: "28px", margin: "0 0 20px 0" }}>{q.question}</h2>
+        {q.question}
+      </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {q.answers.map((answer, i) => (
-            <button
-              key={i}
-              onClick={() => onAnswer?.({ correct: answer === q.correct })}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-start",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                padding: "10px 12px",
-                backgroundColor: "#fff",
-                cursor: "pointer",
-              }}
-            >
-              <div style={{ fontWeight: "bold", marginRight: "8px" }}>
-                {String.fromCharCode(65 + i)}.
-              </div>
-              {answer}
-            </button>
-          ))}
-        </div>
-      </main>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          width: "100%",
+          maxWidth: "500px",
+        }}
+      >
+        {q.answers.map((answer, i) => (
+          <button
+            key={i}
+            onClick={() => onAnswer?.({ correct: answer === q.correct })}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              gap: "10px",
+              padding: "12px 20px",
+              borderRadius: "12px",
+              border: "2px solid rgba(0,0,0,0.1)",
+              backgroundColor: "white",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              fontWeight: 500,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "rgba(25,118,210,0.1)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "white")
+            }
+          >
+            <strong>{String.fromCharCode(65 + i)}.</strong> {answer}
+          </button>
+        ))}
+      </div>
 
-      {/* Footer */}
-      <footer
+      <div
         style={{
           width: "100%",
-          maxWidth: "600px",
+          maxWidth: "700px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginTop: "20px",
+          marginTop: "30px",
         }}
       >
-        <p style={{ fontSize: "14px" }}>{q.index} out of 1</p>
+        <p style={{ fontWeight: 600 }}>Question {q.index} of 1</p>
         <button
           style={{
-            backgroundColor: "black",
+            backgroundColor: "#1976d2",
             color: "white",
             border: "none",
-            borderRadius: "6px",
-            padding: "8px 16px",
+            borderRadius: "12px",
+            padding: "10px 20px",
+            fontWeight: 700,
             cursor: "pointer",
           }}
         >
           Check
         </button>
-      </footer>
+      </div>
     </div>
   );
 }
