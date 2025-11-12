@@ -1,29 +1,14 @@
 "use client";
-export const dynamic = "force-dynamic";
-export const dynamicParams = false;
-export const revalidate = 0;
 
 export default function MultipleChoice({ question, onAnswer }) {
-  // 🛡️ Guard: If question not provided yet (during prerender or load)
-  if (!question) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "Arial, sans-serif",
-          backgroundColor: "#f9f9f9",
-        }}
-      >
-        <h2 style={{ color: "#555" }}>Loading question...</h2>
-      </div>
-    );
-  }
-
-  // 🧭 Destructure safely
-  const { question: text, answers = [], correct, index = 1 } = question;
+  // Safe default to prevent undefined access during prerender
+  const q =
+    question || {
+      question: "Sample question goes here.",
+      answers: ["Option A", "Option B", "Option C", "Option D"],
+      correct: "Option A",
+      index: 1,
+    };
 
   return (
     <div
@@ -61,7 +46,7 @@ export default function MultipleChoice({ question, onAnswer }) {
           ← Back
         </button>
         <h1 style={{ fontSize: "20px", fontWeight: "600" }}>thetestifyai</h1>
-        <div style={{ width: "50px" }}></div> {/* spacer */}
+        <div style={{ width: "50px" }}></div>
       </header>
 
       {/* Question Box */}
@@ -77,15 +62,13 @@ export default function MultipleChoice({ question, onAnswer }) {
           marginTop: "20px",
         }}
       >
-        <h2 style={{ fontSize: "28px", margin: "0 0 20px 0" }}>
-          {text || "Untitled Question"}
-        </h2>
+        <h2 style={{ fontSize: "28px", margin: "0 0 20px 0" }}>{q.question}</h2>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {(answers.length ? answers : ["A", "B", "C", "D"]).map((answer, i) => (
+          {q.answers.map((answer, i) => (
             <button
               key={i}
-              onClick={() => onAnswer?.({ correct: answer === correct })}
+              onClick={() => onAnswer?.({ correct: answer === q.correct })}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -117,7 +100,7 @@ export default function MultipleChoice({ question, onAnswer }) {
           marginTop: "20px",
         }}
       >
-        <p style={{ fontSize: "14px" }}>{index} out of 1</p>
+        <p style={{ fontSize: "14px" }}>{q.index} out of 1</p>
         <button
           style={{
             backgroundColor: "black",
