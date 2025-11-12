@@ -58,12 +58,14 @@ export default function HomePage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "API failed");
 
+      if (!res.ok || !data.questions) throw new Error(data.error || "API failed");
+
+      // Save questions in sessionStorage
       sessionStorage.setItem("testData", JSON.stringify(data));
       sessionStorage.setItem("resumeIndex", "0");
 
-      router.push(`/test/controller?topic=${encodeURIComponent(topic)}`);
+      router.push(`/test/controller?data=${encodeURIComponent(JSON.stringify(data))}`);
     } catch (err) {
       console.error("❌ Error generating test:", err);
       alert("Failed to generate test. Try again.");
