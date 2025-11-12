@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function MultipleChoice({
   question,
@@ -9,6 +10,7 @@ export default function MultipleChoice({
   totalQuestions,
 }) {
   const [selected, setSelected] = useState(null);
+  const router = useRouter();
 
   if (!question) return null;
 
@@ -24,24 +26,45 @@ export default function MultipleChoice({
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#f8fafc",
-        color: "#222",
         padding: "40px 20px",
         fontFamily: "Segoe UI, Roboto, sans-serif",
+        color: "#222",
       }}
     >
+      {/* Header */}
       <div
         style={{
-          fontWeight: 600,
-          fontSize: "1.1rem",
+          display: "flex",
+          width: "100%",
+          maxWidth: "800px",
+          alignItems: "center",
+          justifyContent: "space-between",
           marginBottom: "16px",
+          borderBottom: "2px solid #1976d2",
+          paddingBottom: "10px",
         }}
       >
-        {topic}
+        <button
+          onClick={() => router.push("/")}
+          style={{
+            backgroundColor: "#1976d2",
+            color: "#fff",
+            border: "none",
+            borderRadius: "10px",
+            padding: "6px 16px",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Leave
+        </button>
+        <div style={{ fontWeight: 700, fontSize: "1.2rem" }}>{topic}</div>
+        <div style={{ fontWeight: 700, color: "#1976d2" }}>TheTestifyAI</div>
       </div>
 
+      {/* Question Box */}
       <div
         style={{
           border: "3px solid #1976d2",
@@ -60,6 +83,7 @@ export default function MultipleChoice({
         {question.question}
       </div>
 
+      {/* Answers */}
       <div
         style={{
           display: "flex",
@@ -93,20 +117,20 @@ export default function MultipleChoice({
         ))}
       </div>
 
+      {/* Footer: Question X of Y + Check Button */}
       <div
         style={{
-          marginTop: "24px",
           width: "100%",
           maxWidth: "700px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          marginTop: "24px",
         }}
       >
         <div style={{ fontWeight: 600 }}>
           Question {currentIndex + 1} of {totalQuestions}
         </div>
-
         <button
           onClick={handleCheck}
           style={{
