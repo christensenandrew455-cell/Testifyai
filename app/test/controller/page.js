@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import MultipleChoice from "../multiple-choice/page";
 import TrueFalse from "../true-false/page";
 import MultiSelect from "../multi-select/page";
@@ -8,6 +8,7 @@ import Response from "../response/page";
 
 function TestControllerInner() {
   const params = useSearchParams();
+  const router = useRouter();
   const [questions, setQuestions] = useState([]);
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -18,7 +19,7 @@ function TestControllerInner() {
       try {
         const decoded = JSON.parse(decodeURIComponent(encoded));
 
-        // ✅ Ensure each question has a type so renderComponent works properly
+        // ✅ Ensure each question has a type
         const normalized = (decoded.questions || []).map((q) => ({
           type: q.type || "multiple-choice",
           ...q,
@@ -33,7 +34,7 @@ function TestControllerInner() {
         console.error("❌ Failed to decode test data:", err);
       }
     } else {
-      // ✅ fallback if reloading the page
+      // ✅ Fallback if reloading
       const stored = sessionStorage.getItem("testData");
       if (stored) {
         const data = JSON.parse(stored);
@@ -45,9 +46,39 @@ function TestControllerInner() {
     setLoading(false);
   }, [params]);
 
-  if (loading) return <div style={{ color: "white" }}>Loading test...</div>;
+  if (loading)
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "1.2rem",
+          color: "#1976d2",
+          fontFamily: "Segoe UI, Roboto, sans-serif",
+        }}
+      >
+        Loading test...
+      </div>
+    );
+
   if (!questions.length)
-    return <div style={{ color: "white" }}>No questions available.</div>;
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "1.2rem",
+          color: "#1976d2",
+          fontFamily: "Segoe UI, Roboto, sans-serif",
+        }}
+      >
+        No questions available.
+      </div>
+    );
 
   const question = questions[index];
 
@@ -78,15 +109,88 @@ function TestControllerInner() {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(to bottom right, #001f3f, #000)",
+        backgroundColor: "#f8fafc",
+        color: "#222",
         padding: "40px 20px",
-        color: "#fff",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
-      <h2 style={{ textAlign: "center" }}>
-        Question {index + 1} of {questions.length}
-      </h2>
-      {renderComponent()}
+      {/* Header */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "800px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "24px",
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "#1976d2",
+            color: "white",
+            borderRadius: "12px",
+            padding: "6px 16px",
+            fontWeight: 600,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          }}
+        >
+          Question {index + 1} of {questions.length}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 700,
+              color: "#1976d2",
+              fontSize: "1.1rem",
+            }}
+          >
+            TheTestifyAI
+          </div>
+
+          <button
+            onClick={() => router.push("/")}
+            style={{
+              backgroundColor: "#1976d2",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              padding: "6px 14px",
+              cursor: "pointer",
+              fontWeight: 600,
+              transition: "all 0.2s ease-in-out",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#125a9c")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "#1976d2")
+            }
+            onMouseDown={(e) =>
+              (e.currentTarget.style.backgroundColor = "#0e4a84")
+            }
+            onMouseUp={(e) =>
+              (e.currentTarget.style.backgroundColor = "#1976d2")
+            }
+          >
+            Leave
+          </button>
+        </div>
+      </div>
+
+      {/* Active question component */}
+      <div style={{ width: "100%", maxWidth: "800px" }}>{renderComponent()}</div>
     </div>
   );
 }
@@ -101,10 +205,11 @@ export default function TestController() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "linear-gradient(to bottom right, #001f3f, #000)",
-            color: "#fff",
+            backgroundColor: "#f8fafc",
+            color: "#1976d2",
             fontSize: "20px",
             fontWeight: "600",
+            fontFamily: "Segoe UI, Roboto, sans-serif",
           }}
         >
           Loading test controller...
