@@ -13,31 +13,64 @@ export default function TrueFalse({ question, onAnswer }) {
   return (
     <div
       style={{
-        fontFamily: "Arial, sans-serif",
         minHeight: "100vh",
-        backgroundColor: "#f9f9f9",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
-        padding: "20px",
+        alignItems: "center",
+        backgroundColor: "#f8fafc",
+        color: "#222",
+        padding: "40px 20px",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
-      <h2 style={{ fontSize: "24px", marginBottom: "20px" }}>{question.question}</h2>
+      <div
+        style={{
+          border: "3px solid #1976d2",
+          borderRadius: "16px",
+          backgroundColor: "white",
+          width: "100%",
+          maxWidth: "700px",
+          padding: "24px",
+          fontSize: "1.1rem",
+          fontWeight: 500,
+          textAlign: "center",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          marginBottom: "24px",
+        }}
+      >
+        {question.question}
+      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", maxWidth: "400px" }}>
-        {["True", "False"].map((answer) => (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          width: "100%",
+          maxWidth: "400px",
+        }}
+      >
+        {["True", "False"].map((answer, i) => (
           <button
             key={answer}
             onClick={() => handleAnswer(answer)}
             style={{
-              padding: "12px",
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              backgroundColor: "#fff",
+              padding: "12px 20px",
+              borderRadius: "12px",
+              border: "2px solid rgba(0,0,0,0.1)",
+              backgroundColor: "white",
               cursor: "pointer",
-              fontSize: "16px",
+              transition: "all 0.2s",
+              fontSize: "1rem",
+              fontWeight: 600,
             }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "rgba(25,118,210,0.1)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "white")
+            }
           >
             {answer}
           </button>
