@@ -1,16 +1,19 @@
-"use client"; // ← add this
-
+"use client";
 import React, { useState } from "react";
 
-export const dynamic = "force-dynamic";
-
-export default function Response({ question, onAnswer }) {
+export default function Response({
+  question,
+  onAnswer,
+  topic,
+  currentIndex,
+  totalQuestions,
+}) {
   const [answer, setAnswer] = useState("");
 
   if (!question) return null;
 
   const handleCheck = () => {
-    onAnswer({ correct: null });
+    onAnswer({ correct: null }); // response can't be auto-checked
   };
 
   return (
@@ -27,6 +30,16 @@ export default function Response({ question, onAnswer }) {
         fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
+      <div
+        style={{
+          fontWeight: 600,
+          fontSize: "1.1rem",
+          marginBottom: "16px",
+        }}
+      >
+        {topic}
+      </div>
+
       <div
         style={{
           border: "3px solid #1976d2",
@@ -63,20 +76,34 @@ export default function Response({ question, onAnswer }) {
         }}
       />
 
-      <button
-        onClick={handleCheck} // ← renamed Submit → Check
+      <div
         style={{
-          backgroundColor: "#1976d2",
-          color: "white",
-          border: "none",
-          borderRadius: "12px",
-          padding: "10px 20px",
-          fontWeight: 700,
-          cursor: "pointer",
+          width: "100%",
+          maxWidth: "700px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        Check
-      </button>
+        <div style={{ fontWeight: 600 }}>
+          Question {currentIndex + 1} of {totalQuestions}
+        </div>
+
+        <button
+          onClick={handleCheck}
+          style={{
+            backgroundColor: "#1976d2",
+            color: "white",
+            border: "none",
+            borderRadius: "12px",
+            padding: "10px 20px",
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Check
+        </button>
+      </div>
     </div>
   );
 }
