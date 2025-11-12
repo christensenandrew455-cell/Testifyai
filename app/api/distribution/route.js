@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const { topic, difficulty, questionsPerType } = await req.json();
+    const { topic, difficulty = 1, questionsPerType } = await req.json();
 
     if (!topic || !questionsPerType || Object.keys(questionsPerType).length === 0) {
       console.error("❌ Missing data in request body:", { topic, questionsPerType });
@@ -13,39 +13,52 @@ export async function POST(req) {
 
     const allQuestions = [];
 
+    // Loop over each selected test type
     for (const [type, count] of Object.entries(questionsPerType)) {
-      const { headers } = req;
-      const host = headers.get("host");
-      const protocol = process.env.VERCEL ? "https" : "http";
-      const apiUrl = `${protocol}://${host}/api/${type}`;
+      try {
+        // Use relative URL to avoid host/protocol issues
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/${type}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic, difficulty, numQuestions: count }),
+        });
 
-      console.log("➡️ Fetching questions from:", apiUrl);
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(`❌ Inner API failed: ${type}`, text);
+          return NextResponse.json(
+            { error: `Inner API failed: ${type}`, details: text },
+            { status: 500 }
+          );
+        }
 
-      const res = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, difficulty, numQuestions: count }),
-      });
+        const data = await res.json();
+        const questionsWithType = (data.questions || []).map((q) => ({
+          type,
+          ...q,
+        }));
 
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("❌ Inner API failed:", text);
-        return NextResponse.json({ error: `Inner API failed: ${type}` }, { status: 500 });
+        allQuestions.push(...questionsWithType);
+      } catch (err) {
+        console.error(`❌ Inner API fetch error: ${type}`, err);
+        return NextResponse.json(
+          { error: `Inner API fetch error: ${type}`, details: err.message },
+          { status: 500 }
+        );
       }
-
-      const data = await res.json();
-      const questionsWithType = (data.questions || []).map((q) => ({
-        type,
-        ...q,
-      }));
-
-      allQuestions.push(...questionsWithType);
     }
 
     // Return all questions as JSON
-    return NextResponse.json({ topic, difficulty, questions: allQuestions });
+    return NextResponse.json({
+      topic,
+      difficulty,
+      questions: allQuestions,
+    });
   } catch (err) {
-    console.error("❌ Distribution route failed hard:", err);
-    return NextResponse.json({ error: "Distribution failed", details: err.message }, { status: 500 });
+    console.error("❌ Distribution route failed:", err);
+    return NextResponse.json(
+      { error: "Distribution failed", details: err.message },
+      { status: 500 }
+    );
   }
 }
