@@ -1,30 +1,23 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function MultiSelect({ question, onAnswer }) {
   const router = useRouter();
   const [selected, setSelected] = useState([]);
-  const [topic, setTopic] = useState("");
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem("testData");
-    if (stored) {
-      const data = JSON.parse(stored);
-      setTopic(data.topic || "");
-    }
-  }, []);
+  if (!question) return null;
 
-  const toggle = (letter) => {
-    setSelected((prev) => (prev.includes(letter) ? prev.filter((l) => l !== letter) : [...prev, letter]));
+  const handleToggle = (i) => {
+    setSelected((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
   };
 
   const handleCheck = () => {
-    const correctSet = new Set(question.correct);
+    const correctSet = new Set(question.correctIndices);
     const selectedSet = new Set(selected);
-    const isCorrect =
+    const correct =
       correctSet.size === selectedSet.size && [...correctSet].every((val) => selectedSet.has(val));
-    onAnswer({ correct: isCorrect });
+    onAnswer({ correct });
   };
 
   return (
@@ -33,22 +26,24 @@ export default function MultiSelect({ question, onAnswer }) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        padding: "40px 20px",
+        alignItems: "center",
         backgroundColor: "#f8fafc",
+        padding: "40px 20px",
         fontFamily: "Segoe UI, Roboto, sans-serif",
         color: "#222",
-        alignItems: "center",
       }}
     >
       {/* Header */}
       <div
         style={{
+          display: "flex",
           width: "100%",
           maxWidth: "800px",
-          display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "12px",
+          justifyContent: "space-between",
+          marginBottom: "16px",
+          borderBottom: "2px solid #1976d2",
+          paddingBottom: "10px",
         }}
       >
         <button
@@ -58,20 +53,18 @@ export default function MultiSelect({ question, onAnswer }) {
             color: "#fff",
             border: "none",
             borderRadius: "10px",
-            padding: "6px 14px",
-            cursor: "pointer",
+            padding: "6px 16px",
             fontWeight: 600,
+            cursor: "pointer",
           }}
         >
           Leave
         </button>
-        <div style={{ fontWeight: 700, fontSize: "1.1rem" }}>{topic}</div>
+        <div style={{ fontWeight: 700, fontSize: "1.2rem" }}>{question.topic}</div>
         <div style={{ fontWeight: 700, color: "#1976d2" }}>TheTestifyAI</div>
       </div>
 
-      <hr style={{ width: "100%", maxWidth: "800px", marginBottom: "24px" }} />
-
-      {/* Question */}
+      {/* Question Box */}
       <div
         style={{
           border: "3px solid #1976d2",
@@ -82,54 +75,46 @@ export default function MultiSelect({ question, onAnswer }) {
           padding: "24px",
           fontSize: "1.1rem",
           fontWeight: 500,
+          textAlign: "center",
           boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
           marginBottom: "24px",
-          textAlign: "center",
         }}
       >
         {question.question}
       </div>
 
-      {/* Answers */}
+      {/* Multi-select options */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "10px",
+          gap: "12px",
           width: "100%",
           maxWidth: "600px",
         }}
       >
-        {question.answers.map((letter, idx) => (
-          <label
-            key={idx}
+        {question.answers?.map((ans, i) => (
+          <button
+            key={i}
+            onClick={() => handleToggle(i)}
             style={{
               display: "flex",
               alignItems: "center",
-              border: "2px solid rgba(0,0,0,0.1)",
+              padding: "12px 20px",
               borderRadius: "12px",
-              padding: "10px 14px",
-              backgroundColor: selected.includes(letter) ? "rgba(25,118,210,0.1)" : "white",
+              border: selected.includes(i) ? "3px solid #1976d2" : "2px solid rgba(0,0,0,0.1)",
+              backgroundColor: selected.includes(i) ? "rgba(25,118,210,0.1)" : "white",
               cursor: "pointer",
-              transition: "all 0.2s",
+              fontWeight: 500,
             }}
           >
-            <input type="checkbox" checked={selected.includes(letter)} onChange={() => toggle(letter)} style={{ marginRight: "10px" }} />
-            {letter}
-          </label>
+            {String.fromCharCode(65 + i)}. {ans}
+          </button>
         ))}
       </div>
 
-      {/* Check button */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "600px",
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "20px",
-        }}
-      >
+      {/* Check Button */}
+      <div style={{ width: "100%", maxWidth: "700px", display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
         <button
           onClick={handleCheck}
           style={{
