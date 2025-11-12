@@ -105,11 +105,7 @@ export default function TestController() {
         return (
           <MultiSelect question={normalizedQuestion} onAnswer={handleAnswer} />
         );
-      case "short-answer":
-        return (
-          <ShortAnswer question={normalizedQuestion} onAnswer={handleAnswer} />
-        );
-      case "open-response":
+      case "response":
         return (
           <OpenResponse question={normalizedQuestion} onAnswer={handleAnswer} />
         );
