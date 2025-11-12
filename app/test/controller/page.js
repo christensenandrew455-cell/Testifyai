@@ -1,12 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import MultipleChoice from "../multiple-choice/page";
 import TrueFalse from "../true-false/page";
 import MultiSelect from "../multi-select/page";
 import Response from "../response/page";
 
-export default function TestController() {
+function TestControllerInner() {
   const params = useSearchParams();
   const [questions, setQuestions] = useState([]);
   const [index, setIndex] = useState(0);
@@ -77,5 +77,30 @@ export default function TestController() {
       </h2>
       {renderComponent()}
     </div>
+  );
+}
+
+export default function TestController() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "linear-gradient(to bottom right, #001f3f, #000)",
+            color: "#fff",
+            fontSize: "20px",
+            fontWeight: "600",
+          }}
+        >
+          Loading test controller...
+        </div>
+      }
+    >
+      <TestControllerInner />
+    </Suspense>
   );
 }
