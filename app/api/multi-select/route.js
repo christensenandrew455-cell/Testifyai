@@ -35,7 +35,7 @@ Rules:
     content = content.replace(/```(json)?/g, "").trim();
     const questions = JSON.parse(content);
 
-    for (const q of questions) q.answers = q.answers.sort(() => Math.random() - 0.5);
+    questions.forEach(q => q.answers = q.answers.sort(() => Math.random() - 0.5));
 
     return new Response(JSON.stringify({ questions }), {
       headers: { "Content-Type": "application/json" },
