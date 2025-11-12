@@ -26,30 +26,58 @@ export default function MultiSelect({ question, onAnswer }) {
   return (
     <div
       style={{
-        fontFamily: "Arial, sans-serif",
         minHeight: "100vh",
-        backgroundColor: "#f9f9f9",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
-        padding: "20px",
+        alignItems: "center",
+        backgroundColor: "#f8fafc",
+        color: "#222",
+        padding: "40px 20px",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
-      <h2 style={{ fontSize: "24px", marginBottom: "20px" }}>{question.question}</h2>
+      <div
+        style={{
+          border: "3px solid #1976d2",
+          borderRadius: "16px",
+          backgroundColor: "white",
+          width: "100%",
+          maxWidth: "700px",
+          padding: "24px",
+          fontSize: "1.1rem",
+          fontWeight: 500,
+          textAlign: "center",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          marginBottom: "24px",
+        }}
+      >
+        {question.question}
+      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "600px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          width: "100%",
+          maxWidth: "600px",
+        }}
+      >
         {question.answers.map((letter, idx) => (
           <label
             key={idx}
             style={{
               display: "flex",
               alignItems: "center",
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              padding: "10px",
-              backgroundColor: "#fff",
+              border: "2px solid rgba(0,0,0,0.1)",
+              borderRadius: "12px",
+              padding: "10px 14px",
+              backgroundColor: selected.includes(letter)
+                ? "rgba(25,118,210,0.1)"
+                : "white",
               cursor: "pointer",
+              transition: "all 0.2s",
             }}
           >
             <input
@@ -66,12 +94,13 @@ export default function MultiSelect({ question, onAnswer }) {
       <button
         onClick={handleCheck}
         style={{
-          marginTop: "20px",
-          padding: "10px 20px",
-          backgroundColor: "black",
+          marginTop: "24px",
+          backgroundColor: "#1976d2",
           color: "white",
           border: "none",
-          borderRadius: "6px",
+          borderRadius: "12px",
+          padding: "10px 20px",
+          fontWeight: 700,
           cursor: "pointer",
         }}
       >
