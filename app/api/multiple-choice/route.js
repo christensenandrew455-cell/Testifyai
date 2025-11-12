@@ -49,7 +49,10 @@ Return ONLY JSON:
         temperature: 0.7,
       });
 
-      content = response.choices?.[0]?.message?.content?.trim()?.replace(/```json|```/g, "") ?? "";
+      content =
+        response.choices?.[0]?.message?.content
+          ?.trim()
+          ?.replace(/```json|```/g, "") ?? "";
     } catch (err) {
       console.error("❌ OpenAI call failed:", err);
       content = "";
@@ -66,11 +69,13 @@ Return ONLY JSON:
       }));
     }
 
-    // Encode the data and redirect
-    const encoded = encodeURIComponent(JSON.stringify({ topic, difficulty, questions: parsed }));
-    return NextResponse.redirect(`/test/controller?data=${encoded}`);
+    // ✅ Return JSON data instead of redirecting
+    return NextResponse.json({ topic, difficulty, questions: parsed });
   } catch (err) {
     console.error("❌ /api/multiple-choice error:", err);
-    return NextResponse.json({ error: "Multiple-choice generation failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Multiple-choice generation failed" },
+      { status: 500 }
+    );
   }
 }
