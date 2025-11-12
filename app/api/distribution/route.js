@@ -14,7 +14,10 @@ export async function POST(req) {
     const allQuestions = [];
 
     // Read bypass token from env (set this in Vercel)
-    const bypassToken = process.env.VERCEL_PROTECTION_BYPASS_TOKEN || null;
+    const bypassToken = process.env.VERCEL_AUTOMATION_BYPASS_SECRET || null;
+
+    // Log presence (non-sensitive)
+    console.log("Bypass token present?", !!bypassToken);
 
     for (const [type, count] of Object.entries(questionsPerType)) {
       try {
@@ -29,10 +32,10 @@ export async function POST(req) {
         // Prepare headers (include bypass header if token is configured)
         const headers = { "Content-Type": "application/json" };
         if (bypassToken) {
+          // Vercel expects this header name to bypass Deployment Protection
           headers["x-vercel-protection-bypass"] = bypassToken;
         } else {
-          // Optional: warn in logs if protection is enabled but token not provided
-          console.warn("⚠️ VERCEL_PROTECTION_BYPASS_TOKEN not set — if deployment protection is enabled, inner fetch may be blocked.");
+          console.warn("⚠️ VERCEL_AUTOMATION_BYPASS_SECRET not set — inner fetch may be blocked by deployment protection.");
         }
 
         const res = await fetch(apiUrl, {
@@ -43,7 +46,7 @@ export async function POST(req) {
 
         if (!res.ok) {
           const text = await res.text();
-          console.error(`❌ Inner API failed: ${type}`, text);
+          console.error(`❌ Inner API failed: ${type}`, text.slice(0, 1000)); // trim long HTML in logs
           return NextResponse.json(
             { error: `Inner API failed: ${type}`, details: text },
             { status: 500 }
