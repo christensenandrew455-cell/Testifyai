@@ -12,8 +12,7 @@ Difficulty level: ${difficulty}
 
 Rules:
 1. Provide questions only (no multiple-choice answers or correct answers).
-2. Include a one-sentence educational explanation.
-3. Output ONLY valid JSON like this:
+2. Output ONLY valid JSON like this:
 [
   {
     "question": "string",
