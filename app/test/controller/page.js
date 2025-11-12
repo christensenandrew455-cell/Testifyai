@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import MultipleChoice from "../multiple-choice";
-import TrueFalse from "../true-false";
-import MultiSelect from "../multi-select";
-import ShortAnswer from "../short-answer";
-import OpenResponse from "../open-response";
+import MultipleChoice from "../multiple-choice/page";
+import TrueFalse from "../true-false/page";
+import MultiSelect from "../multi-select/page";
+import ShortAnswer from "../short-answer/page";
+import OpenResponse from "../open-response/page";
 
 export default function TestController() {
   const [questions, setQuestions] = useState([]);
@@ -39,6 +39,7 @@ export default function TestController() {
   }, []);
 
   const handleAnswer = ({ correct }) => {
+    console.log("Answer result:", correct);
     setTimeout(() => {
       if (index + 1 < questions.length) setIndex(index + 1);
       else alert("✅ Test Complete!");
@@ -78,7 +79,7 @@ export default function TestController() {
       </div>
     );
 
-  // Map your mock data fields to expected component props
+  // Normalize fields
   const normalizedQuestion = {
     ...question,
     answers: question.answers || question.options || ["A", "B", "C", "D"],
@@ -86,6 +87,7 @@ export default function TestController() {
     question: question.question || "No question text",
   };
 
+  // Inline render switcher
   const renderComponent = () => {
     switch (question.type) {
       case "multiple-choice":
