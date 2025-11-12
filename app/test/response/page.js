@@ -1,21 +1,14 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Response({ question, onAnswer }) {
   const router = useRouter();
   const [answer, setAnswer] = useState("");
-  const [topic, setTopic] = useState("");
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem("testData");
-    if (stored) {
-      const data = JSON.parse(stored);
-      setTopic(data.topic || "");
-    }
-  }, []);
+  if (!question) return null;
 
-  const handleSubmit = () => {
+  const handleCheck = () => {
     onAnswer({ correct: null });
   };
 
@@ -25,22 +18,24 @@ export default function Response({ question, onAnswer }) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        padding: "40px 20px",
+        alignItems: "center",
         backgroundColor: "#f8fafc",
+        padding: "40px 20px",
         fontFamily: "Segoe UI, Roboto, sans-serif",
         color: "#222",
-        alignItems: "center",
       }}
     >
       {/* Header */}
       <div
         style={{
+          display: "flex",
           width: "100%",
           maxWidth: "800px",
-          display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "12px",
+          justifyContent: "space-between",
+          marginBottom: "16px",
+          borderBottom: "2px solid #1976d2",
+          paddingBottom: "10px",
         }}
       >
         <button
@@ -50,20 +45,18 @@ export default function Response({ question, onAnswer }) {
             color: "#fff",
             border: "none",
             borderRadius: "10px",
-            padding: "6px 14px",
-            cursor: "pointer",
+            padding: "6px 16px",
             fontWeight: 600,
+            cursor: "pointer",
           }}
         >
           Leave
         </button>
-        <div style={{ fontWeight: 700, fontSize: "1.1rem" }}>{topic}</div>
+        <div style={{ fontWeight: 700, fontSize: "1.2rem" }}>{question.topic}</div>
         <div style={{ fontWeight: 700, color: "#1976d2" }}>TheTestifyAI</div>
       </div>
 
-      <hr style={{ width: "100%", maxWidth: "800px", marginBottom: "24px" }} />
-
-      {/* Question */}
+      {/* Question Box */}
       <div
         style={{
           border: "3px solid #1976d2",
@@ -74,18 +67,19 @@ export default function Response({ question, onAnswer }) {
           padding: "24px",
           fontSize: "1.1rem",
           fontWeight: 500,
+          textAlign: "center",
           boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
           marginBottom: "24px",
-          textAlign: "center",
         }}
       >
         {question.question}
       </div>
 
+      {/* Textarea */}
       <textarea
         value={answer}
         onChange={(e) => setAnswer(e.target.value)}
-        placeholder="Type your answer here..."
+        placeholder="Type your answer..."
         style={{
           width: "100%",
           maxWidth: "600px",
@@ -94,22 +88,15 @@ export default function Response({ question, onAnswer }) {
           borderRadius: "12px",
           padding: "10px",
           fontSize: "1rem",
-          fontFamily: "inherit",
           marginBottom: "24px",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+          fontFamily: "inherit",
         }}
       />
 
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "600px",
-          display: "flex",
-          justifyContent: "flex-end",
-        }}
-      >
+      {/* Check Button */}
+      <div style={{ width: "100%", maxWidth: "700px", display: "flex", justifyContent: "flex-end" }}>
         <button
-          onClick={handleSubmit}
+          onClick={handleCheck}
           style={{
             backgroundColor: "#1976d2",
             color: "white",
@@ -120,7 +107,7 @@ export default function Response({ question, onAnswer }) {
             cursor: "pointer",
           }}
         >
-          Submit
+          Check
         </button>
       </div>
     </div>
