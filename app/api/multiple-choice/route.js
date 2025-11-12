@@ -59,17 +59,20 @@ Return ONLY JSON:
     }
 
     let parsed = safeParseJSON(content);
+
     if (!parsed) {
       console.warn("⚠️ Using mock fallback questions.");
       parsed = Array.from({ length: numQuestions }).map((_, i) => ({
+        type: "multiple-choice",
         question: `Sample question ${i + 1} about ${topic}`,
         answers: ["Option A", "Option B", "Option C", "Option D"],
         correct: "Option A",
         explanation: `Explanation for question ${i + 1}.`,
       }));
+    } else {
+      parsed = parsed.map((q) => ({ type: "multiple-choice", ...q }));
     }
 
-    // ✅ Return JSON data instead of redirecting
     return NextResponse.json({ topic, difficulty, questions: parsed });
   } catch (err) {
     console.error("❌ /api/multiple-choice error:", err);
