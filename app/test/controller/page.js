@@ -10,16 +10,16 @@ function TestControllerInner() {
   const params = useSearchParams();
   const [questions, setQuestions] = useState([]);
   const [index, setIndex] = useState(0);
+  const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // ✅ Load questions from URL or sessionStorage
   useEffect(() => {
     const encoded = params.get("data");
     if (encoded) {
       try {
         const decoded = JSON.parse(decodeURIComponent(encoded));
+        setTopic(decoded.topic || "Unknown Topic");
 
-        // Ensure every question has a type
         const normalized = (decoded.questions || []).map((q) => ({
           type: q.type || "multiple-choice",
           ...q,
@@ -38,8 +38,7 @@ function TestControllerInner() {
       if (stored) {
         const data = JSON.parse(stored);
         setQuestions(data.questions || []);
-      } else {
-        console.warn("⚠️ No test data found.");
+        setTopic(data.topic || "Unknown Topic");
       }
     }
     setLoading(false);
@@ -51,27 +50,30 @@ function TestControllerInner() {
   const question = questions[index];
 
   const handleAnswer = ({ correct }) => {
-    console.log("Answer result:", correct);
     setTimeout(() => {
-      if (index + 1 < questions.length) {
-        setIndex(index + 1);
-      } else {
-        alert("✅ Test complete!");
-      }
-    }, 2000);
+      if (index + 1 < questions.length) setIndex(index + 1);
+      else alert("✅ Test complete!");
+    }, 200);
   };
 
-  // ✅ Dynamically render correct question type
   const renderComponent = () => {
+    const commonProps = {
+      question,
+      onAnswer: handleAnswer,
+      topic,
+      currentIndex: index,
+      totalQuestions: questions.length,
+    };
+
     switch (question.type) {
       case "multiple-choice":
-        return <MultipleChoice question={question} onAnswer={handleAnswer} />;
+        return <MultipleChoice {...commonProps} />;
       case "true-false":
-        return <TrueFalse question={question} onAnswer={handleAnswer} />;
+        return <TrueFalse {...commonProps} />;
       case "multi-select":
-        return <MultiSelect question={question} onAnswer={handleAnswer} />;
+        return <MultiSelect {...commonProps} />;
       case "response":
-        return <Response question={question} onAnswer={handleAnswer} />;
+        return <Response {...commonProps} />;
       default:
         return <div>Unknown question type: {question.type}</div>;
     }
