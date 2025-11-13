@@ -1,9 +1,15 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 function Correct2Content() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const question = searchParams.get("question") || "No question provided";
+  const userAnswer = searchParams.get("userAnswer") || "—";
+  const feedback = searchParams.get("feedback") || "";
+
   const [canContinue, setCanContinue] = useState(false);
 
   useEffect(() => {
@@ -13,7 +19,7 @@ function Correct2Content() {
 
   const handleContinue = () => {
     if (!canContinue) return;
-    router.push("/test/controller"); // adjust next page
+    router.push("/test/controller"); // or wherever the next question is
   };
 
   return (
@@ -31,13 +37,17 @@ function Correct2Content() {
         textAlign: "center",
         cursor: canContinue ? "pointer" : "default",
         padding: "20px",
-        transition: "opacity 0.3s ease",
-        opacity: canContinue ? 1 : 0.8,
       }}
     >
       <div style={{ fontSize: 72, marginBottom: 16 }}>✅</div>
       <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16 }}>Correct!</h1>
-      <p style={{ fontSize: 18, marginBottom: 30 }}>Great job — you nailed it!</p>
+
+      <div style={{ maxWidth: 760, marginBottom: 16, textAlign: "left", background: "rgba(255,255,255,0.1)", padding: "12px", borderRadius: "10px" }}>
+        <p><strong>Question:</strong> {question}</p>
+        <p><strong>Your answer:</strong> {userAnswer}</p>
+        {feedback && <p><strong>Explanation:</strong> {feedback}</p>}
+      </div>
+
       <small>{canContinue ? "Click anywhere to continue" : "Please wait..."}</small>
     </div>
   );
