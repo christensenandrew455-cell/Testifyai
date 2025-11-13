@@ -63,7 +63,6 @@ function TestControllerInner() {
   const question = questions[index];
 
   const handleAnswer = ({ correct, userAnswer }) => {
-    // Make sure userAnswer is always an array
     const safeUserAnswer =
       userAnswer === undefined || userAnswer === null
         ? []
@@ -79,6 +78,13 @@ function TestControllerInner() {
             typeof ans === "number" ? ans : question.answers.indexOf(ans)
           )
         : [question.answers.indexOf(question.correct)];
+
+    // ✅ FINAL QUESTION CHECK → SEND TO /ad
+    const isLast = index + 1 >= questions.length;
+    if (isLast) {
+      router.push("/ad");
+      return;
+    }
 
     const params = new URLSearchParams({
       question: question.question || "",
