@@ -16,7 +16,27 @@ export default function MultipleChoice({
 
   const handleCheck = () => {
     if (selected === null) return;
+
     const isCorrect = selected === question.correct;
+
+    // 🧠 Prepare query data for correct/incorrect pages
+    const baseUrl = isCorrect ? "/correct" : "/incorrect";
+    const params = new URLSearchParams({
+      question: question.question,
+      userAnswer: question.answers[selected],
+      correctAnswer:
+        typeof question.correct === "number"
+          ? question.answers[question.correct]
+          : question.correct,
+      explanation: question.explanation || "",
+      index: currentIndex.toString(),
+      topic,
+    });
+
+    // ✅ Navigate to correct or incorrect page
+    router.push(`${baseUrl}?${params.toString()}`);
+
+    // still trigger onAnswer for controller bookkeeping
     onAnswer({ correct: isCorrect });
   };
 
