@@ -30,10 +30,13 @@ function TestControllerInner() {
           "testData",
           JSON.stringify({ ...decoded, questions: normalized })
         );
-        sessionStorage.setItem("currentIndex", "0");
+        sessionStorage.setItem("resumeIndex", "0");
 
         setQuestions(normalized);
-        setIndex(0);
+
+        // start at resumeIndex
+        const savedResume = Number(sessionStorage.getItem("resumeIndex") || 0);
+        setIndex(savedResume);
       } catch (err) {
         console.error("❌ Failed to decode test data:", err);
       }
@@ -44,8 +47,8 @@ function TestControllerInner() {
         setQuestions(data.questions || []);
         setTopic(data.topic || "Unknown Topic");
 
-        const savedIndex = Number(sessionStorage.getItem("currentIndex") || 0);
-        setIndex(savedIndex);
+        const savedResume = Number(sessionStorage.getItem("resumeIndex") || 0);
+        setIndex(savedResume);
       }
     }
     setLoading(false);
@@ -53,7 +56,7 @@ function TestControllerInner() {
 
   useEffect(() => {
     if (questions.length > 0) {
-      sessionStorage.setItem("currentIndex", String(index));
+      sessionStorage.setItem("resumeIndex", String(index));
     }
   }, [index, questions]);
 
