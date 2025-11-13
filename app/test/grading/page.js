@@ -9,9 +9,21 @@ function GradingContent() {
 
   useEffect(() => {
     const dataParam = params.get("data");
-    if (!dataParam) return router.push("/");
+    if (!dataParam) {
+      setStatusText("No grading data found. Redirecting...");
+      setTimeout(() => router.push("/"), 2000); // Graceful redirect
+      return;
+    }
 
-    const payload = JSON.parse(dataParam);
+    let payload;
+    try {
+      payload = JSON.parse(dataParam);
+    } catch (err) {
+      console.error("Failed to parse grading data:", err);
+      setStatusText("Invalid grading data. Redirecting...");
+      setTimeout(() => router.push("/"), 2000);
+      return;
+    }
 
     const grade = async () => {
       try {
@@ -23,19 +35,16 @@ function GradingContent() {
             userAnswer: payload.answer,
             difficulty: payload.difficulty,
             topic: payload.topic,
+            type: payload.type || "short-answer", // default type
           }),
         });
 
         const data = await res.json();
 
         if (data.correct === true) {
-          router.push(
-            `/test/correct2?feedback=${encodeURIComponent(data.feedback)}`
-          );
+          router.push(`/test/correct2?feedback=${encodeURIComponent(data.feedback || "")}`);
         } else {
-          router.push(
-            `/test/incorrect2?feedback=${encodeURIComponent(data.feedback)}`
-          );
+          router.push(`/test/incorrect2?feedback=${encodeURIComponent(data.feedback || "")}`);
         }
       } catch (err) {
         console.error("Grading failed:", err);
