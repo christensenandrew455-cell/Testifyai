@@ -10,8 +10,12 @@ function safeJSONParse(raw) {
   }
 }
 
+function stripLeadingLetter(s = "") {
+  return String(s).replace(/^[A-Z]\s*[\.\)\-\:]\s*/i, "").trim();
+}
+
 function normalizeText(s = "") {
-  return String(s).replace(/^[A-Z]\s*[\.\)]\s*/i, "").trim().toLowerCase();
+  return stripLeadingLetter(String(s)).trim().toLowerCase();
 }
 
 function mapToLetterText(answerValue, questionObj) {
@@ -25,20 +29,25 @@ function mapToLetterText(answerValue, questionObj) {
   const mapSingle = (val) => {
     if (typeof val === "number") {
       const idx = val;
-      const text = answers[idx] ?? String(val);
+      const raw = answers[idx] ?? String(val);
+      const text = stripLeadingLetter(raw);
       return `${String.fromCharCode(65 + idx)}. ${text}`;
     }
     const s = String(val).trim();
     if (/^[A-Z]$/i.test(s)) {
       const idx = s.toUpperCase().charCodeAt(0) - 65;
-      const text = answers[idx] ?? s;
+      const raw = answers[idx] ?? s;
+      const text = stripLeadingLetter(raw);
       return `${String.fromCharCode(65 + idx)}. ${text}`;
     }
     const foundIdx = answers.findIndex((a) => normalizeText(a) === normalizeText(s));
     if (foundIdx !== -1) {
-      return `${String.fromCharCode(65 + foundIdx)}. ${answers[foundIdx]}`;
+      const raw = answers[foundIdx];
+      const text = stripLeadingLetter(raw);
+      return `${String.fromCharCode(65 + foundIdx)}. ${text}`;
     }
-    return String(s);
+    const cleaned = stripLeadingLetter(s);
+    return cleaned;
   };
 
   if (Array.isArray(answerValue)) {
@@ -79,7 +88,7 @@ function IncorrectContent() {
   const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
 
   const handleContinue = () => {
-    router.push(`/test?topic=${encodeURIComponent(topic)}`);
+    router.push(`/test/controller`);
   };
 
   return (
