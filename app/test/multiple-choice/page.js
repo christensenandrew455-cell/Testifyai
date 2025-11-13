@@ -2,6 +2,34 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
+/**
+ * Robust helpers:
+ * - normalizeAnswerText: strip leading "A. " or "A) ", trim, lowercase
+ * - resolveCorrectText: supports correct being a number (index), a letter "A", or the answer text
+ */
+function normalizeAnswerText(s = "") {
+  return String(s)
+    .replace(/^[A-Z]\s*[\.\)]\s*/i, "") // strip "A. " or "A) "
+    .trim()
+    .toLowerCase();
+}
+
+function resolveCorrectText(question, correct) {
+  // correct can be number (index), string letter "A", or answer text
+  if (typeof correct === "number") {
+    return String(question.answers?.[correct] ?? correct);
+  }
+  if (typeof correct === "string" && /^[A-Z]$/i.test(correct.trim())) {
+    const idx = correct.trim().toUpperCase().charCodeAt(0) - 65;
+    return String(question.answers?.[idx] ?? correct);
+  }
+  // try to match an answer by text ignoring case
+  const found = (question.answers || []).find(
+    (a) => normalizeAnswerText(a) === normalizeAnswerText(correct)
+  );
+  return found ?? String(correct);
+}
+
 export default function MultipleChoice({
   question,
   onAnswer,
@@ -17,23 +45,30 @@ export default function MultipleChoice({
   const handleCheck = () => {
     if (selected === null) return;
 
-    // Compare text, not index
-    const userAnswer = question.answers[selected];
-    const correctAnswer = question.correct;
+    const userAnswerText = String(question.answers[selected] ?? "");
+    const correctText = resolveCorrectText(question, question.correct);
 
-    const isCorrect = userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+    const isCorrect =
+      normalizeAnswerText(userAnswerText) === normalizeAnswerText(correctText);
 
-    // Build query params
+    // Always send JSON-encoded values so the result pages can JSON.parse them safely
     const params = new URLSearchParams({
-      question: question.question,
-      userAnswer: JSON.stringify(userAnswer),
-      correctAnswer: JSON.stringify(correctAnswer),
+      question: question.question || "",
+      userAnswer: JSON.stringify(userAnswerText),
+      correctAnswer: JSON.stringify(correctText),
       explanation: question.explanation || "",
-      index: currentIndex.toString(),
-      topic,
+      index: String(currentIndex ?? 0),
+      topic: topic || "",
     });
 
     router.push(`${isCorrect ? "/correct" : "/incorrect"}?${params.toString()}`);
+
+    // still call onAnswer so controller can advance (if you're using it)
+    try {
+      onAnswer?.({ correct: isCorrect });
+    } catch (e) {
+      /* ignore */
+    }
   };
 
   return (
@@ -109,7 +144,7 @@ export default function MultipleChoice({
           maxWidth: "500px",
         }}
       >
-        {question.answers.map((ans, i) => (
+        {question.answers?.map((ans, i) => (
           <button
             key={i}
             onClick={() => setSelected(i)}
@@ -130,7 +165,7 @@ export default function MultipleChoice({
           >
             <strong>{String.fromCharCode(65 + i)}.</strong> {ans}
           </button>
-        ))}
+        )) ?? null}
       </div>
 
       {/* Footer */}
