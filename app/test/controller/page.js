@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import MultipleChoice from "../multiple-choice/page";
 import TrueFalse from "../true-false/page";
 import MultiSelect from "../multi-select/page";
@@ -8,6 +8,7 @@ import Response from "../response/page";
 
 function TestControllerInner() {
   const params = useSearchParams();
+  const router = useRouter();
   const [questions, setQuestions] = useState([]);
   const [index, setIndex] = useState(0);
   const [topic, setTopic] = useState("");
@@ -29,7 +30,10 @@ function TestControllerInner() {
           "testData",
           JSON.stringify({ ...decoded, questions: normalized })
         );
+        sessionStorage.setItem("currentIndex", "0");
+
         setQuestions(normalized);
+        setIndex(0);
       } catch (err) {
         console.error("❌ Failed to decode test data:", err);
       }
@@ -39,20 +43,39 @@ function TestControllerInner() {
         const data = JSON.parse(stored);
         setQuestions(data.questions || []);
         setTopic(data.topic || "Unknown Topic");
+
+        const savedIndex = Number(sessionStorage.getItem("currentIndex") || 0);
+        setIndex(savedIndex);
       }
     }
     setLoading(false);
   }, [params]);
+
+  useEffect(() => {
+    if (questions.length > 0) {
+      sessionStorage.setItem("currentIndex", String(index));
+    }
+  }, [index, questions]);
 
   if (loading) return null;
   if (!questions.length) return null;
 
   const question = questions[index];
 
-  const handleAnswer = ({ correct }) => {
-    if (index + 1 < questions.length) {
-      setIndex(index + 1);
-    }
+  const handleAnswer = ({ correct, userAnswer }) => {
+    // don’t advance yet — feedback page will do that
+    const nextPage = correct ? "/correct" : "/incorrect";
+
+    const params = new URLSearchParams({
+      question: question.question,
+      userAnswer: JSON.stringify(userAnswer),
+      correctAnswer: JSON.stringify(question.correct),
+      explanation: question.explanation || "",
+      index: String(index),
+      topic,
+    });
+
+    router.push(`${nextPage}?${params.toString()}`);
   };
 
   const renderComponent = () => {
