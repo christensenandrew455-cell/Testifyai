@@ -14,10 +14,7 @@ function CorrectContent() {
 
   const [canContinue, setCanContinue] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setCanContinue(true), 2000);
-    return () => clearTimeout(timer);
-  }, []);
+  useEffect(() => { const timer = setTimeout(() => setCanContinue(true), 2000); return () => clearTimeout(timer); }, []);
 
   let parsedUser = [];
   let parsedCorrect = [];
@@ -37,10 +34,7 @@ function CorrectContent() {
   function mapToLetterText(answerValue, questionObj) {
     if (answerValue === null || answerValue === undefined) return "—";
     const answers = questionObj?.answers || [];
-    const isTrueFalse =
-      Array.isArray(answers) &&
-      answers.length === 2 &&
-      answers.every((a) => ["true", "false"].includes(String(a).trim().toLowerCase()));
+    const isTrueFalse = Array.isArray(answers) && answers.length === 2 && answers.every((a) => ["true","false"].includes(String(a).trim().toLowerCase()));
 
     const mapSingle = (val) => {
       if (val === null || val === undefined) return "";
@@ -55,9 +49,7 @@ function CorrectContent() {
       return String(val);
     };
 
-    return Array.isArray(answerValue)
-      ? answerValue.map(mapSingle).join(", ")
-      : mapSingle(answerValue);
+    return Array.isArray(answerValue) ? answerValue.map(mapSingle).join(", ") : mapSingle(answerValue);
   }
 
   const displayUser = mapToLetterText(parsedUser, questionObj);
@@ -70,57 +62,31 @@ function CorrectContent() {
   };
 
   return (
-    <div
-      onClick={handleContinue}
-      style={{
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(to right, #81c784, #388e3c)",
-        color: "white",
-        textAlign: "center",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-        cursor: canContinue ? "pointer" : "default",
-        padding: "20px",
-        transition: "opacity 0.3s ease",
-        opacity: canContinue ? 1 : 0.8,
-      }}
-    >
-      <div style={{ fontSize: 72, marginBottom: 8 }}>✅</div>
-      <h1 style={{ fontSize: 28, marginBottom: 8, fontWeight: 800 }}>Correct!</h1>
+    <div onClick={handleContinue} style={{height:"100vh",width:"100vw",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",background:"linear-gradient(to right, #81c784, #388e3c)",color:"white",textAlign:"center",fontFamily:"Segoe UI, Roboto, sans-serif",cursor:canContinue?"pointer":"default",padding:"20px",transition:"opacity 0.3s ease",opacity:canContinue?1:0.8}}>
+      <div style={{fontSize:72,marginBottom:8}}>✅</div>
+      <h1 style={{fontSize:28,marginBottom:8,fontWeight:800}}>Correct!</h1>
 
-      <div style={{ maxWidth: 760, textAlign: "center" }}>
-        <p style={{ fontWeight: 700, margin: 0 }}>Question</p>
-        <p style={{ margin: "2px 0 4px 0" }}>{rawQuestion}</p>
+      <div style={{maxWidth:760,textAlign:"center"}}>
+        <p style={{fontWeight:700,margin:0}}>Question</p>
+        <p style={{margin:"2px 0 4px 0"}}>{rawQuestion}</p>
 
-        <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Your answer(s)</p>
-        <p style={{ margin: "2px 0 4px 0" }}>{displayUser}</p>
+        <p style={{fontWeight:700,margin:"4px 0 2px 0"}}>Your answer(s)</p>
+        <p style={{margin:"2px 0 4px 0"}}>{displayUser}</p>
 
-        <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Correct answer(s)</p>
-        <p style={{ margin: "2px 0 4px 0" }}>{displayCorrect}</p>
+        <p style={{fontWeight:700,margin:"4px 0 2px 0"}}>Correct answer(s)</p>
+        <p style={{margin:"2px 0 4px 0"}}>{displayCorrect}</p>
 
-        {explanation && (
-          <>
-            <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Explanation</p>
-            <p style={{ margin: "2px 0 4px 0" }}>{explanation}</p>
-          </>
-        )}
+        {explanation && <>
+          <p style={{fontWeight:700,margin:"4px 0 2px 0"}}>Explanation</p>
+          <p style={{margin:"2px 0 4px 0"}}>{explanation}</p>
+        </>}
       </div>
 
-      <small style={{ marginTop: 20 }}>
-        {canContinue ? "Click anywhere to continue" : "Please wait..."}
-      </small>
+      <small style={{marginTop:20}}>{canContinue?"Click anywhere to continue":"Please wait..."}</small>
     </div>
   );
 }
 
 export default function CorrectPage() {
-  return (
-    <Suspense fallback={null}>
-      <CorrectContent />
-    </Suspense>
-  );
+  return <Suspense fallback={null}><CorrectContent/></Suspense>;
 }
