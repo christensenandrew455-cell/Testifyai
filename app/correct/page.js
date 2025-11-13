@@ -2,90 +2,15 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
-function safeJSONParse(raw) {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return raw;
-  }
-}
-
-function stripLeadingLetter(s = "") {
-  return String(s).replace(/^[A-Z]\s*[\.\)\-\:]\s*/i, "").trim();
-}
-
-function normalizeText(s = "") {
-  return stripLeadingLetter(String(s)).trim().toLowerCase();
-}
-
-function mapToLetterText(answerValue, questionObj) {
-  if (!answerValue) return "—";
-
-  if (!questionObj || !questionObj.answers) {
-    return Array.isArray(answerValue)
-      ? answerValue.join(", ")
-      : String(answerValue);
-  }
-
-  const answers = questionObj.answers;
-
-  const mapSingle = (val) => {
-    if (val === null || val === undefined) return "";
-    const s = String(val).trim();
-
-    if (!isNaN(Number(s))) {
-      const idx = Number(s);
-      const raw = answers[idx] ?? s;
-      return `${String.fromCharCode(65 + idx)}. ${stripLeadingLetter(raw)}`;
-    }
-
-    if (/^[A-Z]$/i.test(s)) {
-      const idx = s.toUpperCase().charCodeAt(0) - 65;
-      const raw = answers[idx] ?? s;
-      return `${String.fromCharCode(65 + idx)}. ${stripLeadingLetter(raw)}`;
-    }
-
-    const foundIdx = answers.findIndex(
-      (a) => normalizeText(a) === normalizeText(s)
-    );
-    if (foundIdx !== -1) {
-      const raw = answers[foundIdx];
-      return `${String.fromCharCode(65 + foundIdx)}. ${stripLeadingLetter(raw)}`;
-    }
-
-    return stripLeadingLetter(s);
-  };
-
-  return Array.isArray(answerValue)
-    ? answerValue.map(mapSingle).join(", ")
-    : mapSingle(answerValue);
-}
-
 function CorrectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const rawQuestion = searchParams.get("question") || "";
-  const rawUser = searchParams.get("userAnswer") || "[]";
-  const rawCorrect = searchParams.get("correctAnswer") || "[]";
+  const userAnswer = searchParams.get("userAnswer") || "";
+  const correctAnswer = searchParams.get("correctAnswer") || "";
   const explanation = searchParams.get("explanation") || "";
   const index = Number(searchParams.get("index") || 0);
-
-  const parsedUser = safeJSONParse(rawUser);
-  const parsedCorrect = safeJSONParse(rawCorrect);
-
-  let questionObj = null;
-  try {
-    const stored = sessionStorage.getItem("testData");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      const questionsArr = parsed.questions || parsed;
-      questionObj = questionsArr?.[index] || null;
-    }
-  } catch {}
-
-  const displayUser = mapToLetterText(parsedUser, questionObj);
-  const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
 
   const handleContinue = () => {
     sessionStorage.setItem("currentIndex", String(index + 1));
@@ -117,8 +42,8 @@ function CorrectContent() {
 
       <div style={{ maxWidth: 760, marginBottom: 10, textAlign: "left" }}>
         <p><strong>Question:</strong> {rawQuestion}</p>
-        <p><strong>Your answer(s):</strong> {displayUser}</p>
-        <p><strong>Correct answer(s):</strong> {displayCorrect}</p>
+        <p><strong>Your answer:</strong> {userAnswer}</p>
+        <p><strong>Correct answer:</strong> {correctAnswer}</p>
       </div>
 
       {explanation && (
