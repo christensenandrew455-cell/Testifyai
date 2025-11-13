@@ -46,12 +46,12 @@ function Correct2Content() {
         <p style={{ fontWeight: 700 }}>Question</p>
         <p>{question}</p>
 
-        <p style={{ fontWeight: 700, marginTop: 4 }}>Your answer</p>
+        <p style={{ fontWeight: 700, marginTop: 3 }}>Your answer</p>
         <p>{userAnswer}</p>
 
         {feedback && (
           <>
-            <p style={{ fontWeight: 700, marginTop: 4 }}>Explanation</p>
+            <p style={{ fontWeight: 700, marginTop: 3 }}>Explanation</p>
             <p>{feedback}</p>
           </>
         )}
