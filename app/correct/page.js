@@ -6,13 +6,12 @@ function safeJSONParse(raw) {
   try {
     return JSON.parse(raw);
   } catch {
-    // if it's not JSON, return the raw string
     return raw;
   }
 }
 
 function stripLeadingLetter(s = "") {
-  // remove prefixes like "A. ", "A) ", "A - ", "A: ", case-insensitive
+  // remove prefixes like "A. ", "A)", "A - ", etc.
   return String(s).replace(/^[A-Z]\s*[\.\)\-\:]\s*/i, "").trim();
 }
 
@@ -21,7 +20,6 @@ function normalizeText(s = "") {
 }
 
 function mapToLetterText(answerValue, questionObj) {
-  // answerValue can be string or array
   if (!questionObj || !questionObj.answers) {
     if (Array.isArray(answerValue)) return answerValue.join(", ");
     return String(answerValue);
@@ -30,41 +28,37 @@ function mapToLetterText(answerValue, questionObj) {
   const answers = questionObj.answers;
 
   const mapSingle = (val) => {
-    // val may be number (index), letter like "A", or the raw answer text
-    if (typeof val === "number") {
-      const idx = val;
-      const raw = answers[idx] ?? String(val);
-      const text = stripLeadingLetter(raw);
-      return `${String.fromCharCode(65 + idx)}. ${text}`;
-    }
-
+    if (val === null || val === undefined) return "";
     const s = String(val).trim();
 
-    // letter like "A" or "a"
+    // number index (e.g. 0 → A)
+    if (!isNaN(Number(s))) {
+      const idx = Number(s);
+      const raw = answers[idx] ?? String(s);
+      return `${String.fromCharCode(65 + idx)}. ${stripLeadingLetter(raw)}`;
+    }
+
+    // letter (A/B/C)
     if (/^[A-Z]$/i.test(s)) {
       const idx = s.toUpperCase().charCodeAt(0) - 65;
       const raw = answers[idx] ?? s;
-      const text = stripLeadingLetter(raw);
-      return `${String.fromCharCode(65 + idx)}. ${text}`;
+      return `${String.fromCharCode(65 + idx)}. ${stripLeadingLetter(raw)}`;
     }
 
-    // try to find by exact match in answers (compare normalized versions)
+    // match text to answer list
     const foundIdx = answers.findIndex((a) => normalizeText(a) === normalizeText(s));
     if (foundIdx !== -1) {
       const raw = answers[foundIdx];
-      const text = stripLeadingLetter(raw);
-      return `${String.fromCharCode(65 + foundIdx)}. ${text}`;
+      return `${String.fromCharCode(65 + foundIdx)}. ${stripLeadingLetter(raw)}`;
     }
 
-    // fallback: s might already be "A. Duck" or plain text — try to clean it
-    const cleaned = stripLeadingLetter(s);
-    return cleaned;
+    // fallback: clean and show text only
+    return stripLeadingLetter(s);
   };
 
-  if (Array.isArray(answerValue)) {
-    return answerValue.map(mapSingle).join(", ");
-  }
-  return mapSingle(answerValue);
+  return Array.isArray(answerValue)
+    ? answerValue.map(mapSingle).join(", ")
+    : mapSingle(answerValue);
 }
 
 function CorrectContent() {
@@ -76,31 +70,24 @@ function CorrectContent() {
   const rawCorrect = searchParams.get("correctAnswer") || '""';
   const explanation = searchParams.get("explanation") || "";
   const index = Number(searchParams.get("index") || 0);
-  const topic = searchParams.get("topic") || "";
 
   const parsedUser = safeJSONParse(rawUser);
   const parsedCorrect = safeJSONParse(rawCorrect);
 
-  // try to get question object from sessionStorage testData using index
   let questionObj = null;
   try {
     const stored = sessionStorage.getItem("testData");
     if (stored) {
       const parsed = JSON.parse(stored);
       const questionsArr = Array.isArray(parsed) ? parsed : parsed.questions || parsed;
-      if (Array.isArray(questionsArr) && questionsArr[index]) {
-        questionObj = questionsArr[index];
-      }
+      questionObj = questionsArr?.[index] || null;
     }
-  } catch (e) {
-    questionObj = null;
-  }
+  } catch {}
 
   const displayUser = mapToLetterText(parsedUser, questionObj);
   const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
 
   const handleContinue = () => {
-    // return to controller; controller should read resumeIndex from sessionStorage
     router.push(`/test/controller`);
   };
 
