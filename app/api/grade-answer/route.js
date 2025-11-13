@@ -21,14 +21,16 @@ Student Answer: "${userAnswer}"
 
 Instructions:
 - Evaluate if the answer is correct based on the question.
-- Provide a simple feedback message explaining why it is correct or incorrect.
 - Consider the difficulty level when judging grammar, detail, and completeness.
-- Return ONLY valid JSON in this format:
-
+- Provide a short feedback explanation of why the answer is correct or incorrect.
+- Return ONLY valid JSON in this exact format:
 {
-  "correct": true or false,
-  "feedback": "string"
+  "question": "string",     // repeat the original question
+  "studentAnswer": "string", // repeat the student's answer
+  "correct": true or false,  // true if correct, false if not
+  "feedback": "string"       // explanation of why it is correct or incorrect
 }
+- Do not include anything outside of this JSON.
 `;
 
     const response = await openai.chat.completions.create({
@@ -38,15 +40,26 @@ Instructions:
     });
 
     let content = response.choices[0].message.content.trim();
+    // Remove any JSON code fences just in case
     if (content.startsWith("```")) content = content.replace(/```(json)?/g, "").trim();
 
-    const gradingResult = JSON.parse(content);
+    // Safely parse JSON, with a fallback
+    let gradingResult;
+    try {
+      gradingResult = JSON.parse(content);
+    } catch (err) {
+      console.error("❌ Failed to parse JSON from AI:", content);
+      return new Response(
+        JSON.stringify({ error: "Failed to parse AI grading response." }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     return new Response(JSON.stringify(gradingResult), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Grade-answer error:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
