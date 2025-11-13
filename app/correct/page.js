@@ -6,10 +6,10 @@ function CorrectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const rawQuestion = searchParams.get("question") || "";
-  const rawUser = searchParams.get("userAnswer") || "[]";
-  const rawCorrect = searchParams.get("correctAnswer") || "[]";
-  const explanation = searchParams.get("explanation") || "";
+  const rawQuestion = decodeURIComponent(searchParams.get("question") || "No question provided");
+  let rawUser = decodeURIComponent(searchParams.get("userAnswer") || "[]");
+  let rawCorrect = decodeURIComponent(searchParams.get("correctAnswer") || "[]");
+  const explanation = decodeURIComponent(searchParams.get("explanation") || "");
   const index = Number(searchParams.get("index") || 0);
 
   const [canContinue, setCanContinue] = useState(false);
@@ -22,8 +22,8 @@ function CorrectContent() {
   let parsedUser = [];
   let parsedCorrect = [];
 
-  try { parsedUser = JSON.parse(decodeURIComponent(rawUser)); } catch {}
-  try { parsedCorrect = JSON.parse(decodeURIComponent(rawCorrect)); } catch {}
+  try { parsedUser = JSON.parse(rawUser); } catch { parsedUser = rawUser; }
+  try { parsedCorrect = JSON.parse(rawCorrect); } catch { parsedCorrect = rawCorrect; }
 
   let questionObj = null;
   try {
@@ -40,9 +40,8 @@ function CorrectContent() {
     const isTrueFalse =
       Array.isArray(answers) &&
       answers.length === 2 &&
-      answers.every((a) =>
-        ["true", "false"].includes(String(a).trim().toLowerCase())
-      );
+      answers.every((a) => ["true", "false"].includes(String(a).trim().toLowerCase()));
+
     const mapSingle = (val) => {
       if (val === null || val === undefined) return "";
       if (typeof val === "number" && answers[val] !== undefined) {
@@ -55,6 +54,7 @@ function CorrectContent() {
       if (idx !== -1) return `${String.fromCharCode(65 + idx)}. ${val}`;
       return String(val);
     };
+
     return Array.isArray(answerValue)
       ? answerValue.map(mapSingle).join(", ")
       : mapSingle(answerValue);
@@ -89,30 +89,30 @@ function CorrectContent() {
         opacity: canContinue ? 1 : 0.8,
       }}
     >
-      <div style={{ fontSize: 72, marginBottom: 30 }}>✅</div>
+      <div style={{ fontSize: 72, marginBottom: 8 }}>✅</div>
       <h1 style={{ fontSize: 28, marginBottom: 8, fontWeight: 800 }}>Correct!</h1>
 
-      <div style={{ maxWidth: 760, marginBottom: 3, textAlign: "center" }}>
-        <p style={{ fontWeight: 700 }}>Question</p>
-        <p>{rawQuestion}</p>
+      <div style={{ maxWidth: 760, textAlign: "center" }}>
+        <p style={{ fontWeight: 700, margin: 0 }}>Question</p>
+        <p style={{ margin: "2px 0 4px 0" }}>{rawQuestion}</p>
 
-        <p style={{ fontWeight: 700, marginTop: 3 }}>Your answer(s)</p>
-        <p>{displayUser}</p>
+        <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Your answer(s)</p>
+        <p style={{ margin: "2px 0 4px 0" }}>{displayUser}</p>
 
-        <p style={{ fontWeight: 700, marginTop: 3 }}>Correct answer(s)</p>
-        <p>{displayCorrect}</p>
+        <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Correct answer(s)</p>
+        <p style={{ margin: "2px 0 4px 0" }}>{displayCorrect}</p>
+
+        {explanation && (
+          <>
+            <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Explanation</p>
+            <p style={{ margin: "2px 0 4px 0" }}>{explanation}</p>
+          </>
+        )}
       </div>
 
-      {explanation && (
-        <>
-          <p style={{ fontWeight: 700, marginTop: 3 }}>Explanation</p>
-          <p style={{ maxWidth: 760, opacity: 0.95 }}>{explanation}</p>
-        </>
-      )}
-
-      <div style={{ marginTop: 30 }}>
-        <small>{canContinue ? "Click anywhere to continue" : "Please wait..."}</small>
-      </div>
+      <small style={{ marginTop: 20 }}>
+        {canContinue ? "Click anywhere to continue" : "Please wait..."}
+      </small>
     </div>
   );
 }
