@@ -17,27 +17,23 @@ export default function MultipleChoice({
   const handleCheck = () => {
     if (selected === null) return;
 
-    const isCorrect = selected === question.correct;
+    // Compare text, not index
+    const userAnswer = question.answers[selected];
+    const correctAnswer = question.correct;
 
-    // 🧠 Prepare query data for correct/incorrect pages
-    const baseUrl = isCorrect ? "/correct" : "/incorrect";
+    const isCorrect = userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+
+    // Build query params
     const params = new URLSearchParams({
       question: question.question,
-      userAnswer: question.answers[selected],
-      correctAnswer:
-        typeof question.correct === "number"
-          ? question.answers[question.correct]
-          : question.correct,
+      userAnswer: JSON.stringify(userAnswer),
+      correctAnswer: JSON.stringify(correctAnswer),
       explanation: question.explanation || "",
       index: currentIndex.toString(),
       topic,
     });
 
-    // ✅ Navigate to correct or incorrect page
-    router.push(`${baseUrl}?${params.toString()}`);
-
-    // still trigger onAnswer for controller bookkeeping
-    onAnswer({ correct: isCorrect });
+    router.push(`${isCorrect ? "/correct" : "/incorrect"}?${params.toString()}`);
   };
 
   return (
@@ -137,7 +133,7 @@ export default function MultipleChoice({
         ))}
       </div>
 
-      {/* Footer: Question X of Y + Check Button */}
+      {/* Footer */}
       <div
         style={{
           width: "100%",
