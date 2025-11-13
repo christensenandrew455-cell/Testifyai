@@ -1,6 +1,6 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 function CorrectContent() {
   const router = useRouter();
@@ -11,6 +11,13 @@ function CorrectContent() {
   const rawCorrect = searchParams.get("correctAnswer") || "[]";
   const explanation = searchParams.get("explanation") || "";
   const index = Number(searchParams.get("index") || 0);
+
+  const [canContinue, setCanContinue] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setCanContinue(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   let parsedUser = [];
   let parsedCorrect = [];
@@ -33,10 +40,9 @@ function CorrectContent() {
 
   // --- universal answer formatter ---
   function mapToLetterText(answerValue, questionObj) {
-    if (!answerValue) return "—";
+    if (answerValue === null || answerValue === undefined) return "—";
     const answers = questionObj?.answers || [];
 
-    // detect True/False or response (no letters)
     const isTrueFalse =
       Array.isArray(answers) &&
       answers.length === 2 &&
@@ -46,15 +52,19 @@ function CorrectContent() {
 
     const mapSingle = (val) => {
       if (val === null || val === undefined) return "";
-      if (isTrueFalse || answers.length === 0) return String(val);
-      if (typeof val === "number") {
-        const raw = answers[val] ?? "";
+      // convert numeric indexes to answer text
+      if (typeof val === "number" && answers[val] !== undefined) {
+        const raw = answers[val];
+        if (isTrueFalse) return String(raw);
         return `${String.fromCharCode(65 + val)}. ${raw}`;
       }
+      // if True/False or no options, just show value directly
+      if (isTrueFalse || answers.length === 0) return String(val);
+      // otherwise find and label
       const idx = answers.indexOf(val);
       if (idx !== -1)
         return `${String.fromCharCode(65 + idx)}. ${val}`;
-      return val;
+      return String(val);
     };
 
     return Array.isArray(answerValue)
@@ -66,6 +76,7 @@ function CorrectContent() {
   const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
 
   const handleContinue = () => {
+    if (!canContinue) return;
     sessionStorage.setItem("currentIndex", String(index + 1));
     router.push("/test/controller");
   };
@@ -84,8 +95,10 @@ function CorrectContent() {
         color: "white",
         textAlign: "center",
         fontFamily: "Segoe UI, Roboto, sans-serif",
-        cursor: "pointer",
+        cursor: canContinue ? "pointer" : "default",
         padding: "20px",
+        transition: "opacity 0.3s ease",
+        opacity: canContinue ? 1 : 0.8,
       }}
     >
       <div style={{ fontSize: 72, marginBottom: 12 }}>✅</div>
@@ -106,7 +119,9 @@ function CorrectContent() {
       )}
 
       <div style={{ marginTop: 30 }}>
-        <small>Click anywhere to continue</small>
+        <small>
+          {canContinue ? "Click anywhere to continue" : "Please wait..."}
+        </small>
       </div>
     </div>
   );
