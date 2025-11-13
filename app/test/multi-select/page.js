@@ -10,7 +10,6 @@ function normalizeAnswerText(s = "") {
 }
 
 function resolveCorrectArray(question, correct) {
-  // Returns array of answer texts
   if (Array.isArray(correct)) {
     return correct.map((c) => {
       if (typeof c === "number") return question.answers?.[c] ?? String(c);
@@ -24,7 +23,6 @@ function resolveCorrectArray(question, correct) {
       return found ?? String(c);
     });
   }
-  // fallback: if single string/number
   return [resolveCorrectArray(question, correct)[0]];
 }
 
@@ -41,17 +39,18 @@ export default function MultiSelect({
   if (!question) return null;
 
   const toggle = (i) =>
-    setSelected((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
+    setSelected((prev) =>
+      prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
+    );
 
   const handleCheck = () => {
-    // user-selected texts
-    const userTexts = (selected || []).map((i) => String(question.answers?.[i] ?? ""));
+    const userIndexes = selected;
+    const userTexts = userIndexes.map((i) => String(question.answers?.[i] ?? ""));
 
-    // resolve correct answers text array
-    const correctArray =
-      Array.isArray(question.correct) ? resolveCorrectArray(question, question.correct) : resolveCorrectArray(question, question.correct);
+    const correctArray = Array.isArray(question.correct)
+      ? resolveCorrectArray(question, question.correct)
+      : resolveCorrectArray(question, question.correct);
 
-    // normalize and compare as sets
     const norm = (arr) => arr.map((a) => normalizeAnswerText(a)).sort();
     const a = norm(userTexts);
     const b = norm(correctArray);
@@ -60,8 +59,10 @@ export default function MultiSelect({
 
     const params = new URLSearchParams({
       question: question.question || "",
-      userAnswer: JSON.stringify(userTexts),
-      correctAnswer: JSON.stringify(correctArray),
+      userAnswer: JSON.stringify(userIndexes), // send indexes
+      correctAnswer: JSON.stringify(correctArray.map((c) =>
+        question.answers.indexOf(c)
+      )), // send indexes
       explanation: question.explanation || "",
       index: String(currentIndex ?? 0),
       topic: topic || "",
@@ -70,7 +71,7 @@ export default function MultiSelect({
     router.push(`${isCorrect ? "/correct" : "/incorrect"}?${params.toString()}`);
 
     try {
-      onAnswer?.({ correct: isCorrect });
+      onAnswer?.({ correct: isCorrect, userAnswer: userIndexes });
     } catch (e) {}
   };
 
@@ -118,7 +119,7 @@ export default function MultiSelect({
         <div style={{ fontWeight: 700, color: "#1976d2" }}>TheTestifyAI</div>
       </div>
 
-      {/* Question Box */}
+      {/* Question */}
       <div
         style={{
           border: "3px solid #1976d2",
@@ -138,7 +139,15 @@ export default function MultiSelect({
       </div>
 
       {/* Options */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", maxWidth: "600px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          width: "100%",
+          maxWidth: "600px",
+        }}
+      >
         {question.answers?.map((ans, i) => (
           <button
             key={i}
@@ -148,8 +157,12 @@ export default function MultiSelect({
               alignItems: "center",
               padding: "12px 20px",
               borderRadius: "12px",
-              border: selected.includes(i) ? "3px solid #1976d2" : "2px solid rgba(0,0,0,0.1)",
-              backgroundColor: selected.includes(i) ? "rgba(25,118,210,0.1)" : "white",
+              border: selected.includes(i)
+                ? "3px solid #1976d2"
+                : "2px solid rgba(0,0,0,0.1)",
+              backgroundColor: selected.includes(i)
+                ? "rgba(25,118,210,0.1)"
+                : "white",
               cursor: "pointer",
               fontWeight: 500,
             }}
