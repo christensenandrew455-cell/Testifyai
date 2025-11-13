@@ -62,17 +62,26 @@ function TestControllerInner() {
 
   const question = questions[index];
 
-  // ✅ Fixed handleAnswer
   const handleAnswer = ({ correct, userAnswer }) => {
+    // Convert to array for multi-select
     const safeUserAnswer =
-      userAnswer === undefined || userAnswer === null ? "" : String(userAnswer);
+      userAnswer === undefined || userAnswer === null
+        ? []
+        : Array.isArray(userAnswer)
+        ? userAnswer
+        : [userAnswer];
 
-    const safeCorrectAnswer = String(question.correct || "");
+    const safeCorrectAnswer =
+      question.correct === undefined || question.correct === null
+        ? []
+        : Array.isArray(question.correct)
+        ? question.correct
+        : [question.correct];
 
     const params = new URLSearchParams({
       question: question.question || "",
-      userAnswer: safeUserAnswer,
-      correctAnswer: safeCorrectAnswer,
+      userAnswer: encodeURIComponent(JSON.stringify(safeUserAnswer)),
+      correctAnswer: encodeURIComponent(JSON.stringify(safeCorrectAnswer)),
       explanation: question.explanation || "",
       index: String(index),
       topic: topic || "",
