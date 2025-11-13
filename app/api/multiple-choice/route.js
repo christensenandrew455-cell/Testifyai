@@ -48,7 +48,6 @@ Return ONLY JSON:
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
       });
-
       content =
         response.choices?.[0]?.message?.content
           ?.trim()
@@ -70,7 +69,11 @@ Return ONLY JSON:
         explanation: `Explanation for question ${i + 1}.`,
       }));
     } else {
-      parsed = parsed.map((q) => ({ type: "multiple-choice", ...q }));
+      parsed = parsed.map((q) => ({
+        type: "multiple-choice",
+        ...q,
+        correct: q.correct || q.answers?.[0] || "A",
+      }));
     }
 
     return NextResponse.json({ topic, difficulty, questions: parsed });
