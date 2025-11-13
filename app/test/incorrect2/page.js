@@ -1,66 +1,63 @@
 "use client";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 
-export default function Incorrect2Page() {
+function Incorrect2PageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const feedback = decodeURIComponent(searchParams.get("feedback") || "");
-  const question = decodeURIComponent(searchParams.get("question") || "—");
-  const userAnswer = decodeURIComponent(searchParams.get("userAnswer") || "—");
-  const index = Number(searchParams.get("index") || 0);
-
+  const params = useSearchParams();
   const [canContinue, setCanContinue] = useState(false);
+
+  const question = decodeURIComponent(params.get("question") || "No question provided");
+  const userAnswer = decodeURIComponent(params.get("userAnswer") || "—");
+  const feedback = decodeURIComponent(params.get("feedback") || "");
+
   useEffect(() => {
-    const timer = setTimeout(() => setCanContinue(true), 2000);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setCanContinue(true), 2000);
+    return () => clearTimeout(t);
   }, []);
 
   const handleContinue = () => {
     if (!canContinue) return;
-    sessionStorage.setItem("currentIndex", String(index + 1));
+    const stored = sessionStorage.getItem("currentIndex") || "0";
+    sessionStorage.setItem("currentIndex", String(Number(stored) + 1));
     router.push("/test/controller");
   };
 
   return (
-    <div
-      onClick={handleContinue}
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(to right, #ff8a80, #e53935)",
-        color: "white",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-        textAlign: "center",
-        cursor: canContinue ? "pointer" : "default",
-        padding: "20px",
-      }}
-    >
+    <div onClick={handleContinue} style={{
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      background: "linear-gradient(to right, #ff8a80, #e53935)",
+      color: "white",
+      textAlign: "center",
+      cursor: canContinue ? "pointer" : "default",
+      padding: "20px",
+      fontFamily: "Segoe UI, Roboto, sans-serif"
+    }}>
       <div style={{ fontSize: 72, marginBottom: 8 }}>❌</div>
       <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Incorrect</h1>
-
       <div style={{ maxWidth: 760, textAlign: "center" }}>
         <p style={{ fontWeight: 700, margin: 0 }}>Question</p>
         <p style={{ margin: "2px 0 4px 0" }}>{question}</p>
-
         <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Your answer</p>
         <p style={{ margin: "2px 0 4px 0" }}>{userAnswer}</p>
-
-        {feedback && (
-          <>
-            <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Explanation</p>
-            <p style={{ margin: "2px 0 4px 0" }}>{feedback}</p>
-          </>
-        )}
+        {feedback && <>
+          <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Explanation</p>
+          <p style={{ margin: "2px 0 4px 0" }}>{feedback}</p>
+        </>}
       </div>
-
-      <small style={{ marginTop: 20 }}>
-        {canContinue ? "Click anywhere to continue" : "Please wait..."}
-      </small>
+      <small style={{ marginTop: 20 }}>{canContinue ? "Click anywhere to continue" : "Please wait..."}</small>
     </div>
+  );
+}
+
+export default function Incorrect2Page() {
+  return (
+    <Suspense fallback={<div>Loading result…</div>}>
+      <Incorrect2PageContent />
+    </Suspense>
   );
 }
