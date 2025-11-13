@@ -6,11 +6,9 @@ function CorrectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const rawQuestion = searchParams.get("question") || "";
-  const rawUser = searchParams.get("userAnswer") || "[]";
-  const rawCorrect = searchParams.get("correctAnswer") || "[]";
-  const explanation = searchParams.get("explanation") || "";
-  const index = Number(searchParams.get("index") || 0);
+  const question = searchParams.get("question") || "No question provided";
+  const userAnswer = searchParams.get("userAnswer") || "—";
+  const feedback = searchParams.get("feedback") || "";
 
   const [canContinue, setCanContinue] = useState(false);
 
@@ -19,65 +17,8 @@ function CorrectContent() {
     return () => clearTimeout(timer);
   }, []);
 
-  let parsedUser = [];
-  let parsedCorrect = [];
-
-  try {
-    parsedUser = JSON.parse(decodeURIComponent(rawUser));
-  } catch {}
-  try {
-    parsedCorrect = JSON.parse(decodeURIComponent(rawCorrect));
-  } catch {}
-
-  let questionObj = null;
-  try {
-    const stored = sessionStorage.getItem("testData");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      questionObj = parsed.questions?.[index] || null;
-    }
-  } catch {}
-
-  // --- universal answer formatter ---
-  function mapToLetterText(answerValue, questionObj) {
-    if (answerValue === null || answerValue === undefined) return "—";
-    const answers = questionObj?.answers || [];
-
-    const isTrueFalse =
-      Array.isArray(answers) &&
-      answers.length === 2 &&
-      answers.every((a) =>
-        ["true", "false"].includes(String(a).trim().toLowerCase())
-      );
-
-    const mapSingle = (val) => {
-      if (val === null || val === undefined) return "";
-      // convert numeric indexes to answer text
-      if (typeof val === "number" && answers[val] !== undefined) {
-        const raw = answers[val];
-        if (isTrueFalse) return String(raw);
-        return `${String.fromCharCode(65 + val)}. ${raw}`;
-      }
-      // if True/False or no options, just show value directly
-      if (isTrueFalse || answers.length === 0) return String(val);
-      // otherwise find and label
-      const idx = answers.indexOf(val);
-      if (idx !== -1)
-        return `${String.fromCharCode(65 + idx)}. ${val}`;
-      return String(val);
-    };
-
-    return Array.isArray(answerValue)
-      ? answerValue.map(mapSingle).join(", ")
-      : mapSingle(answerValue);
-  }
-
-  const displayUser = mapToLetterText(parsedUser, questionObj);
-  const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
-
   const handleContinue = () => {
     if (!canContinue) return;
-    sessionStorage.setItem("currentIndex", String(index + 1));
     router.push("/test/controller");
   };
 
@@ -97,32 +38,23 @@ function CorrectContent() {
         fontFamily: "Segoe UI, Roboto, sans-serif",
         cursor: canContinue ? "pointer" : "default",
         padding: "20px",
-        transition: "opacity 0.3s ease",
-        opacity: canContinue ? 1 : 0.8,
       }}
     >
-      <div style={{ fontSize: 72, marginBottom: 12 }}>✅</div>
-      <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>
-        Correct!
-      </h1>
+      <div style={{ fontSize: 72, marginBottom: 16 }}>✅</div>
+      <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16 }}>Correct!</h1>
 
-      <div style={{ maxWidth: 760, marginBottom: 10, textAlign: "left" }}>
-        <p><strong>Question:</strong> {rawQuestion}</p>
-        <p><strong>Your answer(s):</strong> {displayUser}</p>
-        <p><strong>Correct answer(s):</strong> {displayCorrect}</p>
+      <div style={{ maxWidth: 760, marginBottom: 16, textAlign: "center", background: "rgba(255,255,255,0.1)", padding: "16px", borderRadius: "12px" }}>
+        <p><strong>Question:</strong></p>
+        <p>{question}</p>
+        <p><strong>Your answer:</strong></p>
+        <p>{userAnswer}</p>
+        {feedback && <>
+          <p><strong>Explanation:</strong></p>
+          <p>{feedback}</p>
+        </>}
       </div>
 
-      {explanation && (
-        <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>
-          💡 {explanation}
-        </p>
-      )}
-
-      <div style={{ marginTop: 30 }}>
-        <small>
-          {canContinue ? "Click anywhere to continue" : "Please wait..."}
-        </small>
-      </div>
+      <small>{canContinue ? "Click anywhere to continue" : "Please wait..."}</small>
     </div>
   );
 }
