@@ -11,7 +11,6 @@ function safeJSONParse(raw) {
 }
 
 function stripLeadingLetter(s = "") {
-  // remove prefixes like "A. ", "A)", "A - ", etc.
   return String(s).replace(/^[A-Z]\s*[\.\)\-\:]\s*/i, "").trim();
 }
 
@@ -31,28 +30,24 @@ function mapToLetterText(answerValue, questionObj) {
     if (val === null || val === undefined) return "";
     const s = String(val).trim();
 
-    // number index (e.g. 0 → A)
     if (!isNaN(Number(s))) {
       const idx = Number(s);
       const raw = answers[idx] ?? String(s);
       return `${String.fromCharCode(65 + idx)}. ${stripLeadingLetter(raw)}`;
     }
 
-    // letter (A/B/C)
     if (/^[A-Z]$/i.test(s)) {
       const idx = s.toUpperCase().charCodeAt(0) - 65;
       const raw = answers[idx] ?? s;
       return `${String.fromCharCode(65 + idx)}. ${stripLeadingLetter(raw)}`;
     }
 
-    // match text to answer list
     const foundIdx = answers.findIndex((a) => normalizeText(a) === normalizeText(s));
     if (foundIdx !== -1) {
       const raw = answers[foundIdx];
       return `${String.fromCharCode(65 + foundIdx)}. ${stripLeadingLetter(raw)}`;
     }
 
-    // fallback: clean and show text only
     return stripLeadingLetter(s);
   };
 
@@ -88,7 +83,9 @@ function CorrectContent() {
   const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
 
   const handleContinue = () => {
-    router.push(`/test/controller`);
+    // save resume index
+    sessionStorage.setItem("resumeIndex", String(index + 1));
+    router.push("/test/controller");
   };
 
   return (
