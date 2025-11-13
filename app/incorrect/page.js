@@ -15,10 +15,7 @@ function normalizeText(s = "") {
 }
 
 function mapToLetterText(answerValue, questionObj) {
-  if (!questionObj || !questionObj.answers) {
-    if (Array.isArray(answerValue)) return answerValue.join(", ");
-    return String(answerValue);
-  }
+  if (!questionObj || !questionObj.answers) return Array.isArray(answerValue) ? answerValue.join(", ") : String(answerValue);
 
   const answers = questionObj.answers;
   const mapSingle = (val) => {
@@ -37,7 +34,7 @@ function mapToLetterText(answerValue, questionObj) {
       return `${String.fromCharCode(65 + idx)}. ${stripLeadingLetter(raw)}`;
     }
 
-    const foundIdx = answers.findIndex((a) => normalizeText(a) === normalizeText(s));
+    const foundIdx = answers.findIndex(a => normalizeText(a) === normalizeText(s));
     if (foundIdx !== -1) {
       const raw = answers[foundIdx];
       return `${String.fromCharCode(65 + foundIdx)}. ${stripLeadingLetter(raw)}`;
@@ -46,9 +43,7 @@ function mapToLetterText(answerValue, questionObj) {
     return stripLeadingLetter(s);
   };
 
-  return Array.isArray(answerValue)
-    ? answerValue.map(mapSingle).join(", ")
-    : mapSingle(answerValue);
+  return Array.isArray(answerValue) ? answerValue.map(mapSingle).join(", ") : mapSingle(answerValue);
 }
 
 function IncorrectContent() {
@@ -61,8 +56,10 @@ function IncorrectContent() {
   const explanation = searchParams.get("explanation") || "";
   const index = Number(searchParams.get("index") || 0);
 
-  const parsedUser = safeJSONParse(rawUser);
-  const parsedCorrect = safeJSONParse(rawCorrect);
+  let parsedUser = safeJSONParse(rawUser);
+  if (!Array.isArray(parsedUser)) parsedUser = [parsedUser];
+  let parsedCorrect = safeJSONParse(rawCorrect);
+  if (!Array.isArray(parsedCorrect)) parsedCorrect = [parsedCorrect];
 
   let questionObj = null;
   try {
@@ -70,7 +67,7 @@ function IncorrectContent() {
     if (stored) {
       const parsed = JSON.parse(stored);
       const questionsArr = Array.isArray(parsed) ? parsed : parsed.questions || parsed;
-      questionObj = questionsArr?.[index] || null;
+      questionObj = questionsArr?.[index] ?? null;
     }
   } catch {}
 
@@ -78,28 +75,25 @@ function IncorrectContent() {
   const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
 
   const handleContinue = () => {
-    sessionStorage.setItem("resumeIndex", String(index + 1));
+    sessionStorage.setItem("currentIndex", String(index + 1));
     router.push("/test/controller");
   };
 
   return (
-    <div
-      onClick={handleContinue}
-      style={{
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(to right, #ff8a80, #e53935)",
-        color: "white",
-        textAlign: "center",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-        cursor: "pointer",
-        padding: "20px",
-      }}
-    >
+    <div onClick={handleContinue} style={{
+      height: "100vh",
+      width: "100vw",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      background: "linear-gradient(to right, #ff8a80, #e53935)",
+      color: "white",
+      textAlign: "center",
+      fontFamily: "Segoe UI, Roboto, sans-serif",
+      cursor: "pointer",
+      padding: "20px",
+    }}>
       <div style={{ fontSize: 72, marginBottom: 12 }}>❌</div>
       <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>Incorrect</h1>
 
@@ -109,9 +103,7 @@ function IncorrectContent() {
         <p><strong>Correct answer(s):</strong> {displayCorrect}</p>
       </div>
 
-      {explanation && (
-        <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>💡 {explanation}</p>
-      )}
+      {explanation && <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>💡 {explanation}</p>}
 
       <div style={{ marginTop: 30 }}>
         <small>Click anywhere to continue</small>
