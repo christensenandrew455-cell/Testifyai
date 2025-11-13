@@ -27,33 +27,33 @@ function mapToLetterText(answerValue, questionObj) {
   const answers = questionObj.answers;
 
   const mapSingle = (val) => {
-    if (typeof val === "number") {
-      const idx = val;
-      const raw = answers[idx] ?? String(val);
-      const text = stripLeadingLetter(raw);
-      return `${String.fromCharCode(65 + idx)}. ${text}`;
-    }
+    if (val === null || val === undefined) return "";
     const s = String(val).trim();
+
+    if (!isNaN(Number(s))) {
+      const idx = Number(s);
+      const raw = answers[idx] ?? String(s);
+      return `${String.fromCharCode(65 + idx)}. ${stripLeadingLetter(raw)}`;
+    }
+
     if (/^[A-Z]$/i.test(s)) {
       const idx = s.toUpperCase().charCodeAt(0) - 65;
       const raw = answers[idx] ?? s;
-      const text = stripLeadingLetter(raw);
-      return `${String.fromCharCode(65 + idx)}. ${text}`;
+      return `${String.fromCharCode(65 + idx)}. ${stripLeadingLetter(raw)}`;
     }
+
     const foundIdx = answers.findIndex((a) => normalizeText(a) === normalizeText(s));
     if (foundIdx !== -1) {
       const raw = answers[foundIdx];
-      const text = stripLeadingLetter(raw);
-      return `${String.fromCharCode(65 + foundIdx)}. ${text}`;
+      return `${String.fromCharCode(65 + foundIdx)}. ${stripLeadingLetter(raw)}`;
     }
-    const cleaned = stripLeadingLetter(s);
-    return cleaned;
+
+    return stripLeadingLetter(s);
   };
 
-  if (Array.isArray(answerValue)) {
-    return answerValue.map(mapSingle).join(", ");
-  }
-  return mapSingle(answerValue);
+  return Array.isArray(answerValue)
+    ? answerValue.map(mapSingle).join(", ")
+    : mapSingle(answerValue);
 }
 
 function IncorrectContent() {
@@ -65,7 +65,6 @@ function IncorrectContent() {
   const rawCorrect = searchParams.get("correctAnswer") || '""';
   const explanation = searchParams.get("explanation") || "";
   const index = Number(searchParams.get("index") || 0);
-  const topic = searchParams.get("topic") || "";
 
   const parsedUser = safeJSONParse(rawUser);
   const parsedCorrect = safeJSONParse(rawCorrect);
@@ -76,13 +75,9 @@ function IncorrectContent() {
     if (stored) {
       const parsed = JSON.parse(stored);
       const questionsArr = Array.isArray(parsed) ? parsed : parsed.questions || parsed;
-      if (Array.isArray(questionsArr) && questionsArr[index]) {
-        questionObj = questionsArr[index];
-      }
+      questionObj = questionsArr?.[index] || null;
     }
-  } catch (e) {
-    questionObj = null;
-  }
+  } catch {}
 
   const displayUser = mapToLetterText(parsedUser, questionObj);
   const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
