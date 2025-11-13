@@ -4,7 +4,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
   try {
-    const { topic, difficulty, type } = await req.json();
+    const { topic, difficulty, question, userAnswer, type } = await req.json();
 
     if (!["short-answer", "open-response"].includes(type)) {
       return new Response(
@@ -14,11 +14,20 @@ export async function POST(req) {
     }
 
     const prompt = `
-You are TestifyAI — generate 1 ${type === "short-answer" ? "short answer" : "open response"} question on the topic "${topic}".
-Difficulty level: ${difficulty}.
-Return ONLY JSON in this format:
+You are TestifyAI, an expert grader. Grade the following student answer based on the question and difficulty level.
+Difficulty: ${difficulty}
+Question: "${question}"
+Student Answer: "${userAnswer}"
+
+Instructions:
+- Evaluate if the answer is correct based on the question.
+- Provide a simple feedback message explaining why it is correct or incorrect.
+- Consider the difficulty level when judging grammar, detail, and completeness.
+- Return ONLY valid JSON in this format:
+
 {
-  "question": "string"
+  "correct": true or false,
+  "feedback": "string"
 }
 `;
 
@@ -31,9 +40,9 @@ Return ONLY JSON in this format:
     let content = response.choices[0].message.content.trim();
     if (content.startsWith("```")) content = content.replace(/```(json)?/g, "").trim();
 
-    const questionData = JSON.parse(content);
+    const gradingResult = JSON.parse(content);
 
-    return new Response(JSON.stringify(questionData), {
+    return new Response(JSON.stringify(gradingResult), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
