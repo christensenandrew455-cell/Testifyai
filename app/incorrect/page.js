@@ -6,11 +6,17 @@ function IncorrectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const question = searchParams.get("question") || "";
-  const userAnswer = searchParams.get("userAnswer") || "";
-  const correctAnswer = searchParams.get("correctAnswer") || "";
+  const userAnswer = JSON.parse(searchParams.get("userAnswer") || "[]");
+  const correctAnswer = JSON.parse(searchParams.get("correctAnswer") || "[]");
   const explanation = searchParams.get("explanation") || "";
-  const index = Number(searchParams.get("index") ?? 0);
   const topic = searchParams.get("topic") || "";
+
+  const formatAnswers = (answers) => {
+    if (Array.isArray(answers)) {
+      return answers.join(", ");
+    }
+    return answers;
+  };
 
   const handleContinue = () => {
     router.push(`/test?topic=${encodeURIComponent(topic)}`);
@@ -35,18 +41,14 @@ function IncorrectContent() {
       }}
     >
       <div style={{ fontSize: 72, marginBottom: 12 }}>❌</div>
-      <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>
-        Incorrect
-      </h1>
+      <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>Incorrect</h1>
       <div style={{ maxWidth: 760, marginBottom: 10 }}>
         <p><strong>Question:</strong> {question}</p>
-        <p><strong>Your answer:</strong> {userAnswer}</p>
-        <p><strong>Correct answer:</strong> {correctAnswer}</p>
+        <p><strong>Your answer(s):</strong> {formatAnswers(userAnswer)}</p>
+        <p><strong>Correct answer(s):</strong> {formatAnswers(correctAnswer)}</p>
       </div>
       {explanation && (
-        <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>
-          💡 {explanation}
-        </p>
+        <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>💡 {explanation}</p>
       )}
       <div style={{ marginTop: 30 }}>
         <small>Click anywhere to continue</small>
@@ -62,4 +64,3 @@ export default function IncorrectPage() {
     </Suspense>
   );
 }
-
