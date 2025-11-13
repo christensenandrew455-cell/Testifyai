@@ -10,7 +10,6 @@ function resolveCorrectTextTF(question, correct) {
   if (typeof correct === "number") {
     return String(question.answers?.[correct] ?? correct);
   }
-  // allow correct to be "True"/"False" or "A"/"B"
   if (typeof correct === "string" && /^[A-B]$/i.test(correct.trim())) {
     const idx = correct.trim().toUpperCase().charCodeAt(0) - 65;
     return String(question.answers?.[idx] ?? correct);
@@ -32,10 +31,11 @@ export default function TrueFalse({ question, onAnswer, topic, currentIndex, tot
 
     const isCorrect = normalizeAnswerText(userText) === normalizeAnswerText(correctText);
 
+    // ✅ wrap in array for consistent display
     const params = new URLSearchParams({
       question: question.question || "",
-      userAnswer: JSON.stringify(userText),
-      correctAnswer: JSON.stringify(correctText),
+      userAnswer: JSON.stringify([userText]),
+      correctAnswer: JSON.stringify([correctText]),
       explanation: question.explanation || "",
       index: String(currentIndex ?? 0),
       topic: topic || "",
@@ -44,7 +44,7 @@ export default function TrueFalse({ question, onAnswer, topic, currentIndex, tot
     router.push(`${isCorrect ? "/correct" : "/incorrect"}?${params.toString()}`);
 
     try {
-      onAnswer?.({ correct: isCorrect });
+      onAnswer?.({ correct: isCorrect, userAnswer: [userText] });
     } catch (e) {}
   };
 
