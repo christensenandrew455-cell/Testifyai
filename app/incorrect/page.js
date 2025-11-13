@@ -22,7 +22,6 @@ function IncorrectContent() {
     parsedCorrect = JSON.parse(decodeURIComponent(rawCorrect));
   } catch {}
 
-  // Retrieve question object for letter mapping
   let questionObj = null;
   try {
     const stored = sessionStorage.getItem("testData");
@@ -37,6 +36,10 @@ function IncorrectContent() {
     const answers = questionObj?.answers || [];
     const mapSingle = (val) => {
       if (val === null || val === undefined) return "";
+      if (typeof val === "number") {
+        const raw = answers[val] ?? "";
+        return `${String.fromCharCode(65 + val)}. ${raw}`;
+      }
       const idx = answers.indexOf(val);
       if (idx !== -1) return `${String.fromCharCode(65 + idx)}. ${val}`;
       return val;
