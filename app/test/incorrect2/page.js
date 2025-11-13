@@ -40,22 +40,49 @@ function Incorrect2Content() {
       }}
     >
       <div style={{ fontSize: 72, marginBottom: 16 }}>❌</div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16 }}>Incorrect</h1>
+      <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Incorrect</h1>
 
-      <div style={{ maxWidth: 760, marginBottom: 16, textAlign: "left", background: "rgba(255,255,255,0.1)", padding: "12px", borderRadius: "10px" }}>
-        <p><strong>Question:</strong> {question}</p>
-        <p><strong>Your answer:</strong> {userAnswer}</p>
-        {feedback && <p><strong>Explanation:</strong> {feedback}</p>}
+      <div style={{ maxWidth: 760, textAlign: "center" }}>
+        <p style={{ fontWeight: 700 }}>Question</p>
+        <p>{question}</p>
+
+        <p style={{ fontWeight: 700, marginTop: 3 }}>Your answer</p>
+        <p>{userAnswer}</p>
+
+        {feedback && (
+          <>
+            <p style={{ fontWeight: 700, marginTop: 3 }}>Explanation</p>
+            <p>{feedback}</p>
+          </>
+        )}
       </div>
 
-      <small>{canContinue ? "Click anywhere to continue" : "Please wait..."}</small>
+      <small style={{ marginTop: 30 }}>
+        {canContinue ? "Click anywhere to continue" : "Please wait..."}
+      </small>
     </div>
   );
 }
 
 export default function Incorrect2Page() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", fontFamily: "Segoe UI, Roboto, sans-serif", fontSize: "1.4rem", color: "#1976d2" }}>Loading result…</div>}>
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontFamily: "Segoe UI, Roboto, sans-serif",
+            fontSize: "1.4rem",
+            color: "#1976d2",
+          }}
+        >
+          Loading result…
+        </div>
+      }
+    >
       <Incorrect2Content />
     </Suspense>
   );
