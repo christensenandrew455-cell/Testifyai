@@ -4,11 +4,17 @@ export const dynamic = "force-dynamic";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Response({ question, onAnswer, topic, currentIndex, totalQuestions, difficulty }) {
+export default function Response({
+  question,
+  onAnswer,
+  topic,
+  currentIndex,
+  totalQuestions,
+  difficulty,
+}) {
   const [answer, setAnswer] = useState("");
   const router = useRouter();
 
-  // ✅ Prevent crash if question is missing during prerender
   if (!question || !question.question) {
     return (
       <div
@@ -42,36 +48,16 @@ export default function Response({ question, onAnswer, topic, currentIndex, tota
     );
   }
 
-  // 🧠 Send to AI grading route
-  const handleCheck = async () => {
-    try {
-      // Navigate to loading page immediately
-      router.push("/loading");
+  // ✅ Go to grading page (loading spinner) and pass data in URL
+  const handleCheck = () => {
+    const data = {
+      question: question.question,
+      answer,
+      topic,
+      difficulty,
+    };
 
-      const res = await fetch("/api/grade-answer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question: question.question,
-          topic,
-          difficulty,
-          answer,
-        }),
-      });
-
-      const data = await res.json();
-
-      // Handle grading result (assume "correct" field in response)
-      if (data.correct) {
-        router.push("/correct2");
-      } else {
-        router.push("/incorrect2");
-      }
-    } catch (err) {
-      console.error("❌ Error grading answer:", err);
-      alert("Error grading your answer. Try again.");
-      router.push("/incorrect2");
-    }
+    router.push(`/test/grading?data=${encodeURIComponent(JSON.stringify(data))}`);
   };
 
   return (
