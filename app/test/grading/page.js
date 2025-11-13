@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-function GradingContent() {
+export default function GradingPage() {
   const [statusText, setStatusText] = useState("AI is grading your answer...");
   const router = useRouter();
   const params = useSearchParams();
@@ -18,8 +18,7 @@ function GradingContent() {
     let payload;
     try {
       payload = JSON.parse(dataParam);
-    } catch (err) {
-      console.error("Failed to parse grading data:", err);
+    } catch {
       setStatusText("Invalid grading data. Redirecting...");
       setTimeout(() => router.push("/"), 2000);
       return;
@@ -41,19 +40,21 @@ function GradingContent() {
 
         const data = await res.json();
 
+        // send index so correct2/incorrect2 can increment
         const query = new URLSearchParams({
-          question: encodeURIComponent(payload.question || "No question provided"),
-          userAnswer: encodeURIComponent(payload.answer || "—"),
-          feedback: encodeURIComponent(data.feedback || ""),
+          feedback: data.feedback || "",
+          question: payload.question,
+          userAnswer: payload.answer,
+          index: payload.currentIndex ?? 0,
         });
 
-        if (data.correct === true) {
+        if (data.correct) {
           router.push(`/test/correct2?${query.toString()}`);
         } else {
           router.push(`/test/incorrect2?${query.toString()}`);
         }
       } catch (err) {
-        console.error("Grading failed:", err);
+        console.error(err);
         setStatusText("An error occurred while grading your answer.");
       }
     };
@@ -93,29 +94,5 @@ function GradingContent() {
         }
       `}</style>
     </div>
-  );
-}
-
-export default function GradingPage() {
-  return (
-    <Suspense
-      fallback={
-        <div
-          style={{
-            minHeight: "100vh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "1.4rem",
-            fontFamily: "Segoe UI, Roboto, sans-serif",
-            color: "#1976d2",
-          }}
-        >
-          Preparing AI grading screen…
-        </div>
-      }
-    >
-      <GradingContent />
-    </Suspense>
   );
 }
