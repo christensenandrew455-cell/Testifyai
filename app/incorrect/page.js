@@ -2,21 +2,81 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
+function safeJSONParse(raw) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+}
+
+function normalizeText(s = "") {
+  return String(s).replace(/^[A-Z]\s*[\.\)]\s*/i, "").trim().toLowerCase();
+}
+
+function mapToLetterText(answerValue, questionObj) {
+  if (!questionObj || !questionObj.answers) {
+    if (Array.isArray(answerValue)) return answerValue.join(", ");
+    return String(answerValue);
+  }
+
+  const answers = questionObj.answers;
+
+  const mapSingle = (val) => {
+    if (typeof val === "number") {
+      const idx = val;
+      const text = answers[idx] ?? String(val);
+      return `${String.fromCharCode(65 + idx)}. ${text}`;
+    }
+    const s = String(val).trim();
+    if (/^[A-Z]$/i.test(s)) {
+      const idx = s.toUpperCase().charCodeAt(0) - 65;
+      const text = answers[idx] ?? s;
+      return `${String.fromCharCode(65 + idx)}. ${text}`;
+    }
+    const foundIdx = answers.findIndex((a) => normalizeText(a) === normalizeText(s));
+    if (foundIdx !== -1) {
+      return `${String.fromCharCode(65 + foundIdx)}. ${answers[foundIdx]}`;
+    }
+    return String(s);
+  };
+
+  if (Array.isArray(answerValue)) {
+    return answerValue.map(mapSingle).join(", ");
+  }
+  return mapSingle(answerValue);
+}
+
 function IncorrectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const question = searchParams.get("question") || "";
-  const userAnswer = JSON.parse(searchParams.get("userAnswer") || "[]");
-  const correctAnswer = JSON.parse(searchParams.get("correctAnswer") || "[]");
+
+  const rawQuestion = searchParams.get("question") || "";
+  const rawUser = searchParams.get("userAnswer") || '""';
+  const rawCorrect = searchParams.get("correctAnswer") || '""';
   const explanation = searchParams.get("explanation") || "";
+  const index = Number(searchParams.get("index") || 0);
   const topic = searchParams.get("topic") || "";
 
-  const formatAnswers = (answers) => {
-    if (Array.isArray(answers)) {
-      return answers.join(", ");
+  const parsedUser = safeJSONParse(rawUser);
+  const parsedCorrect = safeJSONParse(rawCorrect);
+
+  let questionObj = null;
+  try {
+    const stored = sessionStorage.getItem("testData");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const questionsArr = Array.isArray(parsed) ? parsed : parsed.questions || parsed;
+      if (Array.isArray(questionsArr) && questionsArr[index]) {
+        questionObj = questionsArr[index];
+      }
     }
-    return answers;
-  };
+  } catch (e) {
+    questionObj = null;
+  }
+
+  const displayUser = mapToLetterText(parsedUser, questionObj);
+  const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
 
   const handleContinue = () => {
     router.push(`/test?topic=${encodeURIComponent(topic)}`);
@@ -42,14 +102,17 @@ function IncorrectContent() {
     >
       <div style={{ fontSize: 72, marginBottom: 12 }}>❌</div>
       <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>Incorrect</h1>
-      <div style={{ maxWidth: 760, marginBottom: 10 }}>
-        <p><strong>Question:</strong> {question}</p>
-        <p><strong>Your answer(s):</strong> {formatAnswers(userAnswer)}</p>
-        <p><strong>Correct answer(s):</strong> {formatAnswers(correctAnswer)}</p>
+
+      <div style={{ maxWidth: 760, marginBottom: 10, textAlign: "left" }}>
+        <p><strong>Question:</strong> {rawQuestion}</p>
+        <p><strong>Your answer(s):</strong> {displayUser}</p>
+        <p><strong>Correct answer(s):</strong> {displayCorrect}</p>
       </div>
+
       {explanation && (
         <p style={{ maxWidth: 760, marginTop: 12, opacity: 0.95 }}>💡 {explanation}</p>
       )}
+
       <div style={{ marginTop: 30 }}>
         <small>Click anywhere to continue</small>
       </div>
