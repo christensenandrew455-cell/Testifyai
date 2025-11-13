@@ -7,10 +7,48 @@ function CorrectContent() {
   const searchParams = useSearchParams();
 
   const rawQuestion = searchParams.get("question") || "";
-  const userAnswer = searchParams.get("userAnswer") || "";
-  const correctAnswer = searchParams.get("correctAnswer") || "";
+  const rawUser = searchParams.get("userAnswer") || "[]";
+  const rawCorrect = searchParams.get("correctAnswer") || "[]";
   const explanation = searchParams.get("explanation") || "";
   const index = Number(searchParams.get("index") || 0);
+
+  let parsedUser = [];
+  let parsedCorrect = [];
+
+  try {
+    parsedUser = JSON.parse(decodeURIComponent(rawUser));
+  } catch {}
+  try {
+    parsedCorrect = JSON.parse(decodeURIComponent(rawCorrect));
+  } catch {}
+
+  // Retrieve question object for letter mapping
+  let questionObj = null;
+  try {
+    const stored = sessionStorage.getItem("testData");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      questionObj = parsed.questions?.[index] || null;
+    }
+  } catch {}
+
+  // Map answers to letters (A., B., C.)
+  function mapToLetterText(answerValue, questionObj) {
+    if (!answerValue) return "—";
+    const answers = questionObj?.answers || [];
+    const mapSingle = (val) => {
+      if (val === null || val === undefined) return "";
+      const idx = answers.indexOf(val);
+      if (idx !== -1) return `${String.fromCharCode(65 + idx)}. ${val}`;
+      return val;
+    };
+    return Array.isArray(answerValue)
+      ? answerValue.map(mapSingle).join(", ")
+      : mapSingle(answerValue);
+  }
+
+  const displayUser = mapToLetterText(parsedUser, questionObj);
+  const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
 
   const handleContinue = () => {
     sessionStorage.setItem("currentIndex", String(index + 1));
@@ -42,8 +80,8 @@ function CorrectContent() {
 
       <div style={{ maxWidth: 760, marginBottom: 10, textAlign: "left" }}>
         <p><strong>Question:</strong> {rawQuestion}</p>
-        <p><strong>Your answer:</strong> {userAnswer}</p>
-        <p><strong>Correct answer:</strong> {correctAnswer}</p>
+        <p><strong>Your answer(s):</strong> {displayUser}</p>
+        <p><strong>Correct answer(s):</strong> {displayCorrect}</p>
       </div>
 
       {explanation && (
