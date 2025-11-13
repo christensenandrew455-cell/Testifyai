@@ -19,7 +19,7 @@ function Correct2Content() {
 
   const handleContinue = () => {
     if (!canContinue) return;
-    router.push("/test/controller"); // or wherever the next question is
+    router.push("/test/controller");
   };
 
   return (
@@ -42,10 +42,15 @@ function Correct2Content() {
       <div style={{ fontSize: 72, marginBottom: 16 }}>✅</div>
       <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16 }}>Correct!</h1>
 
-      <div style={{ maxWidth: 760, marginBottom: 16, textAlign: "left", background: "rgba(255,255,255,0.1)", padding: "12px", borderRadius: "10px" }}>
-        <p><strong>Question:</strong> {question}</p>
-        <p><strong>Your answer:</strong> {userAnswer}</p>
-        {feedback && <p><strong>Explanation:</strong> {feedback}</p>}
+      <div style={{ maxWidth: 760, marginBottom: 16, textAlign: "center", background: "rgba(255,255,255,0.1)", padding: "16px", borderRadius: "12px" }}>
+        <p><strong>Question:</strong></p>
+        <p>{question}</p>
+        <p><strong>Your answer:</strong></p>
+        <p>{userAnswer}</p>
+        {feedback && <>
+          <p><strong>Explanation:</strong></p>
+          <p>{feedback}</p>
+        </>}
       </div>
 
       <small>{canContinue ? "Click anywhere to continue" : "Please wait..."}</small>
