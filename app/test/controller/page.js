@@ -50,10 +50,9 @@ function TestControllerInner() {
   const question = questions[index];
 
   const handleAnswer = ({ correct }) => {
-    setTimeout(() => {
-      if (index + 1 < questions.length) setIndex(index + 1);
-      else alert("✅ Test complete!");
-    }, 200);
+    if (index + 1 < questions.length) {
+      setIndex(index + 1);
+    }
   };
 
   const renderComponent = () => {
