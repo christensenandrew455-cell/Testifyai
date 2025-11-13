@@ -30,13 +30,10 @@ function TestControllerInner() {
           "testData",
           JSON.stringify({ ...decoded, questions: normalized })
         );
-        sessionStorage.setItem("resumeIndex", "0");
+        sessionStorage.setItem("currentIndex", "0");
 
         setQuestions(normalized);
-
-        // start at resumeIndex
-        const savedResume = Number(sessionStorage.getItem("resumeIndex") || 0);
-        setIndex(savedResume);
+        setIndex(0);
       } catch (err) {
         console.error("❌ Failed to decode test data:", err);
       }
@@ -47,8 +44,8 @@ function TestControllerInner() {
         setQuestions(data.questions || []);
         setTopic(data.topic || "Unknown Topic");
 
-        const savedResume = Number(sessionStorage.getItem("resumeIndex") || 0);
-        setIndex(savedResume);
+        const savedIndex = Number(sessionStorage.getItem("currentIndex") || 0);
+        setIndex(savedIndex);
       }
     }
     setLoading(false);
@@ -56,7 +53,7 @@ function TestControllerInner() {
 
   useEffect(() => {
     if (questions.length > 0) {
-      sessionStorage.setItem("resumeIndex", String(index));
+      sessionStorage.setItem("currentIndex", String(index));
     }
   }, [index, questions]);
 
@@ -65,17 +62,25 @@ function TestControllerInner() {
 
   const question = questions[index];
 
+  // ✅ Fixed version of handleAnswer
   const handleAnswer = ({ correct, userAnswer }) => {
-    // don’t advance yet — feedback page will do that
+    // Ensure userAnswer is always valid JSON-safe data
+    const safeUserAnswer =
+      userAnswer === undefined || userAnswer === null || userAnswer === ""
+        ? []
+        : Array.isArray(userAnswer)
+        ? userAnswer
+        : [userAnswer];
+
     const nextPage = correct ? "/correct" : "/incorrect";
 
     const params = new URLSearchParams({
-      question: question.question,
-      userAnswer: JSON.stringify(userAnswer),
-      correctAnswer: JSON.stringify(question.correct),
+      question: question.question || "",
+      userAnswer: JSON.stringify(safeUserAnswer),
+      correctAnswer: JSON.stringify(question.correct || []),
       explanation: question.explanation || "",
       index: String(index),
-      topic,
+      topic: topic || "",
     });
 
     router.push(`${nextPage}?${params.toString()}`);
