@@ -40,18 +40,18 @@ function Correct2Content() {
       }}
     >
       <div style={{ fontSize: 72, marginBottom: 16 }}>✅</div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16 }}>Correct!</h1>
+      <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Correct!</h1>
 
       <div style={{ maxWidth: 760, textAlign: "center" }}>
         <p style={{ fontWeight: 700 }}>Question</p>
         <p>{question}</p>
 
-        <p style={{ fontWeight: 700, marginTop: 12 }}>Your answer</p>
+        <p style={{ fontWeight: 700, marginTop: 4 }}>Your answer</p>
         <p>{userAnswer}</p>
 
         {feedback && (
           <>
-            <p style={{ fontWeight: 700, marginTop: 12 }}>Explanation</p>
+            <p style={{ fontWeight: 700, marginTop: 4 }}>Explanation</p>
             <p>{feedback}</p>
           </>
         )}
