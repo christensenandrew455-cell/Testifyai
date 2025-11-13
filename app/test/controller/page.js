@@ -109,7 +109,8 @@ function TestControllerInner() {
         return <TrueFalse {...commonProps} />;
       case "multi-select":
         return <MultiSelect {...commonProps} />;
-      case "response":
+      case "open-response":
+      case "short-answer":
         return <Response {...commonProps} />;
       default:
         return <div>Unknown question type: {question.type}</div>;
