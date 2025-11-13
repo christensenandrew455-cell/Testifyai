@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function GradingPage() {
+function GradingContent() {
   const [statusText, setStatusText] = useState("AI is grading your answer...");
   const router = useRouter();
   const params = useSearchParams();
@@ -22,16 +22,20 @@ export default function GradingPage() {
             question: payload.question,
             userAnswer: payload.answer,
             difficulty: payload.difficulty,
-            topic: payload.topic
+            topic: payload.topic,
           }),
         });
 
         const data = await res.json();
 
         if (data.correct === true) {
-          router.push(`/test/correct2?feedback=${encodeURIComponent(data.feedback)}`);
+          router.push(
+            `/test/correct2?feedback=${encodeURIComponent(data.feedback)}`
+          );
         } else {
-          router.push(`/test/incorrect2?feedback=${encodeURIComponent(data.feedback)}`);
+          router.push(
+            `/test/incorrect2?feedback=${encodeURIComponent(data.feedback)}`
+          );
         }
       } catch (err) {
         console.error("Grading failed:", err);
@@ -43,26 +47,30 @@ export default function GradingPage() {
   }, [params, router]);
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      background: "linear-gradient(135deg, #1976d2, #ff9800)",
-      color: "white",
-      fontFamily: "Segoe UI, Roboto, sans-serif",
-      textAlign: "center"
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(135deg, #1976d2, #ff9800)",
+        color: "white",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
+        textAlign: "center",
+      }}
+    >
       <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>{statusText}</h1>
-      <div style={{
-        width: "70px",
-        height: "70px",
-        border: "6px solid rgba(255,255,255,0.3)",
-        borderTopColor: "white",
-        borderRadius: "50%",
-        animation: "spin 1s linear infinite"
-      }} />
+      <div
+        style={{
+          width: "70px",
+          height: "70px",
+          border: "6px solid rgba(255,255,255,0.3)",
+          borderTopColor: "white",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+        }}
+      />
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
@@ -70,5 +78,29 @@ export default function GradingPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function GradingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1.4rem",
+            fontFamily: "Segoe UI, Roboto, sans-serif",
+            color: "#1976d2",
+          }}
+        >
+          Preparing AI grading screen…
+        </div>
+      }
+    >
+      <GradingContent />
+    </Suspense>
   );
 }
