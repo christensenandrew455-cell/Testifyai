@@ -1,12 +1,52 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
+function normalizeAnswerText(s = "") {
+  return String(s).trim().toLowerCase();
+}
+
+function resolveCorrectTextTF(question, correct) {
+  if (typeof correct === "number") {
+    return String(question.answers?.[correct] ?? correct);
+  }
+  // allow correct to be "True"/"False" or "A"/"B"
+  if (typeof correct === "string" && /^[A-B]$/i.test(correct.trim())) {
+    const idx = correct.trim().toUpperCase().charCodeAt(0) - 65;
+    return String(question.answers?.[idx] ?? correct);
+  }
+  return String(correct);
+}
+
 export default function TrueFalse({ question, onAnswer, topic, currentIndex, totalQuestions }) {
+  const [selected, setSelected] = useState(null);
   const router = useRouter();
+
   if (!question) return null;
 
-  const handleAnswer = (i) => onAnswer({ correct: i === question.correct });
+  const handleCheck = () => {
+    if (selected === null) return;
+
+    const userText = String(question.answers?.[selected] ?? "");
+    const correctText = resolveCorrectTextTF(question, question.correct);
+
+    const isCorrect = normalizeAnswerText(userText) === normalizeAnswerText(correctText);
+
+    const params = new URLSearchParams({
+      question: question.question || "",
+      userAnswer: JSON.stringify(userText),
+      correctAnswer: JSON.stringify(correctText),
+      explanation: question.explanation || "",
+      index: String(currentIndex ?? 0),
+      topic: topic || "",
+    });
+
+    router.push(`${isCorrect ? "/correct" : "/incorrect"}?${params.toString()}`);
+
+    try {
+      onAnswer?.({ correct: isCorrect });
+    } catch (e) {}
+  };
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", backgroundColor: "#f8fafc", padding: "40px 20px", fontFamily: "Segoe UI, Roboto, sans-serif", color: "#222" }}>
@@ -24,8 +64,8 @@ export default function TrueFalse({ question, onAnswer, topic, currentIndex, tot
 
       {/* Answers */}
       <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", maxWidth: "400px" }}>
-        {["True", "False"].map((ans, i) => (
-          <button key={i} onClick={() => handleAnswer(i)} style={{ padding: "12px 20px", borderRadius: "12px", border: "2px solid rgba(0,0,0,0.1)", backgroundColor: "white", cursor: "pointer", fontSize: "1rem", fontWeight: 600, transition: "all 0.2s" }}>
+        {question.answers?.map((ans, i) => (
+          <button key={i} onClick={() => setSelected(i)} style={{ padding: "12px 20px", borderRadius: "12px", border: selected === i ? "3px solid #1976d2" : "2px solid rgba(0,0,0,0.1)", backgroundColor: selected === i ? "rgba(25,118,210,0.1)" : "white", cursor: "pointer", fontSize: "1rem", fontWeight: 600 }}>
             {ans}
           </button>
         ))}
@@ -34,7 +74,7 @@ export default function TrueFalse({ question, onAnswer, topic, currentIndex, tot
       {/* Footer */}
       <div style={{ width: "100%", maxWidth: "700px", display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "24px" }}>
         <div style={{ fontWeight: 600 }}>Question {currentIndex + 1} of {totalQuestions}</div>
-        <div /> {/* placeholder for spacing; no check needed since answers act immediately */}
+        <button onClick={handleCheck} style={{ backgroundColor: "#1976d2", color: "white", border: "none", borderRadius: "12px", padding: "10px 20px", fontWeight: 700, cursor: "pointer" }}>Check</button>
       </div>
     </div>
   );
