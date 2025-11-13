@@ -31,19 +31,32 @@ function CorrectContent() {
     }
   } catch {}
 
+  // --- universal answer formatter ---
   function mapToLetterText(answerValue, questionObj) {
     if (!answerValue) return "—";
     const answers = questionObj?.answers || [];
+
+    // detect True/False or response (no letters)
+    const isTrueFalse =
+      Array.isArray(answers) &&
+      answers.length === 2 &&
+      answers.every((a) =>
+        ["true", "false"].includes(String(a).trim().toLowerCase())
+      );
+
     const mapSingle = (val) => {
       if (val === null || val === undefined) return "";
+      if (isTrueFalse || answers.length === 0) return String(val);
       if (typeof val === "number") {
         const raw = answers[val] ?? "";
         return `${String.fromCharCode(65 + val)}. ${raw}`;
       }
       const idx = answers.indexOf(val);
-      if (idx !== -1) return `${String.fromCharCode(65 + idx)}. ${val}`;
+      if (idx !== -1)
+        return `${String.fromCharCode(65 + idx)}. ${val}`;
       return val;
     };
+
     return Array.isArray(answerValue)
       ? answerValue.map(mapSingle).join(", ")
       : mapSingle(answerValue);
