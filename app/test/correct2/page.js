@@ -42,25 +42,47 @@ function Correct2Content() {
       <div style={{ fontSize: 72, marginBottom: 16 }}>✅</div>
       <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16 }}>Correct!</h1>
 
-      <div style={{ maxWidth: 760, marginBottom: 16, textAlign: "center", background: "rgba(255,255,255,0.1)", padding: "16px", borderRadius: "12px" }}>
-        <p><strong>Question:</strong></p>
+      <div style={{ maxWidth: 760, textAlign: "center" }}>
+        <p style={{ fontWeight: 700 }}>Question</p>
         <p>{question}</p>
-        <p><strong>Your answer:</strong></p>
+
+        <p style={{ fontWeight: 700, marginTop: 12 }}>Your answer</p>
         <p>{userAnswer}</p>
-        {feedback && <>
-          <p><strong>Explanation:</strong></p>
-          <p>{feedback}</p>
-        </>}
+
+        {feedback && (
+          <>
+            <p style={{ fontWeight: 700, marginTop: 12 }}>Explanation</p>
+            <p>{feedback}</p>
+          </>
+        )}
       </div>
 
-      <small>{canContinue ? "Click anywhere to continue" : "Please wait..."}</small>
+      <small style={{ marginTop: 30 }}>
+        {canContinue ? "Click anywhere to continue" : "Please wait..."}
+      </small>
     </div>
   );
 }
 
 export default function Correct2Page() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", fontFamily: "Segoe UI, Roboto, sans-serif", fontSize: "1.4rem", color: "#1976d2" }}>Loading result…</div>}>
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontFamily: "Segoe UI, Roboto, sans-serif",
+            fontSize: "1.4rem",
+            color: "#1976d2",
+          }}
+        >
+          Loading result…
+        </div>
+      }
+    >
       <Correct2Content />
     </Suspense>
   );
