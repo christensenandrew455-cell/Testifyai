@@ -63,7 +63,7 @@ function TestControllerInner() {
   const question = questions[index];
 
   const handleAnswer = ({ correct, userAnswer }) => {
-    // Convert to array for multi-select
+    // Make sure userAnswer is always an array
     const safeUserAnswer =
       userAnswer === undefined || userAnswer === null
         ? []
@@ -75,8 +75,10 @@ function TestControllerInner() {
       question.correct === undefined || question.correct === null
         ? []
         : Array.isArray(question.correct)
-        ? question.correct
-        : [question.correct];
+        ? question.correct.map((ans) =>
+            typeof ans === "number" ? ans : question.answers.indexOf(ans)
+          )
+        : [question.answers.indexOf(question.correct)];
 
     const params = new URLSearchParams({
       question: question.question || "",
