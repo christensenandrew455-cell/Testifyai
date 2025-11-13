@@ -1,87 +1,84 @@
-import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-function safeParseJSON(text) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    const match = text.match(/(\[.*\]|\{.*\})/s);
-    if (match) {
-      try {
-        return JSON.parse(match[0]);
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  }
-}
-
 export async function POST(req) {
   try {
-    const { topic, difficulty = 1, numQuestions = 5 } = await req.json();
-
-    if (!topic) {
-      return NextResponse.json({ error: "Missing topic" }, { status: 400 });
-    }
+    const { topic, difficulty, numQuestions = 5, numAnswers = 4 } = await req.json();
 
     const prompt = `
 You are TestifyAI. Generate ${numQuestions} multiple-choice questions about "${topic}".
-Difficulty: ${difficulty}
-Return ONLY JSON:
+Difficulty: ${difficulty}.
+
+Rules:
+1. Each question must have exactly ${numAnswers} unique answer options labeled A, B, C, D, etc.
+2. Each question must have exactly ONE correct answer.
+3. Provide a short, one-sentence educational explanation for each question.
+4. Output ONLY valid JSON, like this:
+
 [
   {
     "question": "string",
-    "answers": ["A","B","C","D"],
-    "correct": "A",
+    "answers": ["string", "string", "string", "string"],
+    "correct": "string",
     "explanation": "string"
   }
 ]
 `;
 
-    let content = "";
-    try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      });
-      content =
-        response.choices?.[0]?.message?.content
-          ?.trim()
-          ?.replace(/```json|```/g, "") ?? "";
-    } catch (err) {
-      console.error("❌ OpenAI call failed:", err);
-      content = "";
-    }
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    });
 
-    let parsed = safeParseJSON(content);
+    let content = response.choices[0].message.content.trim();
+    content = content.replace(/```(json)?/g, "").trim();
 
-    if (!parsed) {
-      console.warn("⚠️ Using mock fallback questions.");
-      parsed = Array.from({ length: numQuestions }).map((_, i) => ({
-        type: "multiple-choice",
-        question: `Sample question ${i + 1} about ${topic}`,
-        answers: ["Option A", "Option B", "Option C", "Option D"],
-        correct: "Option A",
-        explanation: `Explanation for question ${i + 1}.`,
-      }));
-    } else {
-      parsed = parsed.map((q) => ({
-        type: "multiple-choice",
-        ...q,
-        correct: q.correct || q.answers?.[0] || "A",
-      }));
-    }
+    let questions = JSON.parse(content);
 
-    return NextResponse.json({ topic, difficulty, questions: parsed });
+    // ✅ Post-processing to ensure clean structure
+    questions = questions.map((q, i) => {
+      let answers = Array.from(new Set(q.answers || []));
+      if (answers.length < numAnswers) {
+        const needed = numAnswers - answers.length;
+        for (let j = 0; j < needed; j++) {
+          answers.push(`Extra option ${j + 1}`);
+        }
+      }
+
+      // ensure correct answer exists in answers
+      let correct = q.correct;
+      if (!answers.includes(correct)) {
+        correct = answers[0]; // fallback to first
+      }
+
+      // shuffle answers *after* we confirm correct exists
+      answers = answers.sort(() => Math.random() - 0.5);
+
+      return {
+        question: q.question || `Sample question ${i + 1} about ${topic}`,
+        answers,
+        correct,
+        explanation:
+          q.explanation ||
+          "This question helps reinforce your understanding of the topic.",
+      };
+    });
+
+    return new Response(JSON.stringify({ questions }), {
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
-    console.error("❌ /api/multiple-choice error:", err);
-    return NextResponse.json(
-      { error: "Multiple-choice generation failed" },
-      { status: 500 }
-    );
+    console.error("❌ Multiple-choice generation error:", err);
+    const fallback = Array.from({ length: 5 }).map((_, i) => ({
+      question: `Sample multiple-choice question ${i + 1} about topic`,
+      answers: ["Option A", "Option B", "Option C", "Option D"],
+      correct: "Option A",
+      explanation: `Explanation for question ${i + 1}.`,
+    }));
+    return new Response(JSON.stringify({ questions: fallback }), {
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
