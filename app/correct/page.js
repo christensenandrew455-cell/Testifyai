@@ -89,23 +89,23 @@ function CorrectContent() {
         opacity: canContinue ? 1 : 0.8,
       }}
     >
-      <div style={{ fontSize: 72, marginBottom: 12 }}>✅</div>
-      <h1 style={{ fontSize: 28, marginBottom: 16, fontWeight: 800 }}>Correct!</h1>
+      <div style={{ fontSize: 72, marginBottom: 30 }}>✅</div>
+      <h1 style={{ fontSize: 28, marginBottom: 8, fontWeight: 800 }}>Correct!</h1>
 
-      <div style={{ maxWidth: 760, marginBottom: 10, textAlign: "center" }}>
+      <div style={{ maxWidth: 760, marginBottom: 3, textAlign: "center" }}>
         <p style={{ fontWeight: 700 }}>Question</p>
         <p>{rawQuestion}</p>
 
-        <p style={{ fontWeight: 700, marginTop: 12 }}>Your answer(s)</p>
+        <p style={{ fontWeight: 700, marginTop: 3 }}>Your answer(s)</p>
         <p>{displayUser}</p>
 
-        <p style={{ fontWeight: 700, marginTop: 12 }}>Correct answer(s)</p>
+        <p style={{ fontWeight: 700, marginTop: 3 }}>Correct answer(s)</p>
         <p>{displayCorrect}</p>
       </div>
 
       {explanation && (
         <>
-          <p style={{ fontWeight: 700, marginTop: 12 }}>Explanation</p>
+          <p style={{ fontWeight: 700, marginTop: 3 }}>Explanation</p>
           <p style={{ maxWidth: 760, opacity: 0.95 }}>{explanation}</p>
         </>
       )}
