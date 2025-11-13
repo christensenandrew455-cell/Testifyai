@@ -11,7 +11,7 @@ function GradingContent() {
     const dataParam = params.get("data");
     if (!dataParam) {
       setStatusText("No grading data found. Redirecting...");
-      setTimeout(() => router.push("/"), 2000); // Graceful redirect
+      setTimeout(() => router.push("/"), 2000);
       return;
     }
 
@@ -35,16 +35,22 @@ function GradingContent() {
             userAnswer: payload.answer,
             difficulty: payload.difficulty,
             topic: payload.topic,
-            type: payload.type || "short-answer", // default type
+            type: payload.type || "short-answer",
           }),
         });
 
         const data = await res.json();
 
+        const query = new URLSearchParams({
+          question: encodeURIComponent(payload.question || "No question provided"),
+          userAnswer: encodeURIComponent(payload.answer || "—"),
+          feedback: encodeURIComponent(data.feedback || ""),
+        });
+
         if (data.correct === true) {
-          router.push(`/test/correct2?feedback=${encodeURIComponent(data.feedback || "")}`);
+          router.push(`/test/correct2?${query.toString()}`);
         } else {
-          router.push(`/test/incorrect2?feedback=${encodeURIComponent(data.feedback || "")}`);
+          router.push(`/test/incorrect2?${query.toString()}`);
         }
       } catch (err) {
         console.error("Grading failed:", err);
