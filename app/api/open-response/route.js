@@ -7,17 +7,14 @@ export async function POST(req) {
     const { topic, difficulty, numQuestions = 5 } = await req.json();
 
     const prompt = `
-You are TestifyAI. Generate ${numQuestions} open-response questions on "${topic}".
-Difficulty level: ${difficulty}
+You are TestifyAI. Generate ${numQuestions} open-response questions on the topic: "${topic}".
+Difficulty level: ${difficulty} (1 = easy, 9 = very hard).
 
 Rules:
-1. Provide questions only (no multiple-choice answers or correct answers).
-2. Output ONLY valid JSON like this:
+1. Only provide the question text — no answers, no explanations.
+2. Output must be VALID JSON exactly like this:
 [
-  {
-    "question": "string",
-    "explanation": "string"
-  }
+  { "question": "string" }
 ]
 `;
 
