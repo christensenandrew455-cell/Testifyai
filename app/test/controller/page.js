@@ -62,27 +62,23 @@ function TestControllerInner() {
 
   const question = questions[index];
 
-  // ✅ Fixed version of handleAnswer
+  // ✅ Fixed handleAnswer
   const handleAnswer = ({ correct, userAnswer }) => {
-    // Ensure userAnswer is always valid JSON-safe data
     const safeUserAnswer =
-      userAnswer === undefined || userAnswer === null || userAnswer === ""
-        ? []
-        : Array.isArray(userAnswer)
-        ? userAnswer
-        : [userAnswer];
+      userAnswer === undefined || userAnswer === null ? "" : String(userAnswer);
 
-    const nextPage = correct ? "/correct" : "/incorrect";
+    const safeCorrectAnswer = String(question.correct || "");
 
     const params = new URLSearchParams({
       question: question.question || "",
-      userAnswer: JSON.stringify(safeUserAnswer),
-      correctAnswer: JSON.stringify(question.correct || []),
+      userAnswer: safeUserAnswer,
+      correctAnswer: safeCorrectAnswer,
       explanation: question.explanation || "",
       index: String(index),
       topic: topic || "",
     });
 
+    const nextPage = correct ? "/correct" : "/incorrect";
     router.push(`${nextPage}?${params.toString()}`);
   };
 
