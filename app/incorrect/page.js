@@ -3,11 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 function safeJSONParse(raw) {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return raw;
-  }
+  try { return JSON.parse(raw); } catch { return raw; }
 }
 
 function stripLeadingLetter(s = "") {
@@ -25,7 +21,6 @@ function mapToLetterText(answerValue, questionObj) {
   }
 
   const answers = questionObj.answers;
-
   const mapSingle = (val) => {
     if (val === null || val === undefined) return "";
     const s = String(val).trim();
@@ -83,7 +78,8 @@ function IncorrectContent() {
   const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
 
   const handleContinue = () => {
-    router.push(`/test/controller`);
+    sessionStorage.setItem("resumeIndex", String(index + 1));
+    router.push("/test/controller");
   };
 
   return (
