@@ -9,23 +9,25 @@ export async function POST(req) {
 You are TestifyAI. Generate ${numQuestions} MULTI-SELECT questions about "${topic}".
 Difficulty: ${difficulty}.
 
-Each question MUST start with:
-"Choose between 2–5 possible answers below."
+For each question:
+- Put the QUESTION first
+- Then a new line, then: "Choose between 2–5 possible answers below."
 
-IMPORTANT:
-Interpret the topic EXACTLY as written. Do NOT reinterpret the topic.
-If the topic is broad or ambiguous, generate questions that stay strictly within the user's words.
+INTERPRET THE TOPIC EXACTLY AS WRITTEN.
+Do NOT change or reinterpret the topic.
+If the topic is broad or unclear, stay strictly inside the literal meaning.
 
 Rules:
-1. Each question must have exactly ${numAnswers} answer options.
-2. Each question must have BETWEEN **2 and 5 correct answers** (smartly chosen).
-3. Correct answers must logically match the question.
-4. Explanations must match the correct answers.
-5. Output ONLY JSON like this:
+1. Each question must have EXACTLY ${numAnswers} answer options.
+2. Each question must have BETWEEN 2–5 correct answers.
+3. Correct answers must logically fit the question.
+4. Explanations MUST match the correct answers.
+
+Return ONLY VALID JSON, like:
 
 [
   {
-    "question": "Choose between 2–5 possible answers below.\\nWhat is ...?",
+    "question": "What is ...?\\nChoose between 2–5 possible answers below.",
     "answers": ["A", "B", "C", "D", "E"],
     "correct": ["A", "C"],
     "explanation": "string"
@@ -44,44 +46,26 @@ Rules:
 
     let questions = JSON.parse(content);
 
-    // 🛠 FIX: Ensure 2–5 CORRECT answers WITHOUT overriding AI logic
+    // Ensure valid answers + corrects
     questions = questions.map((q, i) => {
       let answers = Array.from(new Set(q.answers || []));
-
-      // pad answers if AI gives fewer than required
       while (answers.length < numAnswers) {
         answers.push(`Extra option ${answers.length + 1}`);
       }
-
       answers = answers.slice(0, numAnswers);
 
-      let correct = q.correct || [];
+      let correct = (q.correct || []).filter(a => answers.includes(a));
 
-      // ensure correct answers actually appear in answers list
-      correct = correct.filter(ans => answers.includes(ans));
-
-      // if too FEW correct answers, add logically unchosen ones (not random multiple incorrect)
       if (correct.length < 2) {
-        const missing = answers
-          .filter(a => !correct.includes(a))
-          .slice(0, 2 - correct.length);
-        correct = [...correct, ...missing];
+        correct.push(answers[0], answers[1]);
       }
-
-      // if too MANY correct answers, trim to max 5
-      if (correct.length > 5) {
-        correct = correct.slice(0, 5);
-      }
+      correct = correct.slice(0, 5);
 
       return {
-        question:
-          q.question ||
-          `Choose between 2–5 possible answers below.\nSample question ${i + 1} about ${topic}`,
+        question: q.question || `Sample question ${i + 1} about ${topic}\nChoose between 2–5 possible answers below.`,
         answers,
         correct,
-        explanation:
-          q.explanation ||
-          "These answers relate to the core concept described in the question."
+        explanation: q.explanation || "Relevant explanation."
       };
     });
 
@@ -91,9 +75,8 @@ Rules:
 
   } catch (err) {
     console.error("MULTI error:", err);
-    return new Response(
-      JSON.stringify({ error: "Multi-select generation failed" }),
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: "Multi-select generation failed" }), {
+      status: 500
+    });
   }
 }
