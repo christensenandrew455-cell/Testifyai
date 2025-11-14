@@ -10,31 +10,45 @@ function Correct2PageContent() {
   const question = decodeURIComponent(params.get("question") || "No question provided");
   const userAnswer = decodeURIComponent(params.get("userAnswer") || "—");
   const feedback = decodeURIComponent(params.get("feedback") || "");
+  const index = Number(params.get("index") || 0);
+  const topic = params.get("topic") || "";
 
   useEffect(() => {
     const t = setTimeout(() => setCanContinue(true), 2000);
     return () => clearTimeout(t);
   }, []);
 
+  // ✅ Save the answer and correctness in sessionStorage
+  useEffect(() => {
+    const stored = sessionStorage.getItem("testData");
+    let data = stored ? JSON.parse(stored) : { questions: [] };
+    data.questions[index] = {
+      ...(data.questions[index] || {}),
+      question,
+      userAnswer: JSON.parse(userAnswer),
+      isCorrect: true,
+      topic: topic || (data.questions[index]?.topic || ""),
+      explanation: feedback,
+    };
+    sessionStorage.setItem("testData", JSON.stringify(data));
+  }, [question, userAnswer, feedback, index, topic]);
+
   const handleContinue = () => {
     if (!canContinue) return;
 
-    const stored = Number(sessionStorage.getItem("currentIndex") || "0");
+    const storedIndex = Number(sessionStorage.getItem("currentIndex") || 0);
     const testData = sessionStorage.getItem("testData");
-
     let total = 0;
+
     try {
-      if (testData) {
-        const parsed = JSON.parse(testData);
-        total = parsed.questions.length;
-      }
+      if (testData) total = JSON.parse(testData).questions.length;
     } catch {}
 
-    const nextIndex = stored + 1;
+    const nextIndex = storedIndex + 1;
     sessionStorage.setItem("currentIndex", String(nextIndex));
 
     if (nextIndex >= total) {
-      router.push("/ad");
+      router.push("/ad"); // last question goes to /ad
     } else {
       router.push("/test/controller");
     }
