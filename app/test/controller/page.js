@@ -79,6 +79,31 @@ function TestControllerInner() {
           )
         : [question.answers.indexOf(question.correct)];
 
+    // ✅ Update sessionStorage with result
+    const stored = sessionStorage.getItem("testData");
+    let data;
+    if (stored) {
+      data = JSON.parse(stored);
+    } else {
+      data = { questions: [] };
+    }
+
+    data.questions[index] = {
+      ...question,
+      userAnswer: safeUserAnswer,
+      isCorrect: correct,
+      topic: question.topic || topic, // ensure topic is stored
+    };
+
+    sessionStorage.setItem("testData", JSON.stringify(data));
+
+    const isLast = index + 1 >= questions.length;
+
+    if (isLast) {
+      router.push("/ad"); // last question goes directly to /ad
+      return;
+    }
+
     const params = new URLSearchParams({
       question: question.question || "",
       userAnswer: encodeURIComponent(JSON.stringify(safeUserAnswer)),
