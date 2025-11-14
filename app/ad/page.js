@@ -45,7 +45,7 @@ export default function AdPage() {
           const questions = data.questions || [];
           const score = questions.filter((q) => q.isCorrect).length;
           const total = questions.length;
-          const topic = data.topic || questions[0]?.topic || "Unknown Topic";
+          const topic = data.topic || questions[0]?.topic || "Unknown Topic"; // ✅ topic fix
           router.push(
             `/results?score=${score}&total=${total}&topic=${encodeURIComponent(
               topic
