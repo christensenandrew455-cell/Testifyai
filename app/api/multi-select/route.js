@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
@@ -7,21 +6,30 @@ export async function POST(req) {
     const { topic, difficulty, numQuestions = 5, numAnswers = 5 } = await req.json();
 
     const prompt = `
-You are TestifyAI. Generate ${numQuestions} *multi-select* questions about "${topic}".
-Difficulty level: ${difficulty}.
+You are TestifyAI. Generate ${numQuestions} MULTI-SELECT questions about "${topic}".
+Difficulty: ${difficulty}.
+
+Each question MUST include at the top:
+"Choose between 2–5 possible answers below."
+
+IMPORTANT:
+Interpret the topic EXACTLY as written. 
+Do NOT reinterpret or rewrite the topic.
+If the topic is broad or ambiguous, generate questions that stay strictly within the words the user provided.
+Example: 
+- “learning psychology” = the psychology of how people learn, memory, motivation, cognitive processes, etc.
 
 Rules:
-1. Each question must have exactly ${numAnswers} unique answer options labeled A, B, C, D, E, F, etc.
-2. Each question must have between 2 and 5 correct answers (random number in that range).
-3. The incorrect answers must be clearly wrong or misleading.
-4. Include a one-sentence educational explanation for each question.
-5. Output ONLY valid JSON with this format:
+1. Each question must have exactly ${numAnswers} answer options.
+2. Each question must have a RANDOM number of correct answers (between 2 and 5).
+3. Explanations must match the correct answers.
+4. Output ONLY JSON in this format:
 
 [
   {
-    "question": "string",
-    "answers": ["Option A", "Option B", "Option C", "Option D"],
-    "correct": ["Option A", "Option D"],
+    "question": "Choose between 2–5 possible answers below.\\nWhat is ...?",
+    "answers": ["A", "B", "C", "D", "E"],
+    "correct": ["A", "C"],
     "explanation": "string"
   }
 ]
@@ -30,55 +38,39 @@ Rules:
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.8,
+      temperature: 0.9
     });
 
     let content = response.choices[0].message.content.trim();
-    content = content.replace(/```(json)?/g, "").trim();
-
+    content = content.replace(/```json|```/g, "").trim();
     let questions = JSON.parse(content);
 
-    // ✅ Post-processing to ensure valid structure
+    // 🛠 Fix structure + random correct count
     questions = questions.map((q, i) => {
-      const uniqueAnswers = Array.from(new Set(q.answers || []));
-      let correctAnswers = (q.correct || []).filter((ans) =>
-        uniqueAnswers.includes(ans)
-      );
+      const answers = Array.from(new Set(q.answers || [])).slice(0, numAnswers);
 
-      // Enforce between 2 and 5 correct answers
-      if (correctAnswers.length < 2) {
-        // Add a few random corrects
-        const extra = uniqueAnswers
-          .filter((a) => !correctAnswers.includes(a))
-          .sort(() => Math.random() - 0.5)
-          .slice(0, Math.max(2 - correctAnswers.length, 0));
-        correctAnswers = [...correctAnswers, ...extra];
-      } else if (correctAnswers.length > 5) {
-        correctAnswers = correctAnswers.slice(0, 5);
-      }
+      // random correct amount
+      const numCorrect = Math.floor(Math.random() * 4) + 2; // 2–5
+      let correct = answers
+        .sort(() => Math.random() - 0.5)
+        .slice(0, numCorrect);
 
       return {
-        question: q.question || `Question ${i + 1} about ${topic}`,
-        answers: uniqueAnswers.sort(() => Math.random() - 0.5),
-        correct: correctAnswers,
-        explanation:
-          q.explanation || "This question demonstrates a key concept about the topic.",
+        question: q.question || `Choose between 2–5 possible answers below.\nSample question ${i + 1} about ${topic}`,
+        answers,
+        correct,
+        explanation: q.explanation || "These answers relate to the core concept."
       };
     });
 
     return new Response(JSON.stringify({ questions }), {
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }
     });
+
   } catch (err) {
-    console.error("❌ Multi-select generation error:", err);
-    const fallback = Array.from({ length: 5 }).map((_, i) => ({
-      question: `Sample multi-select question ${i + 1} about topic`,
-      answers: ["Option A", "Option B", "Option C", "Option D"],
-      correct: ["Option A", "Option C"],
-      explanation: `Explanation for question ${i + 1}.`,
-    }));
-    return new Response(JSON.stringify({ questions: fallback }), {
-      headers: { "Content-Type": "application/json" },
+    console.error("MULTI error:", err);
+    return new Response(JSON.stringify({ error: "Multi-select generation failed" }), {
+      status: 500
     });
   }
 }
