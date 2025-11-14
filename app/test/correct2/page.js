@@ -18,45 +18,72 @@ function Correct2PageContent() {
 
   const handleContinue = () => {
     if (!canContinue) return;
-    const stored = sessionStorage.getItem("currentIndex") || "0";
-    sessionStorage.setItem("currentIndex", String(Number(stored) + 1));
-    router.push("/test/controller");
+
+    const stored = Number(sessionStorage.getItem("currentIndex") || "0");
+    const testData = sessionStorage.getItem("testData");
+
+    let total = 0;
+    try {
+      if (testData) {
+        const parsed = JSON.parse(testData);
+        total = parsed.questions.length;
+      }
+    } catch {}
+
+    const nextIndex = stored + 1;
+    sessionStorage.setItem("currentIndex", String(nextIndex));
+
+    if (nextIndex >= total) {
+      router.push("/ad");
+    } else {
+      router.push("/test/controller");
+    }
   };
 
   return (
-    <div onClick={handleContinue} style={{
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      background: "linear-gradient(to right, #81c784, #388e3c)",
-      color: "white",
-      textAlign: "center",
-      cursor: canContinue ? "pointer" : "default",
-      padding: "20px",
-      fontFamily: "Segoe UI, Roboto, sans-serif"
-    }}>
+    <div
+      onClick={handleContinue}
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(to right, #81c784, #388e3c)",
+        color: "white",
+        textAlign: "center",
+        cursor: canContinue ? "pointer" : "default",
+        padding: "20px",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
+      }}
+    >
       <div style={{ fontSize: 72, marginBottom: 8 }}>✅</div>
       <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Correct!</h1>
       <div style={{ maxWidth: 760, textAlign: "center" }}>
         <p style={{ fontWeight: 700, margin: 0 }}>Question</p>
         <p style={{ margin: "2px 0 4px 0" }}>{question}</p>
+
         <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Your answer</p>
         <p style={{ margin: "2px 0 4px 0" }}>{userAnswer}</p>
-        {feedback && <>
-          <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Explanation</p>
-          <p style={{ margin: "2px 0 4px 0" }}>{feedback}</p>
-        </>}
+
+        {feedback && (
+          <>
+            <p style={{ fontWeight: 700, margin: "4px 0 2px 0" }}>Explanation</p>
+            <p style={{ margin: "2px 0 4px 0" }}>{feedback}</p>
+          </>
+        )}
       </div>
-      <small style={{ marginTop: 20 }}>{canContinue ? "Click anywhere to continue" : "Please wait..."}</small>
+
+      <small style={{ marginTop: 20 }}>
+        {canContinue ? "Click anywhere to continue" : "Please wait..."}
+      </small>
     </div>
   );
 }
 
 export default function Correct2Page() {
   return (
-    <Suspense fallback={<div>Loading result…</div>}>
+    <Suspense fallback={null}>
       <Correct2PageContent />
     </Suspense>
   );
