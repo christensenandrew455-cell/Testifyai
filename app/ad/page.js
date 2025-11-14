@@ -8,12 +8,13 @@ export default function AdPage() {
   const [explanations, setExplanations] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // ✅ Load explanations
+  // ✅ Load explanations from sessionStorage
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("testData");
       if (stored) {
-        const questions = JSON.parse(stored);
+        const data = JSON.parse(stored);
+        const questions = data.questions || [];
         const takenExplanations = questions
           .map((q) => q.explanation)
           .filter(Boolean);
@@ -25,7 +26,7 @@ export default function AdPage() {
     }
   }, []);
 
-  // ✅ Rotate facts every 2.5s
+  // ✅ Rotate explanations every 2.5s
   useEffect(() => {
     if (explanations.length === 0) return;
     const interval = setInterval(() => {
@@ -34,18 +35,21 @@ export default function AdPage() {
     return () => clearInterval(interval);
   }, [explanations]);
 
-  // ✅ Redirect after 10s
+  // ✅ Redirect to results after 10s
   useEffect(() => {
     const timer = setTimeout(() => {
       const stored = sessionStorage.getItem("testData");
       if (stored) {
         try {
           const data = JSON.parse(stored);
-          const score = data.filter((q) => q.isCorrect).length;
-          const total = data.length;
-          const topic = data[0]?.topic || "Unknown Topic";
+          const questions = data.questions || [];
+          const score = questions.filter((q) => q.isCorrect).length;
+          const total = questions.length;
+          const topic = data.topic || questions[0]?.topic || "Unknown Topic";
           router.push(
-            `/results?score=${score}&total=${total}&topic=${encodeURIComponent(topic)}`
+            `/results?score=${score}&total=${total}&topic=${encodeURIComponent(
+              topic
+            )}`
           );
         } catch {
           router.push("/results");
@@ -88,7 +92,9 @@ export default function AdPage() {
           alignItems: "center",
         }}
       >
-        <h2 style={{ color: "#1976d2", marginBottom: "16px" }}>Learning Recap</h2>
+        <h2 style={{ color: "#1976d2", marginBottom: "16px" }}>
+          Learning Recap
+        </h2>
 
         <p
           key={currentIndex}
