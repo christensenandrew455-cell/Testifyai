@@ -9,21 +9,17 @@ export async function POST(req) {
 You are TestifyAI. Generate ${numQuestions} TRUE/FALSE questions about "${topic}".
 Difficulty: ${difficulty}.
 
-IMPORTANT:
-Interpret the topic EXACTLY as written. 
-Do NOT reinterpret or rewrite the topic.
-If the topic is broad or ambiguous, generate questions that stay strictly within the words the user provided.
-Example: 
-- “learning psychology” = the psychology of how people learn, memory, motivation, cognitive processes, etc.
+Each question MUST follow this format:
+"Statement...?
+Choose either True or False below."
 
-Each question MUST include at the top:
-"Choose either True or False below."
+Interpret topic EXACTLY as written.
 
-Output ONLY JSON:
+Return ONLY JSON:
 
 [
   {
-    "question": "Choose either True or False below.\\nStatement...",
+    "question": "Statement...?\\nChoose either True or False below.",
     "answers": ["True", "False"],
     "correct": "True",
     "explanation": "string"
@@ -39,15 +35,14 @@ Output ONLY JSON:
 
     let content = response.choices[0].message.content.trim();
     content = content.replace(/```json|```/g, "").trim();
+
     let questions = JSON.parse(content);
 
     questions = questions.map((q, i) => ({
-      question:
-        q.question ||
-        `Choose either True or False below.\nSample True/False question ${i + 1}`,
+      question: q.question || `Sample statement ${i + 1}\nChoose either True or False below.`,
       answers: ["True", "False"],
       correct: q.correct || "True",
-      explanation: q.explanation || "This explanation supports why the answer is correct."
+      explanation: q.explanation || "Explanation here."
     }));
 
     return new Response(JSON.stringify({ questions }), {
