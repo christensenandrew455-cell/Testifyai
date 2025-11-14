@@ -23,6 +23,7 @@ function TestControllerInner() {
 
         const normalized = (decoded.questions || []).map((q) => ({
           type: q.type || "multiple-choice",
+          topic: decoded.topic || "Unknown Topic", // ✅ ensure topic is stored for each question
           ...q,
         }));
 
@@ -92,7 +93,7 @@ function TestControllerInner() {
       ...question,
       userAnswer: safeUserAnswer,
       isCorrect: correct,
-      topic: question.topic || topic, // ensure topic is stored
+      topic: question.topic || topic, // ✅ ensure topic stays
     };
 
     sessionStorage.setItem("testData", JSON.stringify(data));
