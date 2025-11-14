@@ -9,27 +9,24 @@ export async function POST(req) {
 You are TestifyAI. Generate ${numQuestions} MULTIPLE-CHOICE questions about "${topic}".
 Difficulty: ${difficulty}.
 
-Each question MUST include at the top:
-"Choose one of the answers below."
+Format each question like:
+"Question text...?
+Choose one of the answers below."
 
-IMPORTANT:
-Interpret the topic EXACTLY as written. 
-Do NOT reinterpret or rewrite the topic.
-If the topic is broad or ambiguous, generate questions that stay strictly within the words the user provided.
-Example: 
-- “learning psychology” = the psychology of how people learn, memory, motivation, cognitive processes, etc.
+INTERPRET THE TOPIC EXACTLY AS WRITTEN.
 
 Rules:
-1. Each question must have exactly ${numAnswers} unique answer options (A, B, C, D, etc.)
-2. Each question must have EXACTLY ONE correct answer.
-3. The explanation MUST clearly support the correct answer.
-4. Output ONLY JSON like this:
+1. EXACTLY ${numAnswers} answer options.
+2. EXACTLY ONE correct answer.
+3. Explanations must justify the correct answer.
+
+Return ONLY JSON:
 
 [
   {
-    "question": "Choose one of the answers below.\\nWhat is ...?",
-    "answers": ["string", "string", "string", "string"],
-    "correct": "string",
+    "question": "What is ...?\\nChoose one of the answers below.",
+    "answers": ["A", "B", "C", "D"],
+    "correct": "A",
     "explanation": "string"
   }
 ]
@@ -43,27 +40,21 @@ Rules:
 
     let content = response.choices[0].message.content.trim();
     content = content.replace(/```json|```/g, "").trim();
+
     let questions = JSON.parse(content);
 
-    // 🛠 Fix structure
     questions = questions.map((q, i) => {
       let answers = Array.from(new Set(q.answers || []));
-      while (answers.length < numAnswers) {
-        answers.push(`Extra option ${answers.length + 1}`);
-      }
+      while (answers.length < numAnswers) answers.push(`Extra option ${answers.length + 1}`);
+      answers = answers.slice(0, numAnswers).sort(() => Math.random() - 0.5);
 
-      // Make sure correct answer exists
-      let correct = answers.includes(q.correct) ? q.correct : answers[0];
-
-      // Shuffle answers
-      answers = answers.sort(() => Math.random() - 0.5);
+      const correct = answers.includes(q.correct) ? q.correct : answers[0];
 
       return {
-        question: q.question || `Choose one of the answers below.\nSample question ${i + 1} about ${topic}`,
+        question: q.question || `Sample question ${i + 1}\nChoose one of the answers below.`,
         answers,
         correct,
-        explanation:
-          q.explanation || "This explanation supports why the correct answer is correct."
+        explanation: q.explanation || "Explanation here."
       };
     });
 
