@@ -13,58 +13,56 @@ function IncorrectContent() {
   const index = Number(searchParams.get("index") || 0);
 
   const [canContinue, setCanContinue] = useState(false);
+  useEffect(() => { const t=setTimeout(()=>setCanContinue(true),2000); return()=>clearTimeout(t); }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setCanContinue(true), 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  let parsedUser = [];
-  let parsedCorrect = [];
-
+  let parsedUser = [], parsedCorrect = [];
   try { parsedUser = JSON.parse(rawUser); } catch { parsedUser = rawUser; }
   try { parsedCorrect = JSON.parse(rawCorrect); } catch { parsedCorrect = rawCorrect; }
 
   let questionObj = null;
+  let totalQuestions = 0;
+
   try {
     const stored = sessionStorage.getItem("testData");
     if (stored) {
       const parsed = JSON.parse(stored);
       questionObj = parsed.questions?.[index] || null;
+      totalQuestions = parsed.questions?.length || 0;
     }
   } catch {}
 
-  function mapToLetterText(answerValue) {
-    if (!questionObj) return String(answerValue);
+  function mapToLetterText(answerValue, questionObj) {
+    if (answerValue === null || answerValue === undefined) return "—";
+    const answers = questionObj?.answers || [];
+    const isTrueFalse = Array.isArray(answers) && answers.length === 2 &&
+      answers.every(a => ["true","false"].includes(String(a).trim().toLowerCase()));
 
-    const answers = questionObj.answers || [];
-    const isTF = answers.length === 2 && answers.every(a =>
-      ["true","false"].includes(String(a).toLowerCase())
-    );
-
-    const mapOne = (val) => {
+    const mapSingle = (val) => {
+      if (val === null || val === undefined) return "";
       if (typeof val === "number" && answers[val] !== undefined) {
-        if (isTF) return answers[val];
-        return `${String.fromCharCode(65 + val)}. ${answers[val]}`;
+        const raw = answers[val];
+        if (isTrueFalse) return String(raw);
+        return `${String.fromCharCode(65 + val)}. ${raw}`;
       }
+      if (isTrueFalse || answers.length === 0) return String(val);
+      const idx = answers.indexOf(val);
+      if (idx !== -1) return `${String.fromCharCode(65 + idx)}. ${val}`;
       return String(val);
     };
 
     return Array.isArray(answerValue)
-      ? answerValue.map(mapOne).join(", ")
-      : mapOne(answerValue);
+      ? answerValue.map(mapSingle).join(", ")
+      : mapSingle(answerValue);
   }
 
-  const displayUser = mapToLetterText(parsedUser);
-  const displayCorrect = mapToLetterText(parsedCorrect);
+  const displayUser = mapToLetterText(parsedUser, questionObj);
+  const displayCorrect = mapToLetterText(parsedCorrect, questionObj);
 
   const handleContinue = () => {
     if (!canContinue) return;
 
-    const stored = sessionStorage.getItem("testData");
-    const total = stored ? JSON.parse(stored).questions.length : 0;
-
-    if (index + 1 >= total) {
+    const isLast = index + 1 >= totalQuestions;
+    if (isLast) {
       router.push("/ad");
       return;
     }
@@ -74,40 +72,41 @@ function IncorrectContent() {
   };
 
   return (
-    <div
-      onClick={handleContinue}
-      style={{
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(to right, #ff8a80, #e53935)",
-        color: "white",
-        textAlign: "center",
-        cursor: canContinue ? "pointer" : "default",
-        padding: 20,
-        opacity: canContinue ? 1 : 0.8,
-      }}
-    >
-      <div style={{ fontSize: 72 }}>❌</div>
-      <h1 style={{ fontSize: 28, fontWeight: 800 }}>Incorrect</h1>
+    <div onClick={handleContinue} style={{
+      height:"100vh", width:"100vw", display:"flex", flexDirection:"column",
+      justifyContent:"center", alignItems:"center",
+      background:"linear-gradient(to right, #ff8a80, #e53935)", color:"white",
+      textAlign:"center", fontFamily:"Segoe UI, Roboto, sans-serif",
+      cursor:canContinue?"pointer":"default", padding:"20px",
+      transition:"opacity 0.3s ease", opacity:canContinue?1:0.8
+    }}>
+      <div style={{fontSize:72,marginBottom:8}}>❌</div>
+      <h1 style={{fontSize:28,marginBottom:8,fontWeight:800}}>Incorrect</h1>
 
-      <p><b>Question</b><br />{rawQuestion}</p>
-      <p><b>Your answer</b><br />{displayUser}</p>
-      <p><b>Correct answer</b><br />{displayCorrect}</p>
+      <div style={{maxWidth:760,textAlign:"center"}}>
+        <p style={{fontWeight:700,margin:0}}>Question</p>
+        <p style={{margin:"2px 0 4px 0"}}>{rawQuestion}</p>
 
-      {explanation && (
-        <p><b>Explanation</b><br />{explanation}</p>
-      )}
+        <p style={{fontWeight:700,margin:"4px 0 2px 0"}}>Your answer(s)</p>
+        <p style={{margin:"2px 0 4px 0"}}>{displayUser}</p>
 
-      <small>{canContinue ? "Click to continue" : "Please wait..."}</small>
+        <p style={{fontWeight:700,margin:"4px 0 2px 0"}}>Correct answer(s)</p>
+        <p style={{margin:"2px 0 4px 0"}}>{displayCorrect}</p>
+
+        {explanation && <>
+          <p style={{fontWeight:700,margin:"4px 0 2px 0"}}>Explanation</p>
+          <p style={{margin:"2px 0 4px 0"}}>{explanation}</p>
+        </>}
+      </div>
+
+      <small style={{marginTop:20}}>
+        {canContinue ? "Click anywhere to continue" : "Please wait..."}
+      </small>
     </div>
   );
 }
 
-export default function Page() {
+export default function IncorrectPage() {
   return (
     <Suspense fallback={null}>
       <IncorrectContent />
