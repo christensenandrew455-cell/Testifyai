@@ -9,6 +9,13 @@ export async function POST(req) {
 You are TestifyAI. Generate ${numQuestions} TRUE/FALSE questions about "${topic}".
 Difficulty: ${difficulty}.
 
+IMPORTANT:
+Interpret the topic EXACTLY as written. 
+Do NOT reinterpret or rewrite the topic.
+If the topic is broad or ambiguous, generate questions that stay strictly within the words the user provided.
+Example: 
+- “learning psychology” = the psychology of how people learn, memory, motivation, cognitive processes, etc.
+
 Each question MUST include at the top:
 "Choose either True or False below."
 
