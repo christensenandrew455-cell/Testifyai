@@ -9,13 +9,18 @@ import Response from "../response/page";
 function TestControllerInner() {
   const params = useSearchParams();
   const router = useRouter();
+
   const [questions, setQuestions] = useState([]);
   const [index, setIndex] = useState(0);
   const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // ----------------------------
+  // LOAD TEST DATA
+  // ----------------------------
   useEffect(() => {
     const encoded = params.get("data");
+
     if (encoded) {
       try {
         const decoded = JSON.parse(decodeURIComponent(encoded));
@@ -48,9 +53,11 @@ function TestControllerInner() {
         setIndex(savedIndex);
       }
     }
+
     setLoading(false);
   }, [params]);
 
+  // Save progress
   useEffect(() => {
     if (questions.length > 0) {
       sessionStorage.setItem("currentIndex", String(index));
@@ -62,6 +69,9 @@ function TestControllerInner() {
 
   const question = questions[index];
 
+  // ----------------------------
+  // HANDLE ANSWER
+  // ----------------------------
   const handleAnswer = ({ correct, userAnswer }) => {
     const safeUserAnswer =
       userAnswer === undefined || userAnswer === null
@@ -79,14 +89,9 @@ function TestControllerInner() {
           )
         : [question.answers.indexOf(question.correct)];
 
-    // ✅ FINAL QUESTION CHECK → SEND TO /ad
     const isLast = index + 1 >= questions.length;
-    if (isLast) {
-      router.push("/ad");
-      return;
-    }
 
-    const params = new URLSearchParams({
+    const query = new URLSearchParams({
       question: question.question || "",
       userAnswer: encodeURIComponent(JSON.stringify(safeUserAnswer)),
       correctAnswer: encodeURIComponent(JSON.stringify(safeCorrectAnswer)),
@@ -95,10 +100,23 @@ function TestControllerInner() {
       topic: topic || "",
     });
 
-    const nextPage = correct ? "/correct" : "/incorrect";
-    router.push(`${nextPage}?${params.toString()}`);
+    // ----------------------------
+    // FINAL QUESTION → USE /correct2 OR /incorrect2
+    // ----------------------------
+    let nextPage = "";
+
+    if (isLast) {
+      nextPage = correct ? "/test/correct2" : "/test/incorrect2";
+    } else {
+      nextPage = correct ? "/correct" : "/incorrect";
+    }
+
+    router.push(`${nextPage}?${query.toString()}`);
   };
 
+  // ----------------------------
+  // RENDER QUESTION TYPE
+  // ----------------------------
   const renderComponent = () => {
     const commonProps = {
       question,
@@ -111,13 +129,17 @@ function TestControllerInner() {
     switch (question.type) {
       case "multiple-choice":
         return <MultipleChoice {...commonProps} />;
+
       case "true-false":
         return <TrueFalse {...commonProps} />;
+
       case "multi-select":
         return <MultiSelect {...commonProps} />;
+
       case "open-response":
       case "short-answer":
         return <Response {...commonProps} />;
+
       default:
         return <div>Unknown question type: {question.type}</div>;
     }
