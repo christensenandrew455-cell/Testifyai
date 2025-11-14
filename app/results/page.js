@@ -1,16 +1,32 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
-import { Suspense } from "react";
 
 function ResultsInner() {
-  const searchParams = useSearchParams();
+  const [score, setScore] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [topic, setTopic] = useState("Unknown Topic");
+  const [percent, setPercent] = useState(0);
 
-  const score = parseInt(searchParams.get("score") || "0", 10);
-  const total = parseInt(searchParams.get("total") || "0", 10);
-  const topic = searchParams.get("topic") || "Unknown Topic";
-  const percent = total > 0 ? Math.round((score / total) * 100) : 0;
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("testData");
+      if (stored) {
+        const data = JSON.parse(stored);
+        const totalQuestions = data.questions?.length || 0;
+        const correctCount = data.questions?.filter((q: any) => q.isCorrect)?.length || 0;
+        const testTopic = data.questions?.[0]?.topic || "Unknown Topic";
+
+        setScore(correctCount);
+        setTotal(totalQuestions);
+        setTopic(testTopic);
+        setPercent(totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0);
+      }
+    } catch (err) {
+      console.error("Error reading testData:", err);
+    }
+  }, []);
 
   const getMessage = () => {
     if (percent >= 90) return "🔥 Master Level! Excellent job!";
@@ -45,7 +61,6 @@ function ResultsInner() {
           maxWidth: "600px",
         }}
       >
-        {/* Title at the top */}
         <h1
           style={{
             fontSize: "2rem",
@@ -57,7 +72,6 @@ function ResultsInner() {
           Your Results
         </h1>
 
-        {/* Topic above score */}
         <h2
           style={{
             fontSize: "1.4rem",
@@ -69,19 +83,17 @@ function ResultsInner() {
           {topic}
         </h2>
 
-        {/* Score */}
         <p
           style={{
             fontSize: "1.8rem",
             fontWeight: "800",
-            color: "#333", // ✅ makes the score visible again
+            color: "#333",
             marginBottom: "5px",
           }}
         >
           {score} / {total}
         </p>
 
-        {/* Percent below score */}
         <p
           style={{
             fontSize: "1.3rem",
@@ -93,7 +105,6 @@ function ResultsInner() {
           {percent}%
         </p>
 
-        {/* Message */}
         <p
           style={{
             fontSize: "1.1rem",
@@ -104,7 +115,6 @@ function ResultsInner() {
           {getMessage()}
         </p>
 
-        {/* Buttons */}
         <div style={{ display: "flex", justifyContent: "center", gap: "16px" }}>
           <Link href="/">
             <button
