@@ -1,32 +1,45 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 function ResultsInner() {
+  const searchParams = useSearchParams();
+
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [topic, setTopic] = useState("Unknown Topic");
-  const [percent, setPercent] = useState(0);
 
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("testData");
       if (stored) {
         const data = JSON.parse(stored);
+
         const totalQuestions = data.questions?.length || 0;
-        const correctCount = data.questions?.filter((q: any) => q.isCorrect)?.length || 0;
+        const correctCount = data.questions?.filter((q) => q.isCorrect)?.length || 0;
         const testTopic = data.questions?.[0]?.topic || "Unknown Topic";
 
         setScore(correctCount);
         setTotal(totalQuestions);
         setTopic(testTopic);
-        setPercent(totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0);
+      } else {
+        // Fallback to URL parameters if sessionStorage is empty
+        const scoreParam = parseInt(searchParams.get("score") || "0", 10);
+        const totalParam = parseInt(searchParams.get("total") || "0", 10);
+        const topicParam = searchParams.get("topic") || "Unknown Topic";
+
+        setScore(scoreParam);
+        setTotal(totalParam);
+        setTopic(topicParam);
       }
     } catch (err) {
-      console.error("Error reading testData:", err);
+      console.error("Error parsing test data:", err);
     }
-  }, []);
+  }, [searchParams]);
+
+  const percent = total > 0 ? Math.round((score / total) * 100) : 0;
 
   const getMessage = () => {
     if (percent >= 90) return "🔥 Master Level! Excellent job!";
