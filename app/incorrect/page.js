@@ -1,51 +1,116 @@
 "use client";
-import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
-export default function IncorrectPage() {
+function IncorrectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const index = Number(searchParams.get("index")) || 0;
+
+  const rawQuestion = decodeURIComponent(searchParams.get("question") || "No question provided");
+  let rawUser = decodeURIComponent(searchParams.get("userAnswer") || "[]");
+  let rawCorrect = decodeURIComponent(searchParams.get("correctAnswer") || "[]");
+  const explanation = decodeURIComponent(searchParams.get("explanation") || "");
+  const index = Number(searchParams.get("index") || 0);
+
   const [canContinue, setCanContinue] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setCanContinue(true);
-    }, 2000);
+    const timer = setTimeout(() => setCanContinue(true), 2000);
     return () => clearTimeout(timer);
   }, []);
+
+  let parsedUser = [];
+  let parsedCorrect = [];
+
+  try { parsedUser = JSON.parse(rawUser); } catch { parsedUser = rawUser; }
+  try { parsedCorrect = JSON.parse(rawCorrect); } catch { parsedCorrect = rawCorrect; }
+
+  let questionObj = null;
+  try {
+    const stored = sessionStorage.getItem("testData");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      questionObj = parsed.questions?.[index] || null;
+    }
+  } catch {}
+
+  function mapToLetterText(answerValue) {
+    if (!questionObj) return String(answerValue);
+
+    const answers = questionObj.answers || [];
+    const isTF = answers.length === 2 && answers.every(a =>
+      ["true","false"].includes(String(a).toLowerCase())
+    );
+
+    const mapOne = (val) => {
+      if (typeof val === "number" && answers[val] !== undefined) {
+        if (isTF) return answers[val];
+        return `${String.fromCharCode(65 + val)}. ${answers[val]}`;
+      }
+      return String(val);
+    };
+
+    return Array.isArray(answerValue)
+      ? answerValue.map(mapOne).join(", ")
+      : mapOne(answerValue);
+  }
+
+  const displayUser = mapToLetterText(parsedUser);
+  const displayCorrect = mapToLetterText(parsedCorrect);
 
   const handleContinue = () => {
     if (!canContinue) return;
 
-    let total = 0;
-    try {
-      const stored = sessionStorage.getItem("testData");
-      total = JSON.parse(stored).questions.length;
-    } catch {}
+    const stored = sessionStorage.getItem("testData");
+    const total = stored ? JSON.parse(stored).questions.length : 0;
 
-    const nextIndex = index + 1;
-
-    if (nextIndex >= total) {
+    if (index + 1 >= total) {
       router.push("/ad");
       return;
     }
 
-    sessionStorage.setItem("currentIndex", String(nextIndex));
+    sessionStorage.setItem("currentIndex", String(index + 1));
     router.push("/test/controller");
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-center">
-      <h1 className="text-4xl font-bold text-red-500 mb-6">Incorrect</h1>
-      <button
-        onClick={handleContinue}
-        disabled={!canContinue}
-        className={`mt-4 px-6 py-3 rounded-xl text-white text-lg transition-transform
-          ${canContinue ? "bg-blue-600 active:scale-95" : "bg-gray-500 cursor-not-allowed"}`}
-      >
-        Continue
-      </button>
+    <div
+      onClick={handleContinue}
+      style={{
+        height: "100vh",
+        width: "100vw",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(to right, #ff8a80, #e53935)",
+        color: "white",
+        textAlign: "center",
+        cursor: canContinue ? "pointer" : "default",
+        padding: 20,
+        opacity: canContinue ? 1 : 0.8,
+      }}
+    >
+      <div style={{ fontSize: 72 }}>❌</div>
+      <h1 style={{ fontSize: 28, fontWeight: 800 }}>Incorrect</h1>
+
+      <p><b>Question</b><br />{rawQuestion}</p>
+      <p><b>Your answer</b><br />{displayUser}</p>
+      <p><b>Correct answer</b><br />{displayCorrect}</p>
+
+      {explanation && (
+        <p><b>Explanation</b><br />{explanation}</p>
+      )}
+
+      <small>{canContinue ? "Click to continue" : "Please wait..."}</small>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <IncorrectContent />
+    </Suspense>
   );
 }
