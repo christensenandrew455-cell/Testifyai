@@ -18,18 +18,20 @@ function Correct2PageContent() {
     return () => clearTimeout(t);
   }, []);
 
-  // ✅ Save the answer and correctness in sessionStorage
+  // ✅ Save result in sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem("testData");
-    let data = stored ? JSON.parse(stored) : { questions: [] };
+    const data = stored ? JSON.parse(stored) : { questions: [] };
+
     data.questions[index] = {
       ...(data.questions[index] || {}),
       question,
       userAnswer: JSON.parse(userAnswer),
       isCorrect: true,
-      topic: topic || (data.questions[index]?.topic || ""),
+      topic: topic || data.questions[index]?.topic || "",
       explanation: feedback,
     };
+
     sessionStorage.setItem("testData", JSON.stringify(data));
   }, [question, userAnswer, feedback, index, topic]);
 
@@ -38,17 +40,13 @@ function Correct2PageContent() {
 
     const storedIndex = Number(sessionStorage.getItem("currentIndex") || 0);
     const testData = sessionStorage.getItem("testData");
-    let total = 0;
-
-    try {
-      if (testData) total = JSON.parse(testData).questions.length;
-    } catch {}
+    const total = testData ? JSON.parse(testData).questions.length : 0;
 
     const nextIndex = storedIndex + 1;
     sessionStorage.setItem("currentIndex", String(nextIndex));
 
     if (nextIndex >= total) {
-      router.push("/ad"); // last question goes to /ad
+      router.push("/ad");
     } else {
       router.push("/test/controller");
     }
