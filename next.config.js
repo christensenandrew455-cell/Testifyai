@@ -1,16 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Keep your redirects
+  // Keep your redirects here
   async redirects() {
     return [
-      // You can add any future redirects here if needed
+      // Add any future redirects if needed
     ];
   },
 
-  // 👇 Add these fixes for the missing SWC binary issue
-  swcMinify: false, // disables SWC minifier
+  // Disable SWC minifier to avoid missing binary errors
+  swcMinify: false,
+
+  // Experimental: skip SWC compilation if binaries are missing
   experimental: {
-    forceSwcTransforms: false, // skips SWC compilation if missing
+    forceSwcTransforms: false,
   },
 };
 
