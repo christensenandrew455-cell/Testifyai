@@ -97,13 +97,6 @@ function TestControllerInner() {
 
     sessionStorage.setItem("testData", JSON.stringify(data));
 
-    const isLast = index + 1 >= questions.length;
-
-    if (isLast) {
-      router.push("/ad"); // last question goes directly to /ad
-      return;
-    }
-
     const params = new URLSearchParams({
       question: question.question || "",
       userAnswer: encodeURIComponent(JSON.stringify(safeUserAnswer)),
