@@ -43,7 +43,7 @@ function Correct2PageContent() {
       question,
       userAnswer: parsedUserAnswer,
       isCorrect: true,
-      topic: data.questions[storedIndex]?.topic || "",
+      topic: data.questions[storedIndex]?.topic || "", // keep topic from testData
       explanation: feedback,
     };
 
