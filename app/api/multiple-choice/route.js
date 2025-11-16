@@ -6,21 +6,20 @@ export async function POST(req) {
     const { topic, difficulty, numQuestions = 5, numAnswers = 4 } = await req.json();
 
     const prompt = `
-You are TestifyAI. Generate ${numQuestions} MULTIPLE-CHOICE questions about "${topic}".
+You are Test question generater Generate ${numQuestions} MULTIPLE-CHOICE questions about "${topic}".
 Difficulty: ${difficulty}.
 
 Format each question like:
 "Question text...?
 Choose one of the answers below."
 
-INTERPRET THE TOPIC EXACTLY AS WRITTEN.
-
 Rules:
 1. Each question must have exactly ${numAnswers} answer options
 2. Each question must have EXACTLY ONE correct answer.
-3. The correct answer must support the Explanation
-4. the explanation must support the correct answer
-5. Output ONLY JSON like this:
+3. The explanation MUST clearly support the correct answer.
+4. The explanation must contain the correct answer text exactly once.
+5. If the explanation does not match the correct answer, regenerate that question.
+6. Output ONLY JSON like this:
 
 Return ONLY JSON:
 
