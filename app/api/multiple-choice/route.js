@@ -16,9 +16,10 @@ Choose one of the answers below."
 INTERPRET THE TOPIC EXACTLY AS WRITTEN.
 
 Rules:
-1. EXACTLY ${numAnswers} answer options.
-2. EXACTLY ONE correct answer.
-3. Explanations must justify the correct answer.
+1. Each question must have exactly ${numAnswers} unique answer options (A, B, C, D, )
+2. Each question must have EXACTLY ONE correct answer.
+3. The explanation MUST clearly support the correct answer.
+4. Output ONLY JSON like this:
 
 Return ONLY JSON:
 
