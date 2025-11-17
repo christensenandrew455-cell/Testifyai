@@ -27,7 +27,7 @@ Return ONLY JSON:
   {
     "question": "What is ...?\\nChoose one of the answers below.",
     "answers": ["A", "B", "C", "D"],
-    "correct": "A",
+    "correct": "The exact correct answer text",
     "explanation": "string"
   }
 ]
