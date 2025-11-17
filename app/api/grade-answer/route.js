@@ -22,7 +22,7 @@ Student Answer: "${userAnswer}"
 Instructions:
 - Evaluate if the answer is correct based on the question.
 - Consider the difficulty level when judging grammar, detail, and completeness.
-- Provide a short feedback explanation of why the answer is correct or incorrect.
+- Provide a short feedback explanation of why the answer is correct or incorrect and what the answer acually is.
 - Return ONLY valid JSON in this exact format:
 {
   "question": "string",     // repeat the original question
