@@ -47,25 +47,26 @@ Return ONLY JSON:
     questions = questions.map((q, i) => {
       let answers = Array.from(new Set(q.answers || []));
 
-      // Ensure answer count
+      // Ensure total number of answers
       while (answers.length < numAnswers) {
         answers.push(`Extra option ${answers.length + 1}`);
       }
 
       answers = answers.slice(0, numAnswers);
 
-      // FIX #1: Ensure the correct answer is in the list
+      // FIX: Make sure correct answer is actually in the list
       if (!answers.includes(q.correct)) {
-        answers[0] = q.correct;
+        // Replace LAST answer so we do NOT overwrite any valid options
+        answers[answers.length - 1] = q.correct;
       }
 
-      // FIX #2: Shuffle answers safely
+      // FIX: Shuffle while preserving correct answer
       answers = answers.sort(() => Math.random() - 0.5);
 
-      // FIX #3: Keep correct answer EXACTLY as ChatGPT produced it
+      // FIX: Keep correct answer EXACTLY as ChatGPT generated it
       const correct = q.correct;
 
-      // FIX #4: DO NOT modify explanation
+      // FIX: Keep explanation EXACTLY as generated
       const explanation = q.explanation;
 
       return {
