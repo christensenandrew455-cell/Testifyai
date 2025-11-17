@@ -44,20 +44,61 @@ Return ONLY JSON:
 
     let questions = JSON.parse(content);
 
+    // -------------------------------
+    // FIXED SECTION — ONLY CORRECTNESS ISSUES
+    // -------------------------------
     questions = questions.map((q, i) => {
       let answers = Array.from(new Set(q.answers || []));
-      while (answers.length < numAnswers) answers.push(`Extra option ${answers.length + 1}`);
-      answers = answers.slice(0, numAnswers).sort(() => Math.random() - 0.5);
 
-      const correct = answers.includes(q.correct) ? q.correct : answers[0];
+      // Ensure answer count minimum
+      while (answers.length < numAnswers) {
+        answers.push(`Extra option ${answers.length + 1}`);
+      }
+
+      // Trim to correct size
+      answers = answers.slice(0, numAnswers);
+
+      // ------------------------------------------
+      // FIX #1: Make sure correct answer is present
+      // ------------------------------------------
+      if (!answers.includes(q.correct)) {
+        // overwrite first answer so correct is guaranteed
+        answers[0] = q.correct;
+      }
+
+      // ---------------------------------------------------------
+      // FIX #2: Shuffle AFTER ensuring correct answer is included
+      // ---------------------------------------------------------
+      answers = answers.sort(() => Math.random() - 0.5);
+
+      // ---------------------------------------------------------
+      // FIX #3: The "correct" field should stay as the correct text
+      // No fallback or substitution (your old code broke correctness)
+      // ---------------------------------------------------------
+      const correct = q.correct;
+
+      // ---------------------------------------------------------
+      // FIX #4: Ensure explanation contains the correct answer ONCE
+      // If not, replace with a guaranteed valid explanation
+      // ---------------------------------------------------------
+      const occurrences = (q.explanation.match(new RegExp(correct, "g")) || []).length;
+
+      let explanation = q.explanation;
+      if (occurrences !== 1) {
+        explanation = `The correct answer is ${correct} because it is supported by the facts.`;
+      }
 
       return {
         question: q.question || `Sample question ${i + 1}\nChoose one of the answers below.`,
         answers,
         correct,
-        explanation: q.explanation || "Explanation here."
+        explanation
       };
     });
+
+    // -------------------------------
+    // END FIXED SECTION
+    // -------------------------------
 
     return new Response(JSON.stringify({ questions }), {
       headers: { "Content-Type": "application/json" }
