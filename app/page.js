@@ -7,7 +7,6 @@ export default function HomePage() {
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
 
-  // Track selected test types and their question counts
   const [selectedTypes, setSelectedTypes] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +25,7 @@ export default function HomePage() {
         delete updated[type];
         return updated;
       } else {
-        return { ...prev, [type]: 5 }; // default 5 questions per type
+        return { ...prev, [type]: 5 };
       }
     });
   };
@@ -61,7 +60,6 @@ export default function HomePage() {
 
       if (!res.ok || !data.questions) throw new Error(data.error || "API failed");
 
-      // Save questions in sessionStorage
       sessionStorage.setItem("testData", JSON.stringify(data));
       sessionStorage.setItem("resumeIndex", "0");
 
@@ -144,13 +142,18 @@ export default function HomePage() {
           marginTop: "20px",
         }}
       >
-        <h2 style={{ marginBottom: "20px", fontWeight: 800, fontSize: "1.25rem" }}>
+        <h2 style={{ marginBottom: "6px", fontWeight: 800, fontSize: "1.25rem" }}>
           Topic
         </h2>
 
+        {/* New subtitle text (was inside placeholder before) */}
+        <p style={{ marginBottom: "18px", opacity: 0.9 }}>
+          Enter any topic — broad or specific
+        </p>
+
         <input
           type="text"
-          placeholder="Enter any topic — broad or specific"
+          placeholder="e.g., Math Algebra"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           style={{
@@ -199,16 +202,10 @@ export default function HomePage() {
         />
 
         <h3 style={{ margin: "8px 0", fontWeight: 700 }}>Test Types</h3>
+
         <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
           {testTypeOptions.map((type) => (
-            <div
-              key={type}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-            >
+            <div key={type} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <button
                 onClick={() => handleToggleType(type)}
                 style={{
@@ -219,6 +216,7 @@ export default function HomePage() {
                   cursor: "pointer",
                   fontWeight: 600,
                   width: "160px",
+                  color: "white",
                 }}
               >
                 {type.replace("-", " ").toUpperCase()}
@@ -271,6 +269,26 @@ export default function HomePage() {
           {loading ? "Generating..." : "Generate Test"}
         </button>
       </div>
+
+      {/* ⭐ NEW LEARN MORE BUTTON */}
+      <button
+        onClick={() => router.push("/learn")}
+        style={{
+          marginTop: "24px",
+          padding: "12px 28px",
+          borderRadius: "14px",
+          backgroundColor: "rgba(255,255,255,0.18)",
+          border: "3px solid rgba(255,255,255,0.45)",
+          fontWeight: 700,
+          fontSize: "1.05rem",
+          color: "white",
+          cursor: "pointer",
+          backdropFilter: "blur(6px)",
+          boxShadow: "0 6px 16px rgba(0,0,0,0.15)",
+        }}
+      >
+        Learn More
+      </button>
     </div>
   );
 }
