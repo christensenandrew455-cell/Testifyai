@@ -17,9 +17,8 @@ Rules:
 1. Each question must have exactly ${numAnswers} answer options
 2. Each question must have EXACTLY ONE correct answer.
 3. The explanation MUST clearly support the correct answer.
-4. The explanation must contain the correct answer text exactly once.
-5. If the explanation does not match the correct answer, regenerate that question.
-6. Output ONLY JSON like this:
+4. do not put the letter in the answer choice
+5. Output ONLY JSON like this:
 
 Return ONLY JSON:
 
