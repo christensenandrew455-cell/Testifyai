@@ -1,24 +1,30 @@
 import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Pull correct answer out of explanation reliably
-function extractCorrectFromExplanation(explanation = "") {
-  explanation = explanation.trim();
+// Extract a SHORT correct answer from the explanation
+function extractShortCorrectAnswer(explanation = "") {
+  if (!explanation) return "";
 
-  // Pattern: "**Correct Answer:** XYZ"
-  let match = explanation.match(/\*\*?Correct Answer\*\*?\s*:\s*(.+)/i);
+  let text = explanation.replace(/\n/g, " ").trim();
+
+  // --- 1. Look for direct "Correct answer is X" ---
+  let match = text.match(/correct answer is\s+(.+?)(?:,|\.| because| since| due to|$)/i);
   if (match) return match[1].trim();
 
-  // Pattern: "The correct answer is XYZ"
-  match = explanation.match(/correct answer is\s+([^\.]+)/i);
+  // --- 2. Look for "**Correct Answer:** X" ---
+  match = text.match(/\*\*?correct answer\*\*?\s*:\s*(.+?)(?:,|\.| because| since| due to|$)/i);
   if (match) return match[1].trim();
 
-  // Pattern: "Because XYZ is ..." → take first noun phrase
-  match = explanation.match(/^(.+?)\s+(is|because|since)/i);
-  if (match) return match[1].trim();
+  // --- 3. Otherwise take the first small noun phrase (avoid long text) ---
+  match = text.match(/^(.+?)(?:,|\.| because| since| due to|$)/i);
+  if (match) {
+    let candidate = match[1].trim();
+    // Limit to 7 words max so explanation never becomes an answer
+    return candidate.split(" ").slice(0, 7).join(" ").trim();
+  }
 
-  // Fallback: first 6 words
-  return explanation.split(" ").slice(0, 6).join(" ").trim();
+  // Backup: first 3 words
+  return text.split(" ").slice(0, 3).join(" ").trim();
 }
 
 export async function POST(req) {
@@ -33,21 +39,11 @@ Difficulty: ${difficulty}.
 Each question must include:
 - "question": string
 - "answers": array of ${numAnswers} items
-- "correct": ALWAYS repeat the exact correct answer text
-- "explanation": MUST clearly state the correct answer (e.g., "The correct answer is ____ because...")
+- "correct": EXACT short correct answer text
+- "explanation": must clearly contain the correct answer
 
-Do NOT label answers with letters.
-
-Return ONLY valid JSON:
-
-[
-  {
-    "question": "text",
-    "answers": ["opt1", "opt2", "opt3", "opt4"],
-    "correct": "correct answer text",
-    "explanation": "reason"
-  }
-]
+Do NOT add letters (A, B, C, D).
+Return ONLY JSON.
 `;
 
     const response = await openai.chat.completions.create({
@@ -61,21 +57,21 @@ Return ONLY valid JSON:
 
     let questions = JSON.parse(content);
 
-    // --- MAIN FIX: We IGNORE q.correct and re-derive it from the explanation ---
     questions = questions.map((q) => {
-      let explanationCorrect = extractCorrectFromExplanation(q.explanation || "");
-
       let answers = Array.from(new Set(q.answers || []));
 
-      // Fill missing answers
+      // Short clean correct answer from explanation
+      let realCorrect = extractShortCorrectAnswer(q.explanation || "");
+
+      // Fill if missing
       while (answers.length < numAnswers) {
         answers.push(`Extra option ${answers.length + 1}`);
       }
       answers = answers.slice(0, numAnswers);
 
-      // Make sure the extracted correct answer is present
-      if (!answers.includes(explanationCorrect)) {
-        answers[answers.length - 1] = explanationCorrect;
+      // Ensure correct answer is included
+      if (!answers.includes(realCorrect)) {
+        answers[answers.length - 1] = realCorrect;
       }
 
       // Shuffle
@@ -84,14 +80,15 @@ Return ONLY valid JSON:
       return {
         question: q.question,
         answers,
-        correct: explanationCorrect, // ← FINAL SOURCE OF TRUTH
+        correct: realCorrect,
         explanation: q.explanation,
       };
     });
 
     return new Response(JSON.stringify({ questions }), {
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }),
     });
+
   } catch (err) {
     console.error("MC error:", err);
     return new Response(JSON.stringify({ error: "MC generation failed" }), {
