@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
+// Normalize for fallback text comparison
 function normalizeAnswerText(s = "") {
   return String(s)
     .replace(/^[A-Z]\s*[\.\)]\s*/i, "")
@@ -9,6 +10,7 @@ function normalizeAnswerText(s = "") {
     .toLowerCase();
 }
 
+// Fallback resolver (only used if correctIndex is missing)
 function resolveCorrectText(question, correct) {
   if (typeof correct === "number") {
     return String(question.answers?.[correct] ?? correct);
@@ -38,18 +40,24 @@ export default function MultipleChoice({
   const handleCheck = () => {
     if (selected === null) return;
 
-    const userAnswerText = String(question.answers[selected] ?? "");
-    const correctText = resolveCorrectText(question, question.correct);
-    const isCorrect =
-      normalizeAnswerText(userAnswerText) === normalizeAnswerText(correctText);
+    // ✅ 1. Preferred grading: use correctIndex directly
+    let isCorrect = false;
 
-    // ✅ send the full answer data to the controller
+    if (typeof question.correctIndex === "number") {
+      isCorrect = selected === question.correctIndex;
+    } else {
+      // ❗ Fallback for old questions (should rarely trigger)
+      const userAnswerText = String(question.answers[selected] ?? "");
+      const correctText = resolveCorrectText(question, question.correct);
+      isCorrect =
+        normalizeAnswerText(userAnswerText) ===
+        normalizeAnswerText(correctText);
+    }
+
     onAnswer?.({
       correct: isCorrect,
-      userAnswer: userAnswerText,
+      userAnswer: question.answers[selected],
     });
-
-    // ✅ controller will now handle the route change
   };
 
   return (
