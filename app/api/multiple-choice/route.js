@@ -6,7 +6,6 @@ export async function POST(req) {
     const { topic, difficulty, numQuestions = 5, numAnswers = 4 } = await req.json();
 
     const prompt = `
-
 You are a test question generator.
 
 Generate ${numQuestions} MULTIPLE-CHOICE questions about "${topic}".
@@ -14,7 +13,7 @@ Difficulty: ${difficulty}.
 
 For EACH question, follow this EXACT process:
 
-1. Generate a question.
+1. Generate a question WITHOUT adding any extra text like “Choose one of the answers below.” 
 2. Generate a detailed explanation that contains the correct answer clearly inside the explanation.
 3. From that explanation, EXTRACT the exact correct answer text.
 4. Use that extracted text as the "correct" field.
@@ -28,21 +27,21 @@ FORMAT STRICTLY AS JSON ONLY:
 
 [
   {
-    "question": "Question text...?\\nChoose one of the answers below.",
+    "question": "Actual question text ONLY.",
     "answers": ["answer A", "answer B", "answer C", "answer D"],
-    "correct": "The EXACT correct answer text extracted from the explanation",
+    "correct": "Exact correct answer text",
     "explanation": "Full explanation containing the correct answer"
   }
 ]
 
 RULES:
-- Do NOT include letters (A, B, C, D) in the answer text.
+- Do NOT include letters (A, B, C, etc) in the answer text.
 - Each question MUST have exactly ${numAnswers} answer options.
 - The explanation MUST clearly support and contain the correct answer.
 - The correct answer MUST appear in the answers array EXACTLY as extracted.
 - Return ONLY valid JSON. No text outside the JSON.
 `;
-    
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
@@ -54,34 +53,29 @@ RULES:
 
     let questions = JSON.parse(content);
 
-    questions = questions.map((q, i) => {
-      // Use the answers exactly as ChatGPT generated
+    questions = questions.map((q) => {
       let answers = Array.from(new Set(q.answers || []));
 
-      // Fill missing answers
       while (answers.length < numAnswers) {
         answers.push(`Extra option ${answers.length + 1}`);
       }
 
       answers = answers.slice(0, numAnswers);
 
-      // Ensure the correct answer is present
       if (!answers.includes(q.correct)) {
-        // Replace last option to avoid overwriting existing valid ones
         answers[answers.length - 1] = q.correct;
       }
 
-      // Shuffle answers but KEEP the correct answer text intact
       answers = answers.sort(() => Math.random() - 0.5);
 
-      // DO NOT CHANGE ChatGPT’s correct answer — EVER
-      const correct = q.correct;
-
       return {
-        question: q.question,
+        question: q.question.replace(/Choose one of the answers below\.?/i, "").trim(),
         answers,
-        correct,
-        explanation: q.explanation
+        correct: q.correct,
+        explanation: q.explanation,
+        
+        // 🔥 SEND THIS SO NEXT PAGE KNOWS HOW MANY ANSWERS THERE ARE
+        numAnswers
       };
     });
 
