@@ -34,43 +34,48 @@ export default function HomePage() {
     setSelectedTypes((prev) => ({ ...prev, [type]: Math.max(1, value) }));
   };
 
-  const handleGenerateTest = async () => {
-    if (!topic.trim()) {
-      alert("Please enter a topic!");
-      return;
-    }
-    if (Object.keys(selectedTypes).length === 0) {
-      alert("Please select at least one test type!");
-      return;
-    }
+const handleGenerateTest = async () => {
+  if (!topic.trim()) {
+    alert("Please enter a topic!");
+    return;
+  }
+  if (Object.keys(selectedTypes).length === 0) {
+    alert("Please select at least one test type!");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const res = await fetch("/api/distribution", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic,
-          difficulty,
-          questionsPerType: selectedTypes,
-        }),
-      });
+  // CLEAN selectedTypes before sending to API
+  const cleanTypes = Object.fromEntries(
+    Object.entries(selectedTypes).filter(([_, v]) => typeof v === "number")
+  );
 
-      const data = await res.json();
+  setLoading(true);
+  try {
+    const res = await fetch("/api/distribution", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        topic,
+        difficulty,
+        questionsPerType: cleanTypes, // ← FIX APPLIED HERE
+      }),
+    });
 
-      if (!res.ok || !data.questions) throw new Error(data.error || "API failed");
+    const data = await res.json();
 
-      sessionStorage.setItem("testData", JSON.stringify(data));
-      sessionStorage.setItem("resumeIndex", "0");
+    if (!res.ok || !data.questions) throw new Error(data.error || "API failed");
 
-      router.push(`/test/controller?data=${encodeURIComponent(JSON.stringify(data))}`);
-    } catch (err) {
-      console.error("❌ Error generating test:", err);
-      alert("Failed to generate test. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    sessionStorage.setItem("testData", JSON.stringify(data));
+    sessionStorage.setItem("resumeIndex", "0");
+
+    router.push(`/test/controller?data=${encodeURIComponent(JSON.stringify(data))}`);
+  } catch (err) {
+    console.error("❌ Error generating test:", err);
+    alert("Failed to generate test. Try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const totalQuestions = Object.values(selectedTypes).reduce((a, b) => a + b, 0);
 
