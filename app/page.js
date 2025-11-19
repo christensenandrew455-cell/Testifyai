@@ -25,7 +25,7 @@ export default function HomePage() {
         delete updated[type];
         return updated;
       } else {
-        return { ...prev, [type]: 5 };
+        return { ...prev, [type]: 5 }; // default 5
       }
     });
   };
@@ -146,7 +146,6 @@ export default function HomePage() {
           Topic
         </h2>
 
-        {/* New subtitle text (was inside placeholder before) */}
         <p style={{ marginBottom: "18px", opacity: 0.9 }}>
           Enter any topic — broad or specific
         </p>
@@ -205,7 +204,7 @@ export default function HomePage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
           {testTypeOptions.map((type) => (
-            <div key={type} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div key={type} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
               <button
                 onClick={() => handleToggleType(type)}
                 style={{
@@ -222,7 +221,34 @@ export default function HomePage() {
                 {type.replace("-", " ").toUpperCase()}
               </button>
 
-              {selectedTypes[type] && (
+              {/* MULTIPLE-CHOICE 3-4-5 SELECTABLE BOXES */}
+              {type === "multiple-choice" && selectedTypes[type] && (
+                <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                  {[3, 4, 5].map((num) => (
+                    <div
+                      key={num}
+                      onClick={() => handleQuestionCountChange(type, num)}
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: selectedTypes[type] === num ? "#1976d2" : "rgba(255,255,255,0.2)",
+                        color: "white",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {num}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Default number input for other types */}
+              {type !== "multiple-choice" && selectedTypes[type] && (
                 <input
                   type="number"
                   min="1"
@@ -270,7 +296,6 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* ⭐ NEW LEARN MORE BUTTON */}
       <button
         onClick={() => router.push("/learn")}
         style={{
