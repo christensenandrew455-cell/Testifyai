@@ -1,49 +1,42 @@
 import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Extract a SHORT correct answer from the explanation
-function extractShortCorrectAnswer(explanation = "") {
-  if (!explanation) return "";
-
-  let text = explanation.replace(/\n/g, " ").trim();
-
-  // --- 1. Look for direct "Correct answer is X" ---
-  let match = text.match(/correct answer is\s+(.+?)(?:,|\.| because| since| due to|$)/i);
-  if (match) return match[1].trim();
-
-  // --- 2. Look for "**Correct Answer:** X" ---
-  match = text.match(/\*\*?correct answer\*\*?\s*:\s*(.+?)(?:,|\.| because| since| due to|$)/i);
-  if (match) return match[1].trim();
-
-  // --- 3. Otherwise take the first small noun phrase (avoid long text) ---
-  match = text.match(/^(.+?)(?:,|\.| because| since| due to|$)/i);
-  if (match) {
-    let candidate = match[1].trim();
-    // Limit to 7 words max so explanation never becomes an answer
-    return candidate.split(" ").slice(0, 7).join(" ").trim();
-  }
-
-  // Backup: first 3 words
-  return text.split(" ").slice(0, 3).join(" ").trim();
-}
-
 export async function POST(req) {
   try {
-    const { topic, difficulty, numQuestions = 5, numAnswers = 4 } =
-      await req.json();
+    const { topic, difficulty, numQuestions = 5, numAnswers = 4 } = await req.json();
 
     const prompt = `
-You are a test question generator. Produce ${numQuestions} MULTIPLE-CHOICE questions about "${topic}".
-Difficulty: ${difficulty}.
+You are a Test Question Generator.
 
-Each question must include:
-- "question": string
-- "answers": array of ${numAnswers} items
-- "correct": EXACT short correct answer text
-- "explanation": must clearly contain the correct answer
+You MUST generate each question using this pipeline:
 
-Do NOT add letters (A, B, C, D).
-Return ONLY JSON.
+STEP 1 — Make the question.
+STEP 2 — Make answer choices (ONLY 1 correct).
+STEP 3 — Write a detailed explanation.
+STEP 4 — From the explanation, EXTRACT the correct answer text.
+STEP 5 — Use that extracted answer text as the "correct" field in JSON.
+
+### IMPORTANT RULES
+- The explanation MUST contain the correct answer clearly inside the first sentence.
+- Example: "The correct answer is oxygen because plants release oxygen..."
+- You MUST pull the correct answer from the explanation, not from memory.
+- The "correct" field in JSON must contain ONLY the exact answer text (few words).
+- The answer choices MUST NOT contain the explanation text.
+- NEVER insert full explanation sentences inside answer options.
+- Output ONLY JSON.
+
+### OUTPUT FORMAT (ONLY JSON)
+[
+  {
+    "question": "What is ...?\\nChoose one of the answers below.",
+    "answers": ["ans1", "ans2", "ans3", "ans4"],
+    "correct": "extracted correct answer",
+    "explanation": "The correct answer is ____ because ____."
+  }
+]
+
+Generate exactly ${numQuestions} questions about "${topic}" at difficulty "${difficulty}".
+All questions must strictly follow Steps 1–5.
 `;
 
     const response = await openai.chat.completions.create({
@@ -55,38 +48,36 @@ Return ONLY JSON.
     let content = response.choices[0].message.content.trim();
     content = content.replace(/```json|```/g, "").trim();
 
+    // GPT NOW handles correct answer extraction itself
     let questions = JSON.parse(content);
 
+    // Light cleanup: ensure number of answers + shuffle
     questions = questions.map((q) => {
       let answers = Array.from(new Set(q.answers || []));
 
-      // Short clean correct answer from explanation
-      let realCorrect = extractShortCorrectAnswer(q.explanation || "");
-
-      // Fill if missing
       while (answers.length < numAnswers) {
-        answers.push(`Extra option ${answers.length + 1}`);
+        answers.push(`Option ${answers.length + 1}`);
       }
+
       answers = answers.slice(0, numAnswers);
 
-      // Ensure correct answer is included
-      if (!answers.includes(realCorrect)) {
-        answers[answers.length - 1] = realCorrect;
+      // Make sure correct stays included
+      if (!answers.includes(q.correct)) {
+        answers[answers.length - 1] = q.correct;
       }
 
-      // Shuffle
       answers = answers.sort(() => Math.random() - 0.5);
 
       return {
         question: q.question,
         answers,
-        correct: realCorrect,
+        correct: q.correct,
         explanation: q.explanation,
       };
     });
 
     return new Response(JSON.stringify({ questions }), {
-      headers: { "Content-Type": "application/json" }),
+      headers: { "Content-Type": "application/json" },
     });
 
   } catch (err) {
