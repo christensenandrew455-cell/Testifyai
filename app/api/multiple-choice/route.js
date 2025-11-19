@@ -19,19 +19,22 @@ export async function POST(req) {
 You are a Test Question Generator. Generate ${numQuestions} MULTIPLE-CHOICE questions about "${topic}".
 Difficulty: ${difficulty}.
 
-Rules:
+RULES (IMPORTANT):
 1. Each question must have exactly ${numAnswers} answer options.
 2. Each question must have EXACTLY ONE correct answer.
-3. Explanation must clearly support the correct answer.
-4. Do NOT put letters (A, B, C, D) in the answer text.
-5. Return ONLY this JSON format:
+3. DO NOT put letters (A, B, C, D) in answer options.
+4. The explanation MUST start with this format EXACTLY:
+
+   "Correct Answer: <correct-answer-text>. Reason: <rest of explanation>"
+
+5. JSON output format ONLY:
 
 [
   {
     "question": "text",
     "answers": ["opt1", "opt2", "opt3", "opt4"],
-    "correct": "exact correct answer text",
-    "explanation": "reason"
+    "correct": "the correct answer text (same as in explanation)",
+    "explanation": "Correct Answer: <text>. Reason: <reason>"
   }
 ]
 `;
@@ -51,52 +54,37 @@ Rules:
 
     // Process & fix each question
     questions = questions.map((q) => {
-      // Normalize answer texts (remove letter prefixes)
+      // Normalize answers
       let answers = (q.answers || []).map((a) =>
         normalizeAnswerTextForStorage(a)
       );
 
-      // Ensure number of answers
+      // Make sure answer count is correct
       while (answers.length < numAnswers) {
         answers.push(`Extra option ${answers.length + 1}`);
       }
       answers = answers.slice(0, numAnswers);
 
-      // --- FIX: Resolve correctText BEFORE shuffle ---
-      let correctText = q.correct;
+      // --- NEW FIX: Extract correct answer from explanation ---
+      const match = q.explanation.match(/Correct Answer:\s*(.*?)\s*\./i);
 
-      // If the model returns a number
-      if (typeof correctText === "number") {
-        correctText = String(q.answers?.[correctText] ?? correctText);
-      }
-      // If the model returns a letter
-      else if (
-        typeof correctText === "string" &&
-        /^[A-Z]$/i.test(correctText.trim())
-      ) {
-        const idx = correctText.trim().toUpperCase().charCodeAt(0) - 65;
-        correctText = String(q.answers?.[idx] ?? correctText);
-      }
-      // Otherwise assume it's already the text
-      else {
-        correctText = String(correctText ?? "");
-      }
+      let correctText = match ? match[1].trim() : q.correct;
 
       // Normalize
       correctText = normalizeAnswerTextForStorage(correctText);
 
-      // Ensure correct text is physically present in answers list
+      // Ensure the correct answer is in the answers list
       if (!answers.includes(correctText)) {
         answers[answers.length - 1] = correctText;
       }
 
-      // Shuffle AFTER mapping the correct text
+      // Shuffle
       answers = answers.sort(() => Math.random() - 0.5);
 
       return {
         question: q.question,
         answers,
-        correct: correctText, // <-- ALWAYS correct TEXT
+        correct: correctText,
         explanation: q.explanation,
       };
     });
