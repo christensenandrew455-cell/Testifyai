@@ -6,84 +6,93 @@ export async function POST(req) {
     const { topic, difficulty, numQuestions = 5, numAnswers = 4 } = await req.json();
 
     const prompt = `
-You are a Test Question Generator.
 
-You MUST generate each question using this pipeline:
+You are a test question generator.
 
-STEP 1 — Make the question.
-STEP 2 — Make answer choices (ONLY 1 correct).
-STEP 3 — Write a detailed explanation.
-STEP 4 — From the explanation, EXTRACT the correct answer text.
-STEP 5 — Use that extracted answer text as the "correct" field in JSON.
+Generate ${numQuestions} MULTIPLE-CHOICE questions about "${topic}".
+Difficulty: ${difficulty}.
 
-### IMPORTANT RULES
-- The explanation MUST contain the correct answer clearly inside the first sentence.
-- Example: "The correct answer is oxygen because plants release oxygen..."
-- You MUST pull the correct answer from the explanation, not from memory.
-- The "correct" field in JSON must contain ONLY the exact answer text (few words).
-- The answer choices MUST NOT contain the explanation text.
-- NEVER insert full explanation sentences inside answer options.
-- Output ONLY JSON.
+For EACH question, follow this EXACT process:
 
-### OUTPUT FORMAT (ONLY JSON)
+1. Generate a question.
+2. Generate a detailed explanation that contains the correct answer clearly inside the explanation.
+3. From that explanation, EXTRACT the exact correct answer text.
+4. Use that extracted text as the "correct" field.
+5. Generate ${numAnswers - 1} WRONG answers that are:
+   - similar in length
+   - believable
+   - NOT obviously wrong
+   - NOT duplicates of each other or the correct answer.
+
+FORMAT STRICTLY AS JSON ONLY:
+
 [
   {
-    "question": "What is ...?\\nChoose one of the answers below.",
-    "answers": ["ans1", "ans2", "ans3", "ans4"],
-    "correct": "extracted correct answer",
-    "explanation": "The correct answer is ____ because ____."
+    "question": "Question text...?\\nChoose one of the answers below.",
+    "answers": ["answer A", "answer B", "answer C", "answer D"],
+    "correct": "The EXACT correct answer text extracted from the explanation",
+    "explanation": "Full explanation containing the correct answer"
   }
 ]
 
-Generate exactly ${numQuestions} questions about "${topic}" at difficulty "${difficulty}".
-All questions must strictly follow Steps 1–5.
+RULES:
+- Do NOT include letters (A, B, C, D) in the answer text.
+- Each question MUST have exactly ${numAnswers} answer options.
+- The explanation MUST clearly support and contain the correct answer.
+- The correct answer MUST appear in the answers array EXACTLY as extracted.
+- Return ONLY valid JSON. No text outside the JSON.
 `;
-
+    
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.6,
+      temperature: 0.6
     });
 
     let content = response.choices[0].message.content.trim();
     content = content.replace(/```json|```/g, "").trim();
 
-    // GPT NOW handles correct answer extraction itself
     let questions = JSON.parse(content);
 
-    // Light cleanup: ensure number of answers + shuffle
-    questions = questions.map((q) => {
+    questions = questions.map((q, i) => {
+      // Use the answers exactly as ChatGPT generated
       let answers = Array.from(new Set(q.answers || []));
 
+      // Fill missing answers
       while (answers.length < numAnswers) {
-        answers.push(`Option ${answers.length + 1}`);
+        answers.push(`Extra option ${answers.length + 1}`);
       }
 
       answers = answers.slice(0, numAnswers);
 
-      // Make sure correct stays included
+      // Ensure the correct answer is present
       if (!answers.includes(q.correct)) {
+        // Replace last option to avoid overwriting existing valid ones
         answers[answers.length - 1] = q.correct;
       }
 
+      // Shuffle answers but KEEP the correct answer text intact
       answers = answers.sort(() => Math.random() - 0.5);
+
+      // DO NOT CHANGE ChatGPT’s correct answer — EVER
+      const correct = q.correct;
 
       return {
         question: q.question,
         answers,
-        correct: q.correct,
-        explanation: q.explanation,
+        correct,
+        explanation: q.explanation
       };
     });
 
     return new Response(JSON.stringify({ questions }), {
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }
     });
 
   } catch (err) {
     console.error("MC error:", err);
     return new Response(JSON.stringify({ error: "MC generation failed" }), {
-      status: 500,
+      status: 500
     });
   }
 }
