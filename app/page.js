@@ -204,51 +204,54 @@ export default function HomePage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
           {testTypeOptions.map((type) => (
-            <div key={type} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
-              <button
-                onClick={() => handleToggleType(type)}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "12px",
-                  border: selectedTypes[type] ? "3px solid #1976d2" : "2px solid rgba(255,255,255,0.3)",
-                  backgroundColor: selectedTypes[type] ? "rgba(25,118,210,0.14)" : "rgba(255,255,255,0.05)",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  width: "160px",
-                  color: "white",
-                }}
-              >
-                {type.replace("-", " ").toUpperCase()}
-              </button>
+            <div key={type} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              {/* keep button and the 3/4/5 (if multiple-choice) stacked vertically, input stays to the right */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+                <button
+                  onClick={() => handleToggleType(type)}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "12px",
+                    border: selectedTypes[type] ? "3px solid #1976d2" : "2px solid rgba(255,255,255,0.3)",
+                    backgroundColor: selectedTypes[type] ? "rgba(25,118,210,0.14)" : "rgba(255,255,255,0.05)",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    width: "160px",
+                    color: "white",
+                  }}
+                >
+                  {type.replace("-", " ").toUpperCase()}
+                </button>
 
-              {/* MULTIPLE-CHOICE 3-4-5 SELECTABLE BOXES */}
-              {type === "multiple-choice" && selectedTypes[type] && (
-                <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
-                  {[3, 4, 5].map((num) => (
-                    <div
-                      key={num}
-                      onClick={() => handleQuestionCountChange(type, num)}
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: selectedTypes[type] === num ? "#1976d2" : "rgba(255,255,255,0.2)",
-                        color: "white",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {num}
-                    </div>
-                  ))}
-                </div>
-              )}
+                {/* MULTIPLE-CHOICE 3-4-5 SELECTABLE BOXES (below the button) */}
+                {type === "multiple-choice" && selectedTypes[type] && (
+                  <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                    {[3, 4, 5].map((num) => (
+                      <div
+                        key={num}
+                        onClick={() => handleQuestionCountChange(type, num)}
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: selectedTypes[type] === num ? "#1976d2" : "rgba(255,255,255,0.2)",
+                          color: "white",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {num}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-              {/* Default number input for other types */}
-              {type !== "multiple-choice" && selectedTypes[type] && (
+              {/* NUMBER INPUT stays inline to the right for ALL types (unchanged behavior) */}
+              {selectedTypes[type] && (
                 <input
                   type="number"
                   min="1"
@@ -296,6 +299,7 @@ export default function HomePage() {
         </button>
       </div>
 
+      {/* ⭐ NEW LEARN MORE BUTTON */}
       <button
         onClick={() => router.push("/learn")}
         style={{
