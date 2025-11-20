@@ -9,10 +9,6 @@ export async function POST(req) {
 You are TestifyAI. Generate ${numQuestions} MULTI-SELECT questions about "${topic}".
 Difficulty: ${difficulty}.
 
-For each question:
-- Put the QUESTION first
-- Then a new line, then: "Choose between 2–5 possible answers below."
-
 INTERPRET THE TOPIC EXACTLY AS WRITTEN.
 Do NOT change or reinterpret the topic.
 If the topic is broad or unclear, stay strictly inside the literal meaning.
@@ -27,7 +23,7 @@ Return ONLY VALID JSON, like:
 
 [
   {
-    "question": "What is ...?\\nChoose between 2–5 possible answers below.",
+    "question": "What is ...?",
     "answers": ["A", "B", "C", "D", "E"],
     "correct": ["A", "C"],
     "explanation": "string"
