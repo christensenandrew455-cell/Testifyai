@@ -31,30 +31,40 @@ function TestControllerInner() {
         // ✅ SHUFFLE CHANGES (ONLY THIS WAS ADDED)
         // ---------------------------------------------------------
 
-        const earlyTypes = normalized.filter(
-          (q) =>
-            q.type === "multiple-choice" ||
-            q.type === "true-false" ||
-            q.type === "multi-select"
-        );
+       
+       const earlyTypes = normalized.filter(
+  (q) =>
+    q.type === "multiple-choice" ||
+    q.type === "true-false" ||
+    q.type === "multi-select"
+);
 
-        const lateTypes = normalized.filter(
-          (q) =>
-            q.type === "open-response" || q.type === "short-answer"
-        );
+// Separate them instead of mixing them
+const shortAnswerTypes = normalized.filter(
+  (q) => q.type === "short-answer"
+);
 
-        // Shuffle function
-        function shuffle(arr) {
-          for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-          }
-          return arr;
-        }
+const openResponseTypes = normalized.filter(
+  (q) => q.type === "open-response"
+);
 
-        shuffle(earlyTypes);
+// Shuffle early group only
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
-        const finalOrder = [...earlyTypes, ...lateTypes];
+shuffle(earlyTypes);
+
+// Final order
+const finalOrder = [
+  ...earlyTypes,
+  ...shortAnswerTypes,
+  ...openResponseTypes,
+];
 
         // ---------------------------------------------------------
 
