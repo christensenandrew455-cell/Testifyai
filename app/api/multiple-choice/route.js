@@ -28,7 +28,7 @@ FORMAT STRICTLY AS JSON ONLY:
 
 [
   {
-    "question": "Question text...?\\nChoose one of the answers below.",
+    "question": "Question text...?",
     "answers": ["answer A", "answer B", "answer C", "answer D"],
     "correct": "The EXACT correct answer text extracted from the explanation",
     "explanation": "Full explanation containing the correct answer"
