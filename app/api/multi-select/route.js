@@ -26,9 +26,10 @@ If the topic is broad or unclear, stay strictly inside the literal meaning.
 
 Rules:
 1. Each question must have EXACTLY ${numAnswers} answer options.
-2. Each question must have BETWEEN 2–5 correct answers it has to be random.
-3. Correct answers must logically fit the question.
-4. Explanations MUST match the correct answers.
+2. Each question must have 2–5 correct answers. 
+3. The number of answers for each question should be RANDOM.
+4. Correct answers must logically fit the question.
+5. Explanations MUST match the correct answers.
 
 Return ONLY VALID JSON, like:
 
