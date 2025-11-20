@@ -12,6 +12,18 @@ You are a test question generator.
 Generate ${numQuestions} MULTIPLE-CHOICE questions about "${topic}".
 Difficulty: ${difficulty}.
 
+Difficulty scale (1–9):
+1 = Easy / Very Simple
+2 = Easy / Slightly Challenging
+3 = Easy / Hard
+4 = Medium / Easy
+5 = Medium / Medium
+6 = Medium / Hard
+7 = Hard / Easy
+8 = Hard / Medium
+9 = Hard / Very Hard
+`;
+
 For EACH question, follow this EXACT process:
 
 1. Generate a question.
