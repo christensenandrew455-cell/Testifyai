@@ -43,13 +43,10 @@ export default function MultipleChoice({
     const isCorrect =
       normalizeAnswerText(userAnswerText) === normalizeAnswerText(correctText);
 
-    // ✅ send the full answer data to the controller
     onAnswer?.({
       correct: isCorrect,
       userAnswer: userAnswerText,
     });
-
-    // ✅ controller will now handle the route change
   };
 
   return (
@@ -113,6 +110,19 @@ export default function MultipleChoice({
         }}
       >
         {question.question}
+      </div>
+
+      {/* Instruction line */}
+      <div
+        style={{
+          marginTop: "-10px",
+          marginBottom: "20px",
+          fontSize: "1rem",
+          fontWeight: 500,
+          color: "#444",
+        }}
+      >
+        Choose the best answer below:
       </div>
 
       {/* Answers */}
