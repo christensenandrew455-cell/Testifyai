@@ -59,10 +59,10 @@ export default function MultiSelect({
 
     const params = new URLSearchParams({
       question: question.question || "",
-      userAnswer: JSON.stringify(userIndexes), // send indexes
-      correctAnswer: JSON.stringify(correctArray.map((c) =>
-        question.answers.indexOf(c)
-      )), // send indexes
+      userAnswer: JSON.stringify(userIndexes),
+      correctAnswer: JSON.stringify(
+        correctArray.map((c) => question.answers.indexOf(c))
+      ),
       explanation: question.explanation || "",
       index: String(currentIndex ?? 0),
       topic: topic || "",
@@ -105,7 +105,7 @@ export default function MultiSelect({
           onClick={() => router.push("/")}
           style={{
             backgroundColor: "#1976d2",
-            color: "#fff",
+            color: "white",
             border: "none",
             borderRadius: "10px",
             padding: "6px 16px",
@@ -136,6 +136,19 @@ export default function MultiSelect({
         }}
       >
         {question.question}
+      </div>
+
+      {/* Instruction line */}
+      <div
+        style={{
+          marginTop: "-10px",
+          marginBottom: "20px",
+          fontSize: "1rem",
+          fontWeight: 500,
+          color: "#444",
+        }}
+      >
+        Select all correct answers below:
       </div>
 
       {/* Options */}
