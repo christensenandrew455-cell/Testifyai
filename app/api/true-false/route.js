@@ -9,17 +9,13 @@ export async function POST(req) {
 You are TestifyAI. Generate ${numQuestions} TRUE/FALSE questions about "${topic}".
 Difficulty: ${difficulty}.
 
-Each question MUST follow this format:
-"Statement...?
-Choose either True or False below."
-
 Interpret topic EXACTLY as written.
 
 Return ONLY JSON:
 
 [
   {
-    "question": "Statement...?\\nChoose either True or False below.",
+    "question": "Statement...?",
     "answers": ["True", "False"],
     "correct": "True",
     "explanation": "string"
