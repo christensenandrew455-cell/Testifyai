@@ -128,7 +128,7 @@ export default function TrueFalse({
           textAlign: "center",
         }}
       >
-        Select whether the statement below is True or False:
+        Select whether the statement above is True or False:
       </div>
 
       {/* Answer buttons */}
