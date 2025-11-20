@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
@@ -10,24 +10,8 @@ export default function HomePage() {
   const [selectedTypes, setSelectedTypes] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // ⭐ Prevent multiple ad injections
+  // ⭐ ADDED: Track if ad was shown once
   const [adShown, setAdShown] = useState(false);
-
-  // ⭐ Load Monetag ad ONLY once when loading starts
-  useEffect(() => {
-    if (loading && !adShown) {
-      try {
-        const s = document.createElement("script");
-        s.dataset.zone = "10137448";
-        s.src = "https://groleegni.net/vignette.min.js";
-
-        document.body.appendChild(s);
-        setAdShown(true); // prevents future injections
-      } catch (err) {
-        console.error("Ad script failed:", err);
-      }
-    }
-  }, [loading, adShown]);
 
   const testTypeOptions = [
     "multiple-choice",
@@ -44,7 +28,7 @@ export default function HomePage() {
         delete updated[type];
         return updated;
       } else {
-        return { ...prev, [type]: 5 }; // default 5
+        return { ...prev, [type]: 5 };
       }
     });
   };
@@ -63,8 +47,20 @@ export default function HomePage() {
       return;
     }
 
-    setLoading(true); // ⭐ triggers the ad popup
+    // ⭐ ADDED: Inject Monetag ad ONCE when Generate Test is clicked
+    if (!adShown) {
+      try {
+        const s = document.createElement("script");
+        s.dataset.zone = "10137448";
+        s.src = "https://groleegni.net/vignette.min.js";
+        document.body.appendChild(s);
+        setAdShown(true);
+      } catch (e) {
+        console.error("Ad failed to load:", e);
+      }
+    }
 
+    setLoading(true);
     try {
       const res = await fetch("/api/distribution", {
         method: "POST",
@@ -94,10 +90,7 @@ export default function HomePage() {
     }
   };
 
-  const totalQuestions = Object.values(selectedTypes).reduce(
-    (a, b) => a + b,
-    0
-  );
+  const totalQuestions = Object.values(selectedTypes).reduce((a, b) => a + b, 0);
 
   return (
     <div
@@ -189,6 +182,7 @@ export default function HomePage() {
             textAlign: "center",
             outline: "none",
             marginBottom: "26px",
+            maxWidth: "100%",
           }}
         />
 
@@ -239,64 +233,25 @@ export default function HomePage() {
               key={type}
               style={{ display: "flex", alignItems: "center", gap: "12px" }}
             >
-              {/* Button + small number selector below */}
-              <div
+              <button
+                onClick={() => handleToggleType(type)}
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "6px",
+                  padding: "8px 16px",
+                  borderRadius: "12px",
+                  border: selectedTypes[type]
+                    ? "3px solid #1976d2"
+                    : "2px solid rgba(255,255,255,0.3)",
+                  backgroundColor: selectedTypes[type]
+                    ? "rgba(25,118,210,0.14)"
+                    : "rgba(255,255,255,0.05)",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  width: "160px",
+                  color: "white",
                 }}
               >
-                <button
-                  onClick={() => handleToggleType(type)}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: "12px",
-                    border: selectedTypes[type]
-                      ? "3px solid #1976d2"
-                      : "2px solid rgba(255,255,255,0.3)",
-                    backgroundColor: selectedTypes[type]
-                      ? "rgba(25,118,210,0.14)"
-                      : "rgba(255,255,255,0.05)",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    width: "160px",
-                    color: "white",
-                  }}
-                >
-                  {type.replace("-", " ").toUpperCase()}
-                </button>
-
-                {/* Multiple choice 3/4/5 selector */}
-                {type === "multiple-choice" && selectedTypes[type] && (
-                  <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
-                    {[3, 4, 5].map((num) => (
-                      <div
-                        key={num}
-                        onClick={() => handleQuestionCountChange(type, num)}
-                        style={{
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "8px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor:
-                            selectedTypes[type] === num
-                              ? "#1976d2"
-                              : "rgba(255,255,255,0.2)",
-                          color: "white",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {num}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                {type.replace("-", " ").toUpperCase()}
+              </button>
 
               {selectedTypes[type] && (
                 <input
@@ -348,6 +303,7 @@ export default function HomePage() {
         </button>
       </div>
 
+      {/* ⭐ NEW LEARN MORE BUTTON */}
       <button
         onClick={() => router.push("/learn")}
         style={{
