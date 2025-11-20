@@ -43,10 +43,13 @@ export default function MultipleChoice({
     const isCorrect =
       normalizeAnswerText(userAnswerText) === normalizeAnswerText(correctText);
 
+    // ✅ send the full answer data to the controller
     onAnswer?.({
       correct: isCorrect,
       userAnswer: userAnswerText,
     });
+
+    // ✅ controller will now handle the route change
   };
 
   return (
@@ -106,22 +109,10 @@ export default function MultipleChoice({
           fontWeight: 500,
           textAlign: "center",
           boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-          marginBottom: "14px",
+          marginBottom: "24px",
         }}
       >
         {question.question}
-      </div>
-
-      {/* Instruction (added) */}
-      <div
-        style={{
-          fontSize: "1rem",
-          fontWeight: 600,
-          color: "#444",
-          marginBottom: "20px",
-        }}
-      >
-        Select the best answer from the choices below.
       </div>
 
       {/* Answers */}
