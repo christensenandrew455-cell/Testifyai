@@ -7,7 +7,6 @@ export default function HomePage() {
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
 
-  // ✅ Updated state structure
   const [selectedTypes, setSelectedTypes] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +18,6 @@ export default function HomePage() {
     "short-answer",
   ];
 
-  // ✅ Updated to handle separate numQuestions and numAnswers
   const handleToggleType = (type) => {
     setSelectedTypes((prev) => {
       if (prev[type]) {
@@ -27,31 +25,13 @@ export default function HomePage() {
         delete updated[type];
         return updated;
       } else {
-        return {
-          ...prev,
-          [type]:
-            type === "multiple-choice"
-              ? { numQuestions: 1, numAnswers: 4 } // default 4 answers
-              : { numQuestions: 1 },
-        };
+        return { ...prev, [type]: 5 };
       }
     });
   };
 
-  // ✅ Handle number of questions input
   const handleQuestionCountChange = (type, value) => {
-    setSelectedTypes((prev) => ({
-      ...prev,
-      [type]: { ...prev[type], numQuestions: Math.max(1, value) },
-    }));
-  };
-
-  // ✅ Handle multiple-choice answer count
-  const handleAnswerCountChange = (type, value) => {
-    setSelectedTypes((prev) => ({
-      ...prev,
-      [type]: { ...prev[type], numAnswers: value },
-    }));
+    setSelectedTypes((prev) => ({ ...prev, [type]: Math.max(1, value) }));
   };
 
   const handleGenerateTest = async () => {
@@ -72,7 +52,7 @@ export default function HomePage() {
         body: JSON.stringify({
           topic,
           difficulty,
-          questionsPerType: selectedTypes, // ✅ includes numQuestions and numAnswers
+          questionsPerType: selectedTypes,
         }),
       });
 
@@ -92,10 +72,7 @@ export default function HomePage() {
     }
   };
 
-  const totalQuestions = Object.values(selectedTypes).reduce(
-    (sum, t) => sum + (t.numQuestions || 0),
-    0
-  );
+  const totalQuestions = Object.values(selectedTypes).reduce((a, b) => a + b, 0);
 
   return (
     <div
@@ -169,6 +146,7 @@ export default function HomePage() {
           Topic
         </h2>
 
+        {/* New subtitle text (was inside placeholder before) */}
         <p style={{ marginBottom: "18px", opacity: 0.9 }}>
           Enter any topic — broad or specific
         </p>
@@ -228,59 +206,28 @@ export default function HomePage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
           {testTypeOptions.map((type) => (
             <div key={type} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              {/* keep button and the 3/4/5 (if multiple-choice) stacked vertically, input stays to the right */}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
-                <button
-                  onClick={() => handleToggleType(type)}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: "12px",
-                    border: selectedTypes[type] ? "3px solid #1976d2" : "2px solid rgba(255,255,255,0.3)",
-                    backgroundColor: selectedTypes[type] ? "rgba(25,118,210,0.14)" : "rgba(255,255,255,0.05)",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    width: "160px",
-                    color: "white",
-                  }}
-                >
-                  {type.replace("-", " ").toUpperCase()}
-                </button>
+              <button
+                onClick={() => handleToggleType(type)}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "12px",
+                  border: selectedTypes[type] ? "3px solid #1976d2" : "2px solid rgba(255,255,255,0.3)",
+                  backgroundColor: selectedTypes[type] ? "rgba(25,118,210,0.14)" : "rgba(255,255,255,0.05)",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  width: "160px",
+                  color: "white",
+                }}
+              >
+                {type.replace("-", " ").toUpperCase()}
+              </button>
 
-                {/* MULTIPLE-CHOICE 3-4-5 SELECTABLE BOXES */}
-                {type === "multiple-choice" && selectedTypes[type] && (
-                  <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
-                    {[3, 4, 5].map((num) => (
-                      <div
-                        key={num}
-                        onClick={() => handleAnswerCountChange(type, num)}
-                        style={{
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "8px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor:
-                            selectedTypes[type].numAnswers === num ? "#1976d2" : "rgba(255,255,255,0.2)",
-                          color: "white",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {num}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* NUMBER INPUT stays inline to the right for ALL types (unchanged behavior) */}
               {selectedTypes[type] && (
                 <input
                   type="number"
                   min="1"
                   max="50"
-                  value={selectedTypes[type].numQuestions}
+                  value={selectedTypes[type]}
                   onChange={(e) => handleQuestionCountChange(type, Number(e.target.value))}
                   style={{
                     width: "60px",
