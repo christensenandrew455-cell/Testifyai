@@ -23,17 +23,48 @@ function TestControllerInner() {
 
         const normalized = (decoded.questions || []).map((q) => ({
           type: q.type || "multiple-choice",
-          topic: decoded.topic || "Unknown Topic", // ✅ ensure topic is stored for each question
+          topic: decoded.topic || "Unknown Topic",
           ...q,
         }));
 
+        // ---------------------------------------------------------
+        // ✅ SHUFFLE CHANGES (ONLY THIS WAS ADDED)
+        // ---------------------------------------------------------
+
+        const earlyTypes = normalized.filter(
+          (q) =>
+            q.type === "multiple-choice" ||
+            q.type === "true-false" ||
+            q.type === "multi-select"
+        );
+
+        const lateTypes = normalized.filter(
+          (q) =>
+            q.type === "open-response" || q.type === "short-answer"
+        );
+
+        // Shuffle function
+        function shuffle(arr) {
+          for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+          }
+          return arr;
+        }
+
+        shuffle(earlyTypes);
+
+        const finalOrder = [...earlyTypes, ...lateTypes];
+
+        // ---------------------------------------------------------
+
         sessionStorage.setItem(
           "testData",
-          JSON.stringify({ ...decoded, questions: normalized })
+          JSON.stringify({ ...decoded, questions: finalOrder })
         );
         sessionStorage.setItem("currentIndex", "0");
 
-        setQuestions(normalized);
+        setQuestions(finalOrder);
         setIndex(0);
       } catch (err) {
         console.error("❌ Failed to decode test data:", err);
@@ -80,7 +111,6 @@ function TestControllerInner() {
           )
         : [question.answers.indexOf(question.correct)];
 
-    // ✅ Update sessionStorage with result
     const stored = sessionStorage.getItem("testData");
     let data;
     if (stored) {
@@ -93,7 +123,7 @@ function TestControllerInner() {
       ...question,
       userAnswer: safeUserAnswer,
       isCorrect: correct,
-      topic: question.topic || topic, // ✅ ensure topic stays
+      topic: question.topic || topic,
     };
 
     sessionStorage.setItem("testData", JSON.stringify(data));
