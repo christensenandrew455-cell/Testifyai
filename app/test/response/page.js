@@ -60,6 +60,15 @@ export default function Response({
     router.push(`/test/grading?data=${encodeURIComponent(JSON.stringify(data))}`);
   };
 
+  // Placeholder text depending on question type
+  const getPlaceholder = () => {
+    if (question.type === "open-response") {
+      return "Type your answer and reasoning in the box provided below...";
+    }
+    // Default to short-answer style
+    return "Type your answer in the box provided below...";
+  };
+
   return (
     <div
       style={{
@@ -127,7 +136,7 @@ export default function Response({
       <textarea
         value={answer}
         onChange={(e) => setAnswer(e.target.value)}
-        placeholder="Type your answer here..."
+        placeholder={getPlaceholder()}
         style={{
           width: "100%",
           maxWidth: "600px",
