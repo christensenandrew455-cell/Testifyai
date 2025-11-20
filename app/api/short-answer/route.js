@@ -8,7 +8,19 @@ export async function POST(req) {
 
     const prompt = `
 You are TestifyAI. Generate ${numQuestions} short-answer questions on the topic: "${topic}".
-Difficulty level: ${difficulty} (1 = easy, 9 = very hard).
+Difficulty level: ${difficulty}.
+
+Difficulty scale (1–9):
+1 = Easy / Very Simple
+2 = Easy / Slightly Challenging
+3 = Easy / Hard
+4 = Medium / Easy
+5 = Medium / Medium
+6 = Medium / Hard
+7 = Hard / Easy
+8 = Hard / Medium
+9 = Hard / Very Hard
+`;
 
 Rules:
 1. Only provide the question text — no answers, no explanations.
