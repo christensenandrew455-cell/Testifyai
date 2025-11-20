@@ -177,7 +177,7 @@ export default function HomePage() {
 
         <input
           type="text"
-          placeholder="e.g., Math Algebra"
+          placeholder="e.g., Math, Algebra"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           style={{
