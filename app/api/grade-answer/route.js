@@ -16,9 +16,6 @@ export async function POST(req) {
     const prompt = `
 You are TestifyAI, an expert grader. Grade the following student answer based on the question and difficulty level.
 Difficulty: ${difficulty}
-Question: "${question}"
-Student Answer: "${userAnswer}"
-
 Difficulty scale (1–9):
 1 = Easy / Very Simple
 2 = Easy / Slightly Challenging
@@ -29,10 +26,12 @@ Difficulty scale (1–9):
 7 = Hard / Easy
 8 = Hard / Medium
 9 = Hard / Very Hard
+Question: "${question}"
+Student Answer: "${userAnswer}"
 
 Instructions:
 - Evaluate if the answer is correct based on the question.
-- Consider the difficulty level when judging grammar, detail, and completeness.
+- use the difficulty level from lenient to no leniency when judging grammar, detail, and completeness.
 - Provide a short feedback explanation of why the answer is correct or incorrect and what the answer acually is.
 - Return ONLY valid JSON in this exact format:
 {
