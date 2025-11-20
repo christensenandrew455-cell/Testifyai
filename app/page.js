@@ -10,7 +10,7 @@ export default function HomePage() {
   const [selectedTypes, setSelectedTypes] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // ⭐ ADDED: Track if ad was shown once
+  // Track if Monetag ad already ran once
   const [adShown, setAdShown] = useState(false);
 
   const testTypeOptions = [
@@ -47,20 +47,24 @@ export default function HomePage() {
       return;
     }
 
-    // ⭐ ADDED: Inject Monetag ad ONCE when Generate Test is clicked
+    // ⭐ FIRE MONETAG INSTANTLY — not delayed, no waiting.
     if (!adShown) {
       try {
-        const s = document.createElement("script");
-        s.dataset.zone = "10137448";
-        s.src = "https://groleegni.net/vignette.min.js";
-        document.body.appendChild(s);
+        const script = document.createElement("script");
+        script.dataset.zone = "10137448";
+        script.src = "https://groleegni.net/vignette.min.js";
+
+        // Insert before loading starts to guarantee instant popup
+        document.body.appendChild(script);
+
         setAdShown(true);
-      } catch (e) {
-        console.error("Ad failed to load:", e);
+      } catch (err) {
+        console.error("Ad script failed:", err);
       }
     }
 
     setLoading(true);
+
     try {
       const res = await fetch("/api/distribution", {
         method: "POST",
@@ -90,7 +94,10 @@ export default function HomePage() {
     }
   };
 
-  const totalQuestions = Object.values(selectedTypes).reduce((a, b) => a + b, 0);
+  const totalQuestions = Object.values(selectedTypes).reduce(
+    (a, b) => a + b,
+    0
+  );
 
   return (
     <div
@@ -303,7 +310,7 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* ⭐ NEW LEARN MORE BUTTON */}
+      {/* Learn More Button */}
       <button
         onClick={() => router.push("/learn")}
         style={{
