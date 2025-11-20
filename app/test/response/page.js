@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Response({
@@ -14,6 +14,7 @@ export default function Response({
 }) {
   const [answer, setAnswer] = useState("");
   const router = useRouter();
+  const textareaRef = useRef(null);
 
   if (!question || !question.question) {
     return (
@@ -48,7 +49,6 @@ export default function Response({
     );
   }
 
-  // ✅ Go to grading page (loading spinner) and pass data in URL
   const handleCheck = () => {
     const data = {
       question: question.question,
@@ -56,17 +56,22 @@ export default function Response({
       topic,
       difficulty,
     };
-
     router.push(`/test/grading?data=${encodeURIComponent(JSON.stringify(data))}`);
   };
 
-  // Placeholder text depending on question type
-  const getPlaceholder = () => {
-    if (question.type === "open-response") {
-      return "Type your answer and reasoning in the box provided below...";
+  // Auto-expand textarea as user types
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
     }
-    // Default to short-answer style
-    return "Type your answer in the box provided below...";
+  }, [answer]);
+
+  const getLabelText = () => {
+    if (question.type === "open-response") {
+      return "Type your answer and reasoning in the box provided below:";
+    }
+    return "Type your answer in the box provided below:";
   };
 
   return (
@@ -126,21 +131,36 @@ export default function Response({
           fontWeight: 500,
           textAlign: "center",
           boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-          marginBottom: "24px",
+          marginBottom: "12px",
         }}
       >
         {question.question}
       </div>
 
-      {/* Answer Box */}
-      <textarea
-        value={answer}
-        onChange={(e) => setAnswer(e.target.value)}
-        placeholder={getPlaceholder()}
+      {/* Label above answer box */}
+      <div
         style={{
           width: "100%",
-          maxWidth: "600px",
-          height: "120px",
+          maxWidth: "700px",
+          marginBottom: "8px",
+          fontSize: "1rem",
+          fontWeight: 500,
+          color: "#555",
+        }}
+      >
+        {getLabelText()}
+      </div>
+
+      {/* Answer Box */}
+      <textarea
+        ref={textareaRef}
+        value={answer}
+        onChange={(e) => setAnswer(e.target.value)}
+        placeholder="Start typing..."
+        style={{
+          width: "100%",
+          maxWidth: "700px",
+          minHeight: "120px",
           border: "2px solid rgba(0,0,0,0.1)",
           borderRadius: "12px",
           padding: "10px",
@@ -148,6 +168,8 @@ export default function Response({
           fontFamily: "inherit",
           marginBottom: "24px",
           boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+          resize: "none",
+          overflow: "hidden",
         }}
       />
 
