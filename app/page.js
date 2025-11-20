@@ -7,6 +7,7 @@ export default function HomePage() {
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
 
+  // ✅ Updated state structure
   const [selectedTypes, setSelectedTypes] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -18,6 +19,7 @@ export default function HomePage() {
     "short-answer",
   ];
 
+  // ✅ Updated to handle separate numQuestions and numAnswers
   const handleToggleType = (type) => {
     setSelectedTypes((prev) => {
       if (prev[type]) {
@@ -25,59 +27,75 @@ export default function HomePage() {
         delete updated[type];
         return updated;
       } else {
-        return { ...prev, [type]: 5 }; // default 5
+        return {
+          ...prev,
+          [type]:
+            type === "multiple-choice"
+              ? { numQuestions: 1, numAnswers: 4 } // default 4 answers
+              : { numQuestions: 1 },
+        };
       }
     });
   };
 
+  // ✅ Handle number of questions input
   const handleQuestionCountChange = (type, value) => {
-    setSelectedTypes((prev) => ({ ...prev, [type]: Math.max(1, value) }));
+    setSelectedTypes((prev) => ({
+      ...prev,
+      [type]: { ...prev[type], numQuestions: Math.max(1, value) },
+    }));
   };
 
-const handleGenerateTest = async () => {
-  if (!topic.trim()) {
-    alert("Please enter a topic!");
-    return;
-  }
-  if (Object.keys(selectedTypes).length === 0) {
-    alert("Please select at least one test type!");
-    return;
-  }
+  // ✅ Handle multiple-choice answer count
+  const handleAnswerCountChange = (type, value) => {
+    setSelectedTypes((prev) => ({
+      ...prev,
+      [type]: { ...prev[type], numAnswers: value },
+    }));
+  };
 
-  // CLEAN selectedTypes before sending to API
-  const cleanTypes = Object.fromEntries(
-    Object.entries(selectedTypes).filter(([_, v]) => typeof v === "number")
+  const handleGenerateTest = async () => {
+    if (!topic.trim()) {
+      alert("Please enter a topic!");
+      return;
+    }
+    if (Object.keys(selectedTypes).length === 0) {
+      alert("Please select at least one test type!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/distribution", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic,
+          difficulty,
+          questionsPerType: selectedTypes, // ✅ includes numQuestions and numAnswers
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.questions) throw new Error(data.error || "API failed");
+
+      sessionStorage.setItem("testData", JSON.stringify(data));
+      sessionStorage.setItem("resumeIndex", "0");
+
+      router.push(`/test/controller?data=${encodeURIComponent(JSON.stringify(data))}`);
+    } catch (err) {
+      console.error("❌ Error generating test:", err);
+      alert("Failed to generate test. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalQuestions = Object.values(selectedTypes).reduce(
+    (sum, t) => sum + (t.numQuestions || 0),
+    0
   );
-
-  setLoading(true);
-  try {
-    const res = await fetch("/api/distribution", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        topic,
-        difficulty,
-        questionsPerType: cleanTypes, // ← FIX APPLIED HERE
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.questions) throw new Error(data.error || "API failed");
-
-    sessionStorage.setItem("testData", JSON.stringify(data));
-    sessionStorage.setItem("resumeIndex", "0");
-
-    router.push(`/test/controller?data=${encodeURIComponent(JSON.stringify(data))}`);
-  } catch (err) {
-    console.error("❌ Error generating test:", err);
-    alert("Failed to generate test. Try again.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const totalQuestions = Object.values(selectedTypes).reduce((a, b) => a + b, 0);
 
   return (
     <div
@@ -228,13 +246,13 @@ const handleGenerateTest = async () => {
                   {type.replace("-", " ").toUpperCase()}
                 </button>
 
-                {/* MULTIPLE-CHOICE 3-4-5 SELECTABLE BOXES (below the button) */}
+                {/* MULTIPLE-CHOICE 3-4-5 SELECTABLE BOXES */}
                 {type === "multiple-choice" && selectedTypes[type] && (
                   <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
                     {[3, 4, 5].map((num) => (
                       <div
                         key={num}
-                        onClick={() => handleQuestionCountChange(type, num)}
+                        onClick={() => handleAnswerCountChange(type, num)}
                         style={{
                           width: "32px",
                           height: "32px",
@@ -242,7 +260,8 @@ const handleGenerateTest = async () => {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          backgroundColor: selectedTypes[type] === num ? "#1976d2" : "rgba(255,255,255,0.2)",
+                          backgroundColor:
+                            selectedTypes[type].numAnswers === num ? "#1976d2" : "rgba(255,255,255,0.2)",
                           color: "white",
                           fontWeight: 700,
                           cursor: "pointer",
@@ -261,7 +280,7 @@ const handleGenerateTest = async () => {
                   type="number"
                   min="1"
                   max="50"
-                  value={selectedTypes[type]}
+                  value={selectedTypes[type].numQuestions}
                   onChange={(e) => handleQuestionCountChange(type, Number(e.target.value))}
                   style={{
                     width: "60px",
