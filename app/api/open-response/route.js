@@ -23,7 +23,8 @@ Difficulty scale (1–9):
 
 Rules:
 1. Only provide the question text — no answers, no explanations.
-2. Output must be VALID JSON exactly like this:
+2. make sure you use the difficulty level when generating a question
+3. Output must be VALID JSON exactly like this:
 [
   { "question": "string" }
 ]
