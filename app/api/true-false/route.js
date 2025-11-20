@@ -9,6 +9,18 @@ export async function POST(req) {
 You are TestifyAI. Generate ${numQuestions} TRUE/FALSE questions about "${topic}".
 Difficulty: ${difficulty}.
 
+Difficulty scale (1–9):
+1 = Easy / Very Simple
+2 = Easy / Slightly Challenging
+3 = Easy / Hard
+4 = Medium / Easy
+5 = Medium / Medium
+6 = Medium / Hard
+7 = Hard / Easy
+8 = Hard / Medium
+9 = Hard / Very Hard
+`;
+
 Interpret topic EXACTLY as written.
 
 Return ONLY JSON:
