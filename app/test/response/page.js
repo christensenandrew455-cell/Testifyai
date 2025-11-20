@@ -59,16 +59,18 @@ export default function Response({
     router.push(`/test/grading?data=${encodeURIComponent(JSON.stringify(data))}`);
   };
 
-  // Auto-expand textarea as user types
+  const isOpenResponse = question.type === "open-response";
+
+  // Auto-expand textarea for open-response
   useEffect(() => {
-    if (textareaRef.current) {
+    if (textareaRef.current && isOpenResponse) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
     }
-  }, [answer]);
+  }, [answer, isOpenResponse]);
 
   const getLabelText = () => {
-    if (question.type === "open-response") {
+    if (isOpenResponse) {
       return "Type your answer and reasoning in the box provided below:";
     }
     return "Type your answer in the box provided below:";
@@ -160,7 +162,8 @@ export default function Response({
         style={{
           width: "100%",
           maxWidth: "700px",
-          minHeight: "120px",
+          minHeight: isOpenResponse ? "120px" : "60px",
+          maxHeight: isOpenResponse ? "400px" : "150px",
           border: "2px solid rgba(0,0,0,0.1)",
           borderRadius: "12px",
           padding: "10px",
@@ -169,7 +172,7 @@ export default function Response({
           marginBottom: "24px",
           boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
           resize: "none",
-          overflow: "hidden",
+          overflowY: "auto",
         }}
       />
 
