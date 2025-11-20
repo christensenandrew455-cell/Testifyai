@@ -29,7 +29,6 @@ Difficulty scale (1–9):
 7 = Hard / Easy
 8 = Hard / Medium
 9 = Hard / Very Hard
-`;
 
 Instructions:
 - Evaluate if the answer is correct based on the question.
