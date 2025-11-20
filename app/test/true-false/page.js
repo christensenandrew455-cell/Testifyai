@@ -22,33 +22,12 @@ export default function TrueFalse({
   onAnswer,
   topic,
   currentIndex,
-  totalQuestions
+  totalQuestions,
 }) {
   const [selected, setSelected] = useState(null);
-  const [adShown, setAdShown] = useState(false);
   const router = useRouter();
 
   if (!question) return null;
-
-  // 🔥 POP THE AD INSTANTLY ON FIRST CLICK
-  const triggerAd = () => {
-    if (adShown) return; // only once
-
-    try {
-      const s = document.createElement("script");
-      s.dataset.zone = "10137448";
-      s.src = "https://groleegni.net/vignette.min.js";
-      document.body.appendChild(s);
-      setAdShown(true);
-    } catch (err) {
-      console.error("Monetag ad failed:", err);
-    }
-  };
-
-  const handleSelect = (i) => {
-    triggerAd();     // ⬅️ Runs instantly on answer click
-    setSelected(i);  // highlight
-  };
 
   const handleCheck = () => {
     if (selected === null) return;
@@ -59,14 +38,13 @@ export default function TrueFalse({
     const isCorrect =
       normalizeAnswerText(userText) === normalizeAnswerText(correctText);
 
-    // Keep array format for consistent review screens
     const params = new URLSearchParams({
       question: question.question || "",
       userAnswer: JSON.stringify([userText]),
       correctAnswer: JSON.stringify([correctText]),
       explanation: question.explanation || "",
       index: String(currentIndex ?? 0),
-      topic: topic || ""
+      topic: topic || "",
     });
 
     router.push(
@@ -88,7 +66,7 @@ export default function TrueFalse({
         backgroundColor: "#f8fafc",
         padding: "40px 20px",
         fontFamily: "Segoe UI, Roboto, sans-serif",
-        color: "#222"
+        color: "#222",
       }}
     >
       {/* Header */}
@@ -101,7 +79,7 @@ export default function TrueFalse({
           justifyContent: "space-between",
           marginBottom: "16px",
           borderBottom: "2px solid #1976d2",
-          paddingBottom: "10px"
+          paddingBottom: "10px",
         }}
       >
         <button
@@ -113,7 +91,7 @@ export default function TrueFalse({
             borderRadius: "10px",
             padding: "6px 16px",
             fontWeight: 600,
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           Leave
@@ -122,7 +100,7 @@ export default function TrueFalse({
         <div style={{ fontWeight: 700, color: "#1976d2" }}>TheTestifyAI</div>
       </div>
 
-      {/* Question */}
+      {/* Question Box */}
       <div
         style={{
           border: "3px solid #1976d2",
@@ -135,26 +113,38 @@ export default function TrueFalse({
           fontWeight: 500,
           textAlign: "center",
           boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-          marginBottom: "24px"
+          marginBottom: "10px",
         }}
       >
         {question.question}
       </div>
 
-      {/* Answers */}
+      {/* ✔ Correct test-style instruction */}
+      <div
+        style={{
+          marginBottom: "20px",
+          fontSize: "1rem",
+          fontWeight: 600,
+          textAlign: "center",
+        }}
+      >
+        Select whether the statement below is True or False:
+      </div>
+
+      {/* Answer buttons */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           gap: "12px",
           width: "100%",
-          maxWidth: "400px"
+          maxWidth: "400px",
         }}
       >
         {question.answers?.map((ans, i) => (
           <button
             key={i}
-            onClick={() => handleSelect(i)}
+            onClick={() => setSelected(i)}
             style={{
               padding: "12px 20px",
               borderRadius: "12px",
@@ -166,7 +156,7 @@ export default function TrueFalse({
                 selected === i ? "rgba(25,118,210,0.1)" : "white",
               cursor: "pointer",
               fontSize: "1rem",
-              fontWeight: 600
+              fontWeight: 600,
             }}
           >
             {ans}
@@ -182,7 +172,7 @@ export default function TrueFalse({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginTop: "24px"
+          marginTop: "24px",
         }}
       >
         <div style={{ fontWeight: 600 }}>
@@ -197,7 +187,7 @@ export default function TrueFalse({
             borderRadius: "12px",
             padding: "10px 20px",
             fontWeight: 700,
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           Check
