@@ -19,7 +19,6 @@ Difficulty scale (1–9):
 7 = Hard / Easy
 8 = Hard / Medium
 9 = Hard / Very Hard
-`;
 
 INTERPRET THE TOPIC EXACTLY AS WRITTEN.
 Do NOT change or reinterpret the topic.
@@ -27,7 +26,7 @@ If the topic is broad or unclear, stay strictly inside the literal meaning.
 
 Rules:
 1. Each question must have EXACTLY ${numAnswers} answer options.
-2. Each question must have BETWEEN 2–5 correct answers.
+2. Each question must have BETWEEN 2–5 correct answers it has to be random.
 3. Correct answers must logically fit the question.
 4. Explanations MUST match the correct answers.
 
