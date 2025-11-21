@@ -43,15 +43,17 @@ export default function LearnPage() {
           TheTestifyAI is designed to make learning engaging and adaptive.
           You can take tests on nearly any topic — whether it’s history,
           science, entertainment (be as vague or specific as you like). 
-          You choose the difficulty and the number of questions 
-          (the more questions the better), and the AI does the rest.
+          You choose the difficulty, the number of questions (the more 
+          questions the better), and the type of test. Then the AI does 
+          the rest.
         </p>
 
         <p style={{ marginBottom: "16px", color: "#222" }}>
           Our AI gathers accurate, topic-based information, then builds
-          multiple-choice questions with detailed reasoning for each correct
-          answer. After each question, you’ll see an explanation to help you
-          learn as you go.
+          your test based off of your options. After each question, you’ll 
+          see a correct or inccorect screen with a deatailed expalnation
+          that helps you. All this helps you study, learn, and improve super
+          fast.
         </p>
 
         <p style={{ marginBottom: "16px", color: "#222" }}>
