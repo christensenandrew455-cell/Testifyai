@@ -143,6 +143,132 @@ export default function HomePage() {
             Test Me
           </button>
         </div>
+
+        {/* FEATURES SECTION */}
+        <div
+          style={{
+            marginTop: "80px",
+            width: "100%",
+            maxWidth: "1100px",
+            padding: "0 20px",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "2rem",
+              fontWeight: 800,
+              marginBottom: "30px",
+              textShadow: "0 2px 6px rgba(0,0,0,0.2)",
+            }}
+          >
+            Why Students Love TheTestifyAI
+          </h2>
+
+          {/* Feature Grid */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: "26px",
+              width: "100%",
+            }}
+          >
+            {/* Feature 1 */}
+            <div
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "22px",
+                borderRadius: "18px",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+                AI-Generated Tests Instantly
+              </h3>
+              <p style={{ opacity: 0.9, lineHeight: 1.5 }}>
+                Create tests on any topic in seconds. Boost your studying with
+                fully personalized practice questions.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "22px",
+                borderRadius: "18px",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+                Multiple Test Types
+              </h3>
+              <p style={{ opacity: 0.9, lineHeight: 1.5 }}>
+                Choose from multiple-choice, true/false, open-response,
+                short-answer, and more to match your learning style.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "22px",
+                borderRadius: "18px",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+                Difficulty That Adapts to You
+              </h3>
+              <p style={{ opacity: 0.9, lineHeight: 1.5 }}>
+                Start easy or go advanced — adjust difficulty anytime and learn
+                at your pace.
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "22px",
+                borderRadius: "18px",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+                Track Your Progress
+              </h3>
+              <p style={{ opacity: 0.9, lineHeight: 1.5 }}>
+                Study smarter with detailed results and instant explanations for
+                every question.
+              </p>
+            </div>
+
+            {/* Feature 5 */}
+            <div
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "22px",
+                borderRadius: "18px",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+                Perfect for Any Subject
+              </h3>
+              <p style={{ opacity: 0.9, lineHeight: 1.5 }}>
+                Math, science, history, nursing, trades, exams, certifications —
+                you name it, TheTestifyAI can generate it.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
