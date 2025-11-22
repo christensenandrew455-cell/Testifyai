@@ -309,5 +309,6 @@ export default function HomePage() {
           {loading ? "Generating..." : "Generate Test"}
         </button>
       </div>
+    </div>  
   );
 }
