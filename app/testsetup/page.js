@@ -2,15 +2,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function testsetuppage() {
+export default function TestSetupPage() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
-
   const [selectedTypes, setSelectedTypes] = useState({});
   const [loading, setLoading] = useState(false);
-
-  // Track if Monetag ad already ran once
   const [adShown, setAdShown] = useState(false);
 
   const testTypeOptions = [
@@ -47,16 +44,12 @@ export default function testsetuppage() {
       return;
     }
 
-    // ⭐ FIRE MONETAG INSTANTLY — not delayed, no waiting.
     if (!adShown) {
       try {
         const script = document.createElement("script");
         script.dataset.zone = "10137448";
         script.src = "https://groleegni.net/vignette.min.js";
-
-        // Insert before loading starts to guarantee instant popup
         document.body.appendChild(script);
-
         setAdShown(true);
       } catch (err) {
         console.error("Ad script failed:", err);
@@ -266,50 +259,52 @@ export default function testsetuppage() {
           </div>
         )}
 
+        {/* BACK + GENERATE BUTTONS */}
         <div
-  style={{
-    display: "flex",
-    gap: "12px",
-    marginTop: "20px",
-  }}
->
-  <button
-    onClick={() => router.back()}
-    style={{
-      flex: 1,
-      padding: "12px 0",
-      borderRadius: "12px",
-      border: "2px solid rgba(255,255,255,0.35)",
-      backgroundColor: "rgba(255,255,255,0.12)",
-      color: "white",
-      fontWeight: 700,
-      fontSize: "1rem",
-      cursor: "pointer",
-      backdropFilter: "blur(6px)",
-    }}
-  >
-    ← Back
-  </button>
+          style={{
+            display: "flex",
+            gap: "12px",
+            marginTop: "20px",
+          }}
+        >
+          <button
+            onClick={() => router.back()}
+            style={{
+              flex: 1,
+              padding: "12px 0",
+              borderRadius: "12px",
+              border: "2px solid rgba(255,255,255,0.35)",
+              backgroundColor: "rgba(255,255,255,0.12)",
+              color: "white",
+              fontWeight: 700,
+              fontSize: "1rem",
+              cursor: "pointer",
+              backdropFilter: "blur(6px)",
+            }}
+          >
+            ← Back
+          </button>
 
-  <button
-    onClick={handleGenerateTest}
-    disabled={loading}
-    style={{
-      flex: 1,
-      padding: "12px 0",
-      borderRadius: "12px",
-      border: "none",
-      backgroundColor: loading ? "#ccc" : "#1976d2",
-      color: "white",
-      fontWeight: 700,
-      fontSize: "1rem",
-      cursor: loading ? "not-allowed" : "pointer",
-      transition: "background-color 0.2s",
-    }}
-  >
-    {loading ? "Generating..." : "Generate"}
-  </button>
-</div>
-    </div>  
+          <button
+            onClick={handleGenerateTest}
+            disabled={loading}
+            style={{
+              flex: 1,
+              padding: "12px 0",
+              borderRadius: "12px",
+              border: "none",
+              backgroundColor: loading ? "#ccc" : "#1976d2",
+              color: "white",
+              fontWeight: 700,
+              fontSize: "1rem",
+              cursor: loading ? "not-allowed" : "pointer",
+              transition: "background-color 0.2s",
+            }}
+          >
+            {loading ? "Generating..." : "Generate"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
