@@ -309,26 +309,5 @@ export default function HomePage() {
           {loading ? "Generating..." : "Generate Test"}
         </button>
       </div>
-
-      {/* Learn More Button */}
-      <button
-        onClick={() => router.push("/learn")}
-        style={{
-          marginTop: "24px",
-          padding: "12px 28px",
-          borderRadius: "14px",
-          backgroundColor: "rgba(255,255,255,0.18)",
-          border: "3px solid rgba(255,255,255,0.45)",
-          fontWeight: 700,
-          fontSize: "1.05rem",
-          color: "white",
-          cursor: "pointer",
-          backdropFilter: "blur(6px)",
-          boxShadow: "0 6px 16px rgba(0,0,0,0.15)",
-        }}
-      >
-        Learn More
-      </button>
-    </div>
   );
 }
