@@ -282,7 +282,7 @@ export default function TestSetupPage() {
               backdropFilter: "blur(6px)",
             }}
           >
-            ← Back
+            Back
           </button>
 
           <button
