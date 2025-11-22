@@ -1,103 +1,8 @@
 "use client";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const router = useRouter();
-  const [topic, setTopic] = useState("");
-  const [difficulty, setDifficulty] = useState(1);
-
-  const [selectedTypes, setSelectedTypes] = useState({});
-  const [loading, setLoading] = useState(false);
-
-  // Track if Monetag ad already ran once
-  const [adShown, setAdShown] = useState(false);
-
-  const testTypeOptions = [
-    "multiple-choice",
-    "multi-select",
-    "true-false",
-    "open-response",
-    "short-answer",
-  ];
-
-  const handleToggleType = (type) => {
-    setSelectedTypes((prev) => {
-      if (prev[type]) {
-        const updated = { ...prev };
-        delete updated[type];
-        return updated;
-      } else {
-        return { ...prev, [type]: 5 };
-      }
-    });
-  };
-
-  const handleQuestionCountChange = (type, value) => {
-    setSelectedTypes((prev) => ({ ...prev, [type]: Math.max(1, value) }));
-  };
-
-  const handleGenerateTest = async () => {
-    if (!topic.trim()) {
-      alert("Please enter a topic!");
-      return;
-    }
-    if (Object.keys(selectedTypes).length === 0) {
-      alert("Please select at least one test type!");
-      return;
-    }
-
-    // ⭐ FIRE MONETAG INSTANTLY — not delayed, no waiting.
-    if (!adShown) {
-      try {
-        const script = document.createElement("script");
-        script.dataset.zone = "10137448";
-        script.src = "https://groleegni.net/vignette.min.js";
-
-        // Insert before loading starts to guarantee instant popup
-        document.body.appendChild(script);
-
-        setAdShown(true);
-      } catch (err) {
-        console.error("Ad script failed:", err);
-      }
-    }
-
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/distribution", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic,
-          difficulty,
-          questionsPerType: selectedTypes,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.questions) throw new Error(data.error || "API failed");
-
-      sessionStorage.setItem("testData", JSON.stringify(data));
-      sessionStorage.setItem("resumeIndex", "0");
-
-      router.push(
-        `/test/controller?data=${encodeURIComponent(JSON.stringify(data))}`
-      );
-    } catch (err) {
-      console.error("❌ Error generating test:", err);
-      alert("Failed to generate test. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const totalQuestions = Object.values(selectedTypes).reduce(
-    (a, b) => a + b,
-    0
-  );
 
   return (
     <div
@@ -107,33 +12,36 @@ export default function HomePage() {
         background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
         display: "flex",
         flexDirection: "column",
+        justifyContent: "center",
         alignItems: "center",
+        textAlign: "center",
         fontFamily: "Segoe UI, Roboto, sans-serif",
         color: "white",
-        textAlign: "center",
-        padding: "40px 20px",
+        padding: "20px",
         position: "relative",
       }}
     >
+      {/* Logo / Title */}
       <div
         style={{
           position: "absolute",
           top: "20px",
           right: "30px",
           fontWeight: 700,
-          color: "white",
           fontSize: "1.2rem",
+          color: "white",
         }}
       >
         TheTestifyAI
       </div>
 
+      {/* Main Title */}
       <h1
         style={{
-          fontSize: "clamp(2rem, 6vw, 3.25rem)",
+          fontSize: "clamp(2.2rem, 6vw, 3.5rem)",
           fontWeight: 800,
-          textShadow: "0 2px 6px rgba(0,0,0,0.25)",
-          marginBottom: "0.5rem",
+          marginBottom: "16px",
+          textShadow: "0 2px 8px rgba(0,0,0,0.25)",
         }}
       >
         Welcome to TheTestifyAI
@@ -141,194 +49,73 @@ export default function HomePage() {
 
       <p
         style={{
-          fontSize: "1.125rem",
-          maxWidth: "720px",
-          marginBottom: "2rem",
-          color: "rgba(255,255,255,0.95)",
+          fontSize: "1.2rem",
+          maxWidth: "700px",
+          opacity: 0.95,
           lineHeight: 1.5,
+          marginBottom: "40px",
         }}
       >
-        Instantly generate an AI-powered test on any topic — free, fast, and fun.
+        Your personal AI-powered learning assistant — fast, simple, and fun.
       </p>
 
-      {/* Test Setup Card */}
+      {/* Button Container */}
       <div
         style={{
-          backgroundColor: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "40px",
-          border: "3px solid rgba(255,255,255,0.18)",
-          padding: "36px 44px",
-          width: "92%",
-          maxWidth: "520px",
-          color: "white",
-          textAlign: "center",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
-          marginTop: "20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+          width: "100%",
+          maxWidth: "360px",
         }}
       >
-        <h2 style={{ marginBottom: "6px", fontWeight: 800, fontSize: "1.25rem" }}>
-          Topic
-        </h2>
-
-        <p style={{ marginBottom: "18px", opacity: 0.9 }}>
-          Enter any topic — broad or specific
-        </p>
-
-        <input
-          type="text"
-          placeholder="e.g., Math, Algebra"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
+        <button
+          onClick={() => router.push("/learn")}
           style={{
-            width: "100%",
-            padding: "12px 16px",
-            borderRadius: "12px",
-            border: "none",
-            fontSize: "1rem",
-            textAlign: "center",
-            outline: "none",
-            marginBottom: "26px",
-            maxWidth: "100%",
-          }}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "8px",
-            fontWeight: 600,
-            fontSize: "0.95rem",
-            color: "rgba(255,255,255,0.9)",
-          }}
-        >
-          <span>Beginner</span>
-          <span>Difficulty Scale</span>
-          <span>Master</span>
-        </div>
-
-        <input
-          type="range"
-          min="1"
-          max="9"
-          step="1"
-          value={difficulty}
-          onChange={(e) => setDifficulty(Number(e.target.value))}
-          style={{
-            width: "100%",
-            accentColor: "#1976d2",
-            marginBottom: "22px",
-            height: "6px",
+            padding: "16px 0",
+            fontSize: "1.1rem",
+            fontWeight: 700,
+            borderRadius: "16px",
+            border: "3px solid rgba(255,255,255,0.45)",
+            backgroundColor: "rgba(255,255,255,0.18)",
+            color: "white",
             cursor: "pointer",
+            backdropFilter: "blur(8px)",
+            transition: "0.25s",
           }}
-        />
-
-        <h3 style={{ margin: "8px 0", fontWeight: 700 }}>Test Types</h3>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-            alignItems: "center",
-          }}
+          onMouseOver={(e) =>
+            (e.target.style.backgroundColor = "rgba(255,255,255,0.28)")
+          }
+          onMouseOut={(e) =>
+            (e.target.style.backgroundColor = "rgba(255,255,255,0.18)")
+          }
         >
-          {testTypeOptions.map((type) => (
-            <div
-              key={type}
-              style={{ display: "flex", alignItems: "center", gap: "12px" }}
-            >
-              <button
-                onClick={() => handleToggleType(type)}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "12px",
-                  border: selectedTypes[type]
-                    ? "3px solid #1976d2"
-                    : "2px solid rgba(255,255,255,0.3)",
-                  backgroundColor: selectedTypes[type]
-                    ? "rgba(25,118,210,0.14)"
-                    : "rgba(255,255,255,0.05)",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  width: "160px",
-                  color: "white",
-                }}
-              >
-                {type.replace("-", " ").toUpperCase()}
-              </button>
-
-              {selectedTypes[type] && (
-                <input
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={selectedTypes[type]}
-                  onChange={(e) =>
-                    handleQuestionCountChange(type, Number(e.target.value))
-                  }
-                  style={{
-                    width: "60px",
-                    padding: "6px",
-                    borderRadius: "8px",
-                    border: "none",
-                    textAlign: "center",
-                    fontSize: "0.95rem",
-                  }}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {Object.keys(selectedTypes).length > 1 && (
-          <div style={{ marginTop: "12px", fontWeight: 600 }}>
-            Total Questions: {totalQuestions}
-          </div>
-        )}
+          Learn More
+        </button>
 
         <button
-          onClick={handleGenerateTest}
-          disabled={loading}
+          onClick={() => router.push("/testsetup")}
           style={{
-            padding: "12px 0",
-            borderRadius: "12px",
-            border: "none",
-            backgroundColor: loading ? "#ccc" : "#1976d2",
-            color: "white",
+            padding: "16px 0",
+            fontSize: "1.1rem",
             fontWeight: 700,
-            fontSize: "1rem",
-            cursor: loading ? "not-allowed" : "pointer",
-            width: "100%",
-            marginTop: "20px",
-            transition: "background-color 0.2s",
+            borderRadius: "16px",
+            border: "3px solid rgba(255,255,255,0.7)",
+            backgroundColor: "white",
+            color: "#1976d2",
+            cursor: "pointer",
+            transition: "0.25s",
+          }}
+          onMouseOver={(e) => {
+            e.target.style.backgroundColor = "#f2f2f2";
+          }}
+          onMouseOut={(e) => {
+            e.target.style.backgroundColor = "white";
           }}
         >
-          {loading ? "Generating..." : "Generate Test"}
+          Test Me
         </button>
       </div>
-
-      {/* Learn More Button */}
-      <button
-        onClick={() => router.push("/learn")}
-        style={{
-          marginTop: "24px",
-          padding: "12px 28px",
-          borderRadius: "14px",
-          backgroundColor: "rgba(255,255,255,0.18)",
-          border: "3px solid rgba(255,255,255,0.45)",
-          fontWeight: 700,
-          fontSize: "1.05rem",
-          color: "white",
-          cursor: "pointer",
-          backdropFilter: "blur(6px)",
-          boxShadow: "0 6px 16px rgba(0,0,0,0.15)",
-        }}
-      >
-        Learn More
-      </button>
     </div>
   );
 }
