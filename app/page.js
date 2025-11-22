@@ -56,7 +56,7 @@ export default function HomePage() {
           marginBottom: "40px",
         }}
       >
-        Your personal AI-powered learning assistant — fast, simple, and fun.
+        the best ai test generater- study, learn, and improve.
       </p>
 
       {/* Button Row */}
