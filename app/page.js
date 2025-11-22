@@ -59,20 +59,21 @@ export default function HomePage() {
         Your personal AI-powered learning assistant — fast, simple, and fun.
       </p>
 
-      {/* Button Container */}
+      {/* Button Row */}
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-          width: "100%",
-          maxWidth: "360px",
+          gap: "24px",
+          justifyContent: "center",
+          alignItems: "center",
+          flexWrap: "wrap",
         }}
       >
+        {/* Learn More Button */}
         <button
           onClick={() => router.push("/learn")}
           style={{
-            padding: "16px 0",
+            padding: "16px 30px",
             fontSize: "1.1rem",
             fontWeight: 700,
             borderRadius: "16px",
@@ -93,10 +94,11 @@ export default function HomePage() {
           Learn More
         </button>
 
+        {/* Test Me Button */}
         <button
           onClick={() => router.push("/testsetup")}
           style={{
-            padding: "16px 0",
+            padding: "16px 30px",
             fontSize: "1.1rem",
             fontWeight: 700,
             borderRadius: "16px",
