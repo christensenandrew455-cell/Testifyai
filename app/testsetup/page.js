@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function HomePage() {
+export default function testsetuppage() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
@@ -127,29 +127,6 @@ export default function HomePage() {
       >
         TheTestifyAI
       </div>
-
-      <h1
-        style={{
-          fontSize: "clamp(2rem, 6vw, 3.25rem)",
-          fontWeight: 800,
-          textShadow: "0 2px 6px rgba(0,0,0,0.25)",
-          marginBottom: "0.5rem",
-        }}
-      >
-        Welcome to TheTestifyAI
-      </h1>
-
-      <p
-        style={{
-          fontSize: "1.125rem",
-          maxWidth: "720px",
-          marginBottom: "2rem",
-          color: "rgba(255,255,255,0.95)",
-          lineHeight: 1.5,
-        }}
-      >
-        Instantly generate an AI-powered test on any topic — free, fast, and fun.
-      </p>
 
       {/* Test Setup Card */}
       <div
