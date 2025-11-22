@@ -266,26 +266,50 @@ export default function testsetuppage() {
           </div>
         )}
 
-        <button
-          onClick={handleGenerateTest}
-          disabled={loading}
-          style={{
-            padding: "12px 0",
-            borderRadius: "12px",
-            border: "none",
-            backgroundColor: loading ? "#ccc" : "#1976d2",
-            color: "white",
-            fontWeight: 700,
-            fontSize: "1rem",
-            cursor: loading ? "not-allowed" : "pointer",
-            width: "100%",
-            marginTop: "20px",
-            transition: "background-color 0.2s",
-          }}
-        >
-          {loading ? "Generating..." : "Generate Test"}
-        </button>
-      </div>
+        <div
+  style={{
+    display: "flex",
+    gap: "12px",
+    marginTop: "20px",
+  }}
+>
+  <button
+    onClick={() => router.back()}
+    style={{
+      flex: 1,
+      padding: "12px 0",
+      borderRadius: "12px",
+      border: "2px solid rgba(255,255,255,0.35)",
+      backgroundColor: "rgba(255,255,255,0.12)",
+      color: "white",
+      fontWeight: 700,
+      fontSize: "1rem",
+      cursor: "pointer",
+      backdropFilter: "blur(6px)",
+    }}
+  >
+    ← Back
+  </button>
+
+  <button
+    onClick={handleGenerateTest}
+    disabled={loading}
+    style={{
+      flex: 1,
+      padding: "12px 0",
+      borderRadius: "12px",
+      border: "none",
+      backgroundColor: loading ? "#ccc" : "#1976d2",
+      color: "white",
+      fontWeight: 700,
+      fontSize: "1rem",
+      cursor: loading ? "not-allowed" : "pointer",
+      transition: "background-color 0.2s",
+    }}
+  >
+    {loading ? "Generating..." : "Generate"}
+  </button>
+</div>
     </div>  
   );
 }
