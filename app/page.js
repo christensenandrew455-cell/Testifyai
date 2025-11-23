@@ -169,8 +169,8 @@ export default function HomePage() {
               text: "Choose from multiple-choice, true/false, open-response, short-answer, and more.",
             },
             {
-              title: "Difficulty That Adapts to You",
-              text: "Go from beginner to advanced at your own pace with adaptive difficulty.",
+              title: "Choose the difficulty",
+              text: "Go from beginner to advanced at your own pace on any subject you want.",
             },
             {
               title: "Track Your Progress",
