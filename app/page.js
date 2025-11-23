@@ -171,7 +171,7 @@ export default function HomePage() {
               gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
               gap: "26px",
               width: "100%",
-              justifyItems: "center", // ⭐ Centers all grid items including last row
+              justifyContent: "center", // ⭐ Only change → centers last row
             }}
           >
             {/* Feature 1 */}
@@ -182,7 +182,6 @@ export default function HomePage() {
                 borderRadius: "18px",
                 border: "2px solid rgba(255,255,255,0.25)",
                 backdropFilter: "blur(10px)",
-                textAlign: "center",
               }}
             >
               <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
@@ -202,7 +201,6 @@ export default function HomePage() {
                 borderRadius: "18px",
                 border: "2px solid rgba(255,255,255,0.25)",
                 backdropFilter: "blur(10px)",
-                textAlign: "center",
               }}
             >
               <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
@@ -222,7 +220,6 @@ export default function HomePage() {
                 borderRadius: "18px",
                 border: "2px solid rgba(255,255,255,0.25)",
                 backdropFilter: "blur(10px)",
-                textAlign: "center",
               }}
             >
               <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
@@ -242,7 +239,6 @@ export default function HomePage() {
                 borderRadius: "18px",
                 border: "2px solid rgba(255,255,255,0.25)",
                 backdropFilter: "blur(10px)",
-                textAlign: "center",
               }}
             >
               <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
@@ -262,7 +258,6 @@ export default function HomePage() {
                 borderRadius: "18px",
                 border: "2px solid rgba(255,255,255,0.25)",
                 backdropFilter: "blur(10px)",
-                textAlign: "center",
               }}
             >
               <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
@@ -279,3 +274,4 @@ export default function HomePage() {
     </>
   );
 }
+
