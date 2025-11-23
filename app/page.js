@@ -30,7 +30,6 @@ export default function HomePage() {
         />
       </Head>
 
-      {/* ⭐ HERO SECTION */}
       <div
         style={{
           minHeight: "100vh",
@@ -47,7 +46,7 @@ export default function HomePage() {
           position: "relative",
         }}
       >
-        {/* Logo */}
+        {/* Logo / Title */}
         <div
           style={{
             position: "absolute",
@@ -55,6 +54,7 @@ export default function HomePage() {
             right: "30px",
             fontWeight: 700,
             fontSize: "1.2rem",
+            color: "white",
           }}
         >
           TheTestifyAI
@@ -94,7 +94,7 @@ export default function HomePage() {
             flexWrap: "wrap",
           }}
         >
-          {/* Learn More */}
+          {/* Learn More Button */}
           <button
             onClick={() => router.push("/learn")}
             style={{
@@ -119,7 +119,7 @@ export default function HomePage() {
             Learn More
           </button>
 
-          {/* Test Me */}
+          {/* Test Me Button */}
           <button
             onClick={() => router.push("/testsetup")}
             style={{
@@ -133,30 +133,24 @@ export default function HomePage() {
               cursor: "pointer",
               transition: "0.25s",
             }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = "#f2f2f2")}
-            onMouseOut={(e) => (e.target.style.backgroundColor = "white")}
+            onMouseOver={(e) => {
+              e.target.style.backgroundColor = "#f2f2f2";
+            }}
+            onMouseOut={(e) => {
+              e.target.style.backgroundColor = "white";
+            }}
           >
             Test Me
           </button>
         </div>
-      </div>
 
-      {/* ⭐ FEATURES SECTION */}
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          marginTop: "80px",
-          paddingBottom: "80px",
-        }}
-      >
+        {/* FEATURES SECTION */}
         <div
           style={{
+            marginTop: "80px",
             width: "100%",
             maxWidth: "1100px",
             padding: "0 20px",
-            textAlign: "center",
           }}
         >
           <h2
@@ -176,46 +170,109 @@ export default function HomePage() {
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
               gap: "26px",
+              width: "100%",
+              justifyItems: "center", // ⭐ Centers all grid items including last row
             }}
           >
-            {[
-              {
-                title: "AI-Generated Tests Instantly",
-                text: "Create tests on any topic in seconds. Boost your studying with fully personalized practice questions.",
-              },
-              {
-                title: "Multiple Test Types",
-                text: "Choose from multiple-choice, true/false, open-response, short-answer, and more to fit your learning style.",
-              },
-              {
-                title: "Difficulty That Adapts to You",
-                text: "Adjust the difficulty from beginner to advanced so you can improve at your own pace.",
-              },
-              {
-                title: "Track Your Progress",
-                text: "Study smarter with detailed results and instant explanations for every question.",
-              },
-              {
-                title: "Perfect for Any Subject",
-                text: "Math, science, history, nursing, trades, exams, certifications — you name it, it can generate it.",
-              },
-            ].map((f, i) => (
-              <div
-                key={i}
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.15)",
-                  padding: "22px",
-                  borderRadius: "18px",
-                  border: "2px solid rgba(255,255,255,0.25)",
-                  backdropFilter: "blur(10px)",
-                }}
-              >
-                <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
-                  {f.title}
-                </h3>
-                <p style={{ opacity: 0.9, lineHeight: 1.5 }}>{f.text}</p>
-              </div>
-            ))}
+            {/* Feature 1 */}
+            <div
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "22px",
+                borderRadius: "18px",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(10px)",
+                textAlign: "center",
+              }}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+                AI-Generated Tests Instantly
+              </h3>
+              <p style={{ opacity: 0.9, lineHeight: 1.5 }}>
+                Create tests on any topic in seconds. Boost your studying with
+                fully personalized practice questions.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "22px",
+                borderRadius: "18px",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(10px)",
+                textAlign: "center",
+              }}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+                Multiple Test Types
+              </h3>
+              <p style={{ opacity: 0.9, lineHeight: 1.5 }}>
+                Choose from multiple-choice, true/false, open-response,
+                short-answer, and more to match your learning style.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "22px",
+                borderRadius: "18px",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(10px)",
+                textAlign: "center",
+              }}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+                Difficulty That Adapts to You
+              </h3>
+              <p style={{ opacity: 0.9, lineHeight: 1.5 }}>
+                Start easy or go advanced — adjust difficulty anytime and learn
+                at your pace.
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "22px",
+                borderRadius: "18px",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(10px)",
+                textAlign: "center",
+              }}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+                Track Your Progress
+              </h3>
+              <p style={{ opacity: 0.9, lineHeight: 1.5 }}>
+                Study smarter with detailed results and instant explanations for
+                every question.
+              </p>
+            </div>
+
+            {/* Feature 5 */}
+            <div
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "22px",
+                borderRadius: "18px",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(10px)",
+                textAlign: "center",
+              }}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+                Perfect for Any Subject
+              </h3>
+              <p style={{ opacity: 0.9, lineHeight: 1.5 }}>
+                Math, science, history, nursing, trades, exams, certifications —
+                you name it, TheTestifyAI can generate it.
+              </p>
+            </div>
           </div>
         </div>
       </div>
