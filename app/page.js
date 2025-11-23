@@ -126,7 +126,7 @@ export default function HomePage() {
       </div>
 
       {/* EXTRA SCREEN OF SPACE BEFORE FEATURES */}
-      <div style={{ height: "100vh" }}></div>
+      <div style={{ height: "50vh" }}></div>
 
       {/* FEATURES SECTION */}
       <div
