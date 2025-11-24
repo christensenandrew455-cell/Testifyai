@@ -3,7 +3,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import Link from "next/link";
 import { Analytics } from "@vercel/analytics/react";
-import Header from "./Header";  // <-- ADD THIS
+import Header from "./Header.js";  // <-- ADD THIS
 
 const inter = Inter({ subsets: ["latin"] });
 
