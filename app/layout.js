@@ -17,11 +17,11 @@ const allowedHeaderPaths = [
   "/progress", 
   "/profile",  
   "/testsetup", 
-  "/results"
+  "/results",
+  "/data"        // <-- ADDED DATA PAGE
 ];
 
 export default function RootLayout({ children }) {
-  // Detect current path at runtime
   const path =
     typeof window !== "undefined" ? window.location.pathname : "";
 
@@ -34,9 +34,9 @@ export default function RootLayout({ children }) {
         <meta name="monetag" content="1a8ae42b7ebcfe6cbe21c25d047bbd48" />
       </head>
 
-      <body className={inter.className}>
-        
-        {/* Show header ONLY on selected pages */}
+      <body className={inter.className} style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+
+        {/* HEADER (only on selected pages) */}
         {showHeader && (
           <header
             style={{
@@ -54,16 +54,22 @@ export default function RootLayout({ children }) {
               letterSpacing: "0.7px",
             }}
           >
+            {/* LEFT SIDE TITLE */}
             <span style={{ fontWeight: "800", marginRight: "80px" }}>
               thetestifyai
             </span>
 
+            {/* NAV LINKS */}
             <Link href="/" style={{ textDecoration: "none", color: "#333" }}>
               Home
             </Link>
 
             <Link href="/test" style={{ textDecoration: "none", color: "#333" }}>
               Test Me
+            </Link>
+
+            <Link href="/data" style={{ textDecoration: "none", color: "#333" }}>
+              Data
             </Link>
 
             <Link href="/progress" style={{ textDecoration: "none", color: "#333" }}>
@@ -76,8 +82,31 @@ export default function RootLayout({ children }) {
           </header>
         )}
 
-        {/* Page content */}
-        <div style={{ minHeight: "80vh" }}>{children}</div>
+        {/* MAIN CONTENT */}
+        <div style={{ flex: 1 }}>{children}</div>
+
+        {/* FOOTER (restored) */}
+        <footer
+          style={{
+            textAlign: "center",
+            padding: "16px 0",
+            backgroundColor: "#f5f5f5",
+            fontSize: "0.9rem",
+            color: "#444",
+            borderTop: "1px solid #ddd",
+          }}
+        >
+          <Link
+            href="/privacy-policy"
+            style={{
+              color: "#1976d2",
+              textDecoration: "none",
+              fontWeight: "500",
+            }}
+          >
+            Privacy Policy
+          </Link>
+        </footer>
 
         <Analytics />
       </body>
