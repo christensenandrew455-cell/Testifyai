@@ -43,7 +43,7 @@ export default function Header() {
         Home
       </Link>
 
-      <Link href="/test" style={{ textDecoration: "none", color: "#333" }}>
+      <Link href="/testsetup" style={{ textDecoration: "none", color: "#333" }}>
         Test Me
       </Link>
 
