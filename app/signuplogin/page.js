@@ -1,66 +1,78 @@
 "use client";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function SignInPage() {
+  const router = useRouter();
+
   return (
     <div
       style={{
-        minHeight: "100vh",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        height: "100vh",
         width: "100vw",
-        background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
+        background: "rgba(0,0,0,0.35)",
+        backdropFilter: "blur(6px)",
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-        color: "white",
-        textAlign: "center",
-        padding: "40px 20px",
-        position: "relative",
+        justifyContent: "center",
+        padding: "20px",
+        zIndex: 9999, // modal on top
       }}
     >
-      {/* Top Right Branding (same as TestSetup) */}
+      {/* Card */}
       <div
         style={{
-          position: "absolute",
-          top: "20px",
-          right: "30px",
-          fontWeight: 700,
-          color: "white",
-          fontSize: "1.2rem",
-        }}
-      >
-        TheTestifyAI
-      </div>
-
-      {/* Frosted Glass Card (identical style) */}
-      <div
-        style={{
-          backgroundColor: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(10px)",
+          background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
           borderRadius: "40px",
-          border: "3px solid rgba(255,255,255,0.18)",
-          padding: "40px 44px",
-          width: "92%",
-          maxWidth: "520px",
+          padding: "50px 40px",
+          width: "95%",
+          maxWidth: "540px",
           color: "white",
+          fontFamily: "Segoe UI, Roboto, sans-serif",
           textAlign: "center",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
-          marginTop: "20px",
+          position: "relative",
+          boxShadow: "0 10px 26px rgba(0,0,0,0.22)",
+          border: "3px solid rgba(255,255,255,0.22)",
         }}
       >
+        {/* X Close Button */}
+        <button
+          onClick={() => router.back()}
+          style={{
+            position: "absolute",
+            top: "18px",
+            right: "22px",
+            background: "rgba(255,255,255,0.12)",
+            border: "2px solid rgba(255,255,255,0.3)",
+            backdropFilter: "blur(6px)",
+            borderRadius: "50%",
+            width: "36px",
+            height: "36px",
+            fontSize: "1.2rem",
+            fontWeight: 700,
+            cursor: "pointer",
+            color: "white",
+          }}
+        >
+          ✕
+        </button>
+
         <h2
           style={{
             marginBottom: "10px",
             fontWeight: 800,
-            fontSize: "1.4rem",
+            fontSize: "1.6rem",
           }}
         >
           Sign In Required
         </h2>
 
-        <p style={{ marginBottom: "28px", opacity: 0.9, fontSize: "1rem" }}>
+        <p style={{ marginBottom: "30px", opacity: 0.9, fontSize: "1.05rem" }}>
           You need an account to access this feature.  
-          Create an account or log in to continue.
+          Create an account or log in below.
         </p>
 
         {/* Buttons */}
@@ -68,24 +80,20 @@ export default function SignInPage() {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
+            gap: "18px",
             width: "100%",
-            marginTop: "10px",
           }}
         >
-          {/* SIGN UP BUTTON */}
+          {/* SIGN UP */}
           <Link
             href="/signup"
             style={{
-              width: "100%",
-              padding: "14px 0",
+              padding: "16px 0",
               borderRadius: "12px",
-              border: "none",
               backgroundColor: "#1976d2",
               color: "white",
               fontWeight: 700,
-              fontSize: "1rem",
-              cursor: "pointer",
+              fontSize: "1.05rem",
               textDecoration: "none",
               display: "block",
             }}
@@ -93,22 +101,20 @@ export default function SignInPage() {
             Sign Up
           </Link>
 
-          {/* LOG IN BUTTON */}
+          {/* LOG IN */}
           <Link
             href="/login"
             style={{
-              width: "100%",
-              padding: "14px 0",
+              padding: "16px 0",
               borderRadius: "12px",
               border: "2px solid rgba(255,255,255,0.35)",
-              backgroundColor: "rgba(255,255,255,0.12)",
+              backgroundColor: "rgba(255,255,255,0.14)",
               color: "white",
               fontWeight: 700,
-              fontSize: "1rem",
-              cursor: "pointer",
+              fontSize: "1.05rem",
+              backdropFilter: "blur(6px)",
               textDecoration: "none",
               display: "block",
-              backdropFilter: "blur(6px)",
             }}
           >
             Log In
