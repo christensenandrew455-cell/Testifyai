@@ -13,8 +13,9 @@ export default function SignInPage() {
         left: 0,
         height: "100vh",
         width: "100vw",
-        background: "rgba(0,0,0,0.35)",
-        backdropFilter: "blur(10px)",
+        background: "rgba(0,0,0,0.25)", // must stay transparent for blur to work
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)", // fixes blur on Chrome/Safari
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -30,7 +31,7 @@ export default function SignInPage() {
           padding: "50px 40px",
           width: "95%",
           maxWidth: "540px",
-          color: "#222",
+          color: "black", // all text is black now
           fontFamily: "Segoe UI, Roboto, sans-serif",
           textAlign: "center",
           position: "relative",
@@ -48,13 +49,14 @@ export default function SignInPage() {
             background: "rgba(0,0,0,0.05)",
             border: "2px solid rgba(0,0,0,0.15)",
             backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
             borderRadius: "50%",
             width: "36px",
             height: "36px",
             fontSize: "1.2rem",
             fontWeight: 700,
             cursor: "pointer",
-            color: "#333",
+            color: "black",
           }}
         >
           ✕
@@ -65,6 +67,7 @@ export default function SignInPage() {
             marginBottom: "10px",
             fontWeight: 800,
             fontSize: "1.6rem",
+            color: "black",
           }}
         >
           Sign In Required
@@ -76,9 +79,10 @@ export default function SignInPage() {
             opacity: 0.85,
             fontSize: "1.05rem",
             lineHeight: "1.45",
+            color: "black",
           }}
         >
-          To access this feature, you need to be signed in.  
+          To access this feature, you need to be signed in.
           Create an account or log in below.
         </p>
 
@@ -117,10 +121,11 @@ export default function SignInPage() {
               borderRadius: "12px",
               border: "2px solid rgba(0,0,0,0.2)",
               backgroundColor: "rgba(0,0,0,0.04)",
-              color: "#222",
+              color: "black",
               fontWeight: 700,
               fontSize: "1.05rem",
               backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
               textDecoration: "none",
               display: "block",
             }}
@@ -132,3 +137,4 @@ export default function SignInPage() {
     </div>
   );
 }
+
