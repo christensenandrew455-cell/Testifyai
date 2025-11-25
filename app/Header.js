@@ -35,7 +35,7 @@ export default function Header() {
   // Protect certain links (data, progress, profile)
   const handleProtectedRoute = (href) => {
     if (!loggedIn) {
-      router.push("/signinlogin");
+      router.push("/signuplogin");
     } else {
       router.push(href);
     }
