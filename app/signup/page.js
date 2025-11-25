@@ -3,15 +3,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// ---- UPDATE THIS IMPORT IF YOUR firebase file is somewhere else ----
-// If you placed firebase in /lib/firebase.js use:
-import { auth } from "../firebase";
-// If you used app/firebase.js use:
-// import { auth } from "@/app/firebase";
-// If you used src/firebase.js use:
-// import { auth } from "@/src/firebase";
-// ------------------------------------------------------------------
+import { auth, db } from "@/app/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -49,13 +43,18 @@ export default function SignUpPage() {
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email, pass);
 
-      // set display name
+      // Update display name in Auth
       await updateProfile(userCred.user, { displayName: name });
 
-      // successful signup — navigate to profile
+      // Add user to Firestore
+      await setDoc(doc(db, "users", userCred.user.uid), {
+        name,
+        email,
+        createdAt: Date.now(),
+      });
+
       router.push("/profile");
     } catch (err) {
-      // Friendly error messages for common cases
       const message = (err && err.code) ? err.code : (err && err.message) || "Signup failed";
       if (message.includes("auth/email-already-in-use")) {
         setError("This email is already registered. Try logging in.");
@@ -129,37 +128,10 @@ export default function SignUpPage() {
           </div>
         )}
 
-        <input
-          type="text"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={inputStyle}
-        />
-
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={inputStyle}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={pass}
-          onChange={(e) => setPass(e.target.value)}
-          style={inputStyle}
-        />
-
-        <input
-          type="password"
-          placeholder="Re-enter Password"
-          value={pass2}
-          onChange={(e) => setPass2(e.target.value)}
-          style={inputStyle}
-        />
+        <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+        <input type="password" placeholder="Password" value={pass} onChange={(e) => setPass(e.target.value)} style={inputStyle} />
+        <input type="password" placeholder="Re-enter Password" value={pass2} onChange={(e) => setPass2(e.target.value)} style={inputStyle} />
 
         <button
           type="submit"
