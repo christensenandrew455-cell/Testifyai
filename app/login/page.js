@@ -17,10 +17,11 @@ export default function LoginPage() {
   const inputStyle = {
     padding: "14px",
     borderRadius: "12px",
-    border: "none",
+    border: "2px solid rgba(0,0,0,0.25)",
     outline: "none",
-    backgroundColor: "rgba(255,255,255,0.12)",
-    color: "white",
+    backgroundColor: "white",
+    color: "black",
+    fontSize: "1rem",
   };
 
   async function handleLogin(e) {
@@ -29,7 +30,17 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
+      const userCred = await signInWithEmailAndPassword(auth, email, pass);
+
+      // 🔍 HERE is where we add email verification enforcement
+      if (!userCred.user.emailVerified) {
+        setError(
+          "Your email is not verified. Please check your inbox and verify before logging in."
+        );
+        setLoading(false);
+        return;
+      }
+
       router.push("/profile");
     } catch (err) {
       const code = err?.code || "";
@@ -93,16 +104,44 @@ export default function LoginPage() {
           gap: "18px",
         }}
       >
-        <h2 style={{ marginBottom: "6px", fontWeight: 800, fontSize: "1.4rem" }}>Log In</h2>
+        <h2
+          style={{
+            marginBottom: "6px",
+            fontWeight: 800,
+            fontSize: "1.4rem",
+          }}
+        >
+          Log In
+        </h2>
 
         {error && (
-          <div style={{ color: "#ffdddd", background: "rgba(0,0,0,0.12)", padding: "10px", borderRadius: 8 }}>
+          <div
+            style={{
+              color: "#ffdddd",
+              background: "rgba(0,0,0,0.12)",
+              padding: "10px",
+              borderRadius: 8,
+            }}
+          >
             {error}
           </div>
         )}
 
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
-        <input type="password" placeholder="Password" value={pass} onChange={(e) => setPass(e.target.value)} style={inputStyle} />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={inputStyle}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={pass}
+          onChange={(e) => setPass(e.target.value)}
+          style={inputStyle}
+        />
 
         <button
           type="submit"
@@ -123,8 +162,30 @@ export default function LoginPage() {
           {loading ? "Logging in..." : "Log In"}
         </button>
 
-        <Link href="/signup" style={{ marginTop: "6px", color: "white", opacity: 0.85, fontSize: "0.9rem" }}>
-          Don't have an account? Sign up
+        {/* 🔵 Forgot password link */}
+        <Link
+          href="/passwordreset"
+          style={{
+            marginTop: "-10px",
+            color: "white",
+            opacity: 0.85,
+            fontSize: "0.9rem",
+            textDecoration: "underline",
+          }}
+        >
+          Forgot your password?
+        </Link>
+
+        <Link
+          href="/signup"
+          style={{
+            marginTop: "6px",
+            color: "white",
+            opacity: 0.85,
+            fontSize: "0.9rem",
+          }}
+        >
+          Don&apos;t have an account? Sign up
         </Link>
       </form>
     </div>
