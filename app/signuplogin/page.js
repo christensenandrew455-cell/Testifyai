@@ -14,47 +14,47 @@ export default function SignInPage() {
         height: "100vh",
         width: "100vw",
         background: "rgba(0,0,0,0.35)",
-        backdropFilter: "blur(6px)",
+        backdropFilter: "blur(10px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: "20px",
-        zIndex: 9999, // modal on top
+        zIndex: 9999,
       }}
     >
-      {/* Card */}
+      {/* Modal Card */}
       <div
         style={{
-          background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
+          background: "white",
           borderRadius: "40px",
           padding: "50px 40px",
           width: "95%",
           maxWidth: "540px",
-          color: "white",
+          color: "#222",
           fontFamily: "Segoe UI, Roboto, sans-serif",
           textAlign: "center",
           position: "relative",
-          boxShadow: "0 10px 26px rgba(0,0,0,0.22)",
-          border: "3px solid rgba(255,255,255,0.22)",
+          boxShadow: "0 10px 26px rgba(0,0,0,0.28)",
+          border: "3px solid rgba(0,0,0,0.06)",
         }}
       >
-        {/* X Close Button */}
+        {/* Close Button */}
         <button
           onClick={() => router.back()}
           style={{
             position: "absolute",
             top: "18px",
             right: "22px",
-            background: "rgba(255,255,255,0.12)",
-            border: "2px solid rgba(255,255,255,0.3)",
-            backdropFilter: "blur(6px)",
+            background: "rgba(0,0,0,0.05)",
+            border: "2px solid rgba(0,0,0,0.15)",
+            backdropFilter: "blur(4px)",
             borderRadius: "50%",
             width: "36px",
             height: "36px",
             fontSize: "1.2rem",
             fontWeight: 700,
             cursor: "pointer",
-            color: "white",
+            color: "#333",
           }}
         >
           ✕
@@ -70,8 +70,15 @@ export default function SignInPage() {
           Sign In Required
         </h2>
 
-        <p style={{ marginBottom: "30px", opacity: 0.9, fontSize: "1.05rem" }}>
-          You need an account to access this feature.  
+        <p
+          style={{
+            marginBottom: "30px",
+            opacity: 0.85,
+            fontSize: "1.05rem",
+            lineHeight: "1.45",
+          }}
+        >
+          To access this feature, you need to be signed in.  
           Create an account or log in below.
         </p>
 
@@ -84,7 +91,7 @@ export default function SignInPage() {
             width: "100%",
           }}
         >
-          {/* SIGN UP */}
+          {/* Sign Up */}
           <Link
             href="/signup"
             style={{
@@ -96,23 +103,24 @@ export default function SignInPage() {
               fontSize: "1.05rem",
               textDecoration: "none",
               display: "block",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
             }}
           >
             Sign Up
           </Link>
 
-          {/* LOG IN */}
+          {/* Log In */}
           <Link
             href="/login"
             style={{
               padding: "16px 0",
               borderRadius: "12px",
-              border: "2px solid rgba(255,255,255,0.35)",
-              backgroundColor: "rgba(255,255,255,0.14)",
-              color: "white",
+              border: "2px solid rgba(0,0,0,0.2)",
+              backgroundColor: "rgba(0,0,0,0.04)",
+              color: "#222",
               fontWeight: 700,
               fontSize: "1.05rem",
-              backdropFilter: "blur(6px)",
+              backdropFilter: "blur(4px)",
               textDecoration: "none",
               display: "block",
             }}
