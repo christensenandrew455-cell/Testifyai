@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 // ---- UPDATE THIS IMPORT IF YOUR firebase file is somewhere else ----
 // If you placed firebase in /lib/firebase.js use:
-import { auth } from "@/firebase";
+import { auth } from "@/app/firebase.js";
 // If you used app/firebase.js use:
 // import { auth } from "@/app/firebase";
 // If you used src/firebase.js use:
