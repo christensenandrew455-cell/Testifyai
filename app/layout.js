@@ -3,7 +3,9 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import Link from "next/link";
 import { Analytics } from "@vercel/analytics/react";
-import Header from "./Header.js";  // <-- ADD THIS
+
+import Header from "./Header.js";
+import { AuthProvider } from "./AuthContext";   // <--- ADD THIS
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,35 +24,36 @@ export default function RootLayout({ children }) {
 
       <body className={inter.className} style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         
-        {/* CLIENT HEADER ALWAYS RENDERS CORRECTLY */}
-        <Header />
+        {/* EVERYTHING WRAPPED IN AUTH CONTEXT */}
+        <AuthProvider>
+          <Header />
 
-        <div style={{ flex: 1 }}>
-          {children}
-        </div>
+          <div style={{ flex: 1 }}>
+            {children}
+          </div>
 
-        {/* FOOTER */}
-        <footer
-          style={{
-            textAlign: "center",
-            padding: "16px 0",
-            backgroundColor: "#f5f5f5",
-            fontSize: "0.9rem",
-            color: "#444",
-            borderTop: "1px solid #ddd",
-          }}
-        >
-          <Link
-            href="/privacy-policy"
+          <footer
             style={{
-              color: "#1976d2",
-              textDecoration: "none",
-              fontWeight: "500",
+              textAlign: "center",
+              padding: "16px 0",
+              backgroundColor: "#f5f5f5",
+              fontSize: "0.9rem",
+              color: "#444",
+              borderTop: "1px solid #ddd",
             }}
           >
-            Privacy Policy
-          </Link>
-        </footer>
+            <Link
+              href="/privacy-policy"
+              style={{
+                color: "#1976d2",
+                textDecoration: "none",
+                fontWeight: "500",
+              }}
+            >
+              Privacy Policy
+            </Link>
+          </footer>
+        </AuthProvider>
 
         <Analytics />
       </body>
