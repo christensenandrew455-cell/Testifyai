@@ -1,131 +1,87 @@
-// app/signup/page.js
 "use client";
+import { useState } from "react";
 import Link from "next/link";
+import { auth } from "@/lib/firebase";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
+  const router = useRouter();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [pass, setPass] = useState("");
+  const [pass2, setPass2] = useState("");
+  const [error, setError] = useState("");
+
+  async function handleSignup() {
+    setError("");
+
+    if (pass !== pass2) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+
+      // Update display name
+      await updateProfile(userCred.user, {
+        displayName: name,
+      });
+
+      router.push("/profile"); // redirect after signup
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        width: "100vw",
-        background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-        color: "white",
-        textAlign: "center",
-        padding: "40px 20px",
-        position: "relative",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "30px",
-          fontWeight: 700,
-          color: "white",
-          fontSize: "1.2rem",
-        }}
+    <div style={{ /* your same styling */ }}>
+      {/* stuff removed for clarity */}
+
+      {error && (
+        <p style={{ color: "red", marginBottom: "12px", fontSize: "0.9rem" }}>
+          {error}
+        </p>
+      )}
+
+      <input
+        type="text"
+        placeholder="Name"
+        onChange={(e) => setName(e.target.value)}
+        style={{ /* input style */ }}
+      />
+
+      <input
+        type="email"
+        placeholder="Email"
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ /* input style */ }}
+      />
+
+      <input
+        type="password"
+        placeholder="Password"
+        onChange={(e) => setPass(e.target.value)}
+        style={{ /* input style */ }}
+      />
+
+      <input
+        type="password"
+        placeholder="Re-enter Password"
+        onChange={(e) => setPass2(e.target.value)}
+        style={{ /* input style */ }}
+      />
+
+      <button
+        onClick={handleSignup}
+        style={{ /* button style */ }}
       >
-        TheTestifyAI
-      </div>
+        Create Account
+      </button>
 
-      <div
-        style={{
-          backgroundColor: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "40px",
-          border: "3px solid rgba(255,255,255,0.18)",
-          padding: "40px 44px",
-          width: "92%",
-          maxWidth: "520px",
-          color: "white",
-          textAlign: "center",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
-          marginTop: "20px",
-        }}
-      >
-        <h2 style={{ marginBottom: "10px", fontWeight: 800, fontSize: "1.4rem" }}>
-          Create an Account
-        </h2>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "18px", marginTop: "25px" }}>
-          <input
-            type="text"
-            placeholder="Name"
-            style={{
-              padding: "14px",
-              borderRadius: "12px",
-              border: "none",
-              outline: "none",
-              backgroundColor: "rgba(255,255,255,0.12)",
-              color: "white",
-            }}
-          />
-
-          <input
-            type="email"
-            placeholder="Email"
-            style={{
-              padding: "14px",
-              borderRadius: "12px",
-              border: "none",
-              outline: "none",
-              backgroundColor: "rgba(255,255,255,0.12)",
-              color: "white",
-            }}
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            style={{
-              padding: "14px",
-              borderRadius: "12px",
-              border: "none",
-              outline: "none",
-              backgroundColor: "rgba(255,255,255,0.12)",
-              color: "white",
-            }}
-          />
-
-          <input
-            type="password"
-            placeholder="Re-enter Password"
-            style={{
-              padding: "14px",
-              borderRadius: "12px",
-              border: "none",
-              outline: "none",
-              backgroundColor: "rgba(255,255,255,0.12)",
-              color: "white",
-            }}
-          />
-
-          <button
-            style={{
-              width: "100%",
-              padding: "14px 0",
-              borderRadius: "12px",
-              border: "none",
-              backgroundColor: "#1976d2",
-              color: "white",
-              fontWeight: 700,
-              fontSize: "1rem",
-              cursor: "pointer",
-              marginTop: "10px",
-            }}
-          >
-            Create Account
-          </button>
-
-          <Link href="/login" style={{ marginTop: "10px", color: "white", opacity: 0.8, fontSize: "0.9rem" }}>
-            Already have an account? Log in
-          </Link>
-        </div>
-      </div>
+      <Link href="/login">Already have an account?</Link>
     </div>
   );
 }
