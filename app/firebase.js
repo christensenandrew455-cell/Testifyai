@@ -1,8 +1,5 @@
+// /lib/firebase.js
 import { initializeApp } from "firebase/app";
-
-// OPTIONAL: remove analytics for now (Next.js breaks if run on server)
-// import { getAnalytics } from "firebase/analytics";
-
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
@@ -13,13 +10,9 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  // measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
-
-// ❌ DO NOT use analytics in Next.js without guarding window
-// const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
