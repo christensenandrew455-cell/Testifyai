@@ -5,14 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const allowedHeaderPaths = [
-  "/", 
-  "/progress", 
-  "/profile",  
-  "/testsetup", 
-  "/data"
+  "/",
+  "/progress",
+  "/profile",
+  "/testsetup",
+  "/data",
 ];
 
-// Your login checker — change it to match your auth system
+// Simple login check (change this later to match your auth)
 function isLoggedIn() {
   if (typeof window !== "undefined") {
     return !!localStorage.getItem("authToken");
@@ -32,80 +32,82 @@ export default function Header() {
 
   if (!show) return null;
 
-  // Protected links — only allowed if logged in
-  const ProtectedLink = ({ href, label }) => (
-    <span
-      onClick={() => {
-        if (!loggedIn) {
-          router.push("/signin"); // redirect if NOT logged in
-        } else {
-          router.push(href);
-        }
-      }}
-      style={{
-        cursor: "pointer",
-        color: "#333",
-        textDecoration: "none",
-        fontSize: "1.05rem",
-        marginLeft: "22px"
-      }}
-    >
-      {label}
-    </span>
-  );
-
-  // Public links — always allowed
-  const PublicLink = ({ href, label }) => (
-    <span
-      onClick={() => router.push(href)}
-      style={{
-        cursor: "pointer",
-        color: "#333",
-        textDecoration: "none",
-        fontSize: "1.05rem",
-        marginLeft: "22px"
-      }}
-    >
-      {label}
-    </span>
-  );
+  // Protect certain links (data, progress, profile)
+  const handleProtectedRoute = (href) => {
+    if (!loggedIn) {
+      router.push("/signin");
+    } else {
+      router.push(href);
+    }
+  };
 
   return (
     <header
       style={{
         width: "100%",
-        padding: "18px 0",
+        padding: "14px 40px",
         backgroundColor: "#f5f5f5",
         borderBottom: "1px solid #ddd",
         display: "flex",
-        justifyContent: "center",
+        justifyContent: "space-between",
         alignItems: "center",
-        gap: "60px",
-        fontWeight: "600",
-        textTransform: "uppercase",
-        letterSpacing: "0.7px",
       }}
     >
+      {/* LEFT SIDE: LOGO */}
       <span
         style={{
           fontWeight: "800",
-          marginRight: "120px",
           fontSize: "1.25rem",
-          cursor: "pointer"
+          letterSpacing: "0.8px",
+          textTransform: "uppercase",
         }}
-        onClick={() => router.push("/")}
       >
         thetestifyai
       </span>
 
-      {/* Public */}
-      <PublicLink href="/" label="Home" />
-      <PublicLink href="/testsetup" label="Test Me" />
+      {/* RIGHT SIDE: NAVIGATION LINKS */}
+      <nav
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "28px",
+          fontSize: "0.95rem",
+          fontWeight: "600",
+          textTransform: "uppercase",
+          letterSpacing: "0.6px",
+        }}
+      >
+        {/* Always allowed */}
+        <Link href="/" style={{ color: "#333" }}>
+          Home
+        </Link>
 
-      {/* Protected */}
-      <ProtectedLink href="/data" label="Data" />
-      <ProtectedLink href="/progress" label="Progress" />
-      <ProtectedLink href="/profile" label="Profile" />
+        <Link href="/testsetup" style={{ color: "#333" }}>
+          Test Me
+        </Link>
+
+        {/* PROTECTED LINKS */}
+        <span
+          style={{ color: "#333", cursor: "pointer" }}
+          onClick={() => handleProtectedRoute("/data")}
+        >
+          Data
+        </span>
+
+        <span
+          style={{ color: "#333", cursor: "pointer" }}
+          onClick={() => handleProtectedRoute("/progress")}
+        >
+          Progress
+        </span>
+
+        <span
+          style={{ color: "#333", cursor: "pointer" }}
+          onClick={() => handleProtectedRoute("/profile")}
+        >
+          Profile
+        </span>
+      </nav>
     </header>
   );
 }
