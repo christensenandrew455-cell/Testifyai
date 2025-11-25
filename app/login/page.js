@@ -3,14 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// ---- UPDATE THIS IMPORT IF YOUR firebase file is somewhere else ----
-// If you placed firebase in /lib/firebase.js use:
-import { auth } from "../firebase";
-// If you used app/firebase.js use:
-// import { auth } from "@/app/firebase";
-// If you used src/firebase.js use:
-// import { auth } from "@/src/firebase";
-// ------------------------------------------------------------------
+import { auth } from "@/app/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function LoginPage() {
@@ -100,9 +93,7 @@ export default function LoginPage() {
           gap: "18px",
         }}
       >
-        <h2 style={{ marginBottom: "6px", fontWeight: 800, fontSize: "1.4rem" }}>
-          Log In
-        </h2>
+        <h2 style={{ marginBottom: "6px", fontWeight: 800, fontSize: "1.4rem" }}>Log In</h2>
 
         {error && (
           <div style={{ color: "#ffdddd", background: "rgba(0,0,0,0.12)", padding: "10px", borderRadius: 8 }}>
@@ -110,21 +101,8 @@ export default function LoginPage() {
           </div>
         )}
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={inputStyle}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={pass}
-          onChange={(e) => setPass(e.target.value)}
-          style={inputStyle}
-        />
+        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+        <input type="password" placeholder="Password" value={pass} onChange={(e) => setPass(e.target.value)} style={inputStyle} />
 
         <button
           type="submit"
