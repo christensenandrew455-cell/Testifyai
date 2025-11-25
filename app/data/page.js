@@ -5,165 +5,182 @@ export default function DataPage() {
   const [rawData, setRawData] = useState("");
   const [formattedData, setFormattedData] = useState("");
   const [viewMode, setViewMode] = useState("none"); 
-  // none | raw | formatted
-
   const [dataAllowedForAI, setDataAllowedForAI] = useState("both");
-  // "data-only" | "chatgpt-only" | "both"
 
-  const container = {
-    padding: "40px",
+  const frostedContainer = {
+    width: "92%",
     maxWidth: "900px",
-    margin: "0 auto",
-    fontFamily: "sans-serif",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    backdropFilter: "blur(14px)",
+    borderRadius: "36px",
+    border: "3px solid rgba(255,255,255,0.18)",
+    padding: "40px",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+    color: "white",
+    fontFamily: "Segoe UI, Roboto, sans-serif",
+  };
+
+  const sectionBox = {
+    background: "rgba(255,255,255,0.12)",
+    borderRadius: "16px",
+    padding: "20px",
+    marginBottom: "25px",
+    border: "2px solid rgba(255,255,255,0.25)",
   };
 
   const title = {
     fontSize: "32px",
-    fontWeight: "bold",
-    marginBottom: "20px",
-  };
-
-  const sectionBox = {
-    border: "1px solid #ccc",
-    borderRadius: "10px",
-    padding: "20px",
-    marginBottom: "25px",
-  };
-
-  const boxTitle = {
-    fontWeight: "bold",
-    fontSize: "20px",
-    marginBottom: "10px",
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: "30px",
   };
 
   const textarea = {
     width: "100%",
     minHeight: "150px",
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #bbb",
-    fontSize: "14px",
+    padding: "12px",
+    borderRadius: "12px",
+    border: "none",
+    outline: "none",
     resize: "vertical",
+    background: "rgba(255,255,255,0.3)",
+    color: "white",
   };
 
   const button = {
-    padding: "10px 20px",
-    borderRadius: "6px",
-    border: "none",
-    cursor: "pointer",
-    backgroundColor: "black",
+    padding: "12px 18px",
+    background: "rgba(0,0,0,0.55)",
+    border: "2px solid rgba(255,255,255,0.25)",
     color: "white",
-    marginRight: "10px",
+    borderRadius: "12px",
+    cursor: "pointer",
+    fontWeight: "700",
     marginTop: "10px",
+    marginRight: "10px",
   };
 
-  const grayText = { color: "#888" };
-
   return (
-    <div style={container}>
-      <div style={title}>Data</div>
+    <div
+      style={{
+        minHeight: "100vh",
+        width: "100vw",
+        background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
+        display: "flex",
+        justifyContent: "center",
+        padding: "40px 20px",
+      }}
+    >
+      <div style={frostedContainer}>
+        <h1 style={title}>Data</h1>
 
-      {/* ■■■ NO DATA MESSAGE OR CURRENT STATUS ■■■ */}
-      <div style={sectionBox}>
-        <div style={boxTitle}>Data Status</div>
-
-        {rawData.trim() === "" && formattedData.trim() === "" ? (
-          <div style={grayText}>You currently have no data imported.</div>
-        ) : (
-          <div>Data has been imported.</div>
-        )}
-      </div>
-
-      {/* ■■■ IMPORT DATA SECTION ■■■ */}
-      <div style={sectionBox}>
-        <div style={boxTitle}>Import Your Data</div>
-        <div style={{ marginBottom: "10px" }}>
-          Paste data below (copy/paste, export, generated text, etc):
-        </div>
-
-        <textarea
-          style={textarea}
-          placeholder="Paste your test data here..."
-          value={rawData}
-          onChange={(e) => setRawData(e.target.value)}
-        ></textarea>
-
-        <button
-          style={button}
-          onClick={() => {
-            if (!rawData.trim()) return alert("No data to import.");
-            setViewMode("raw");
-          }}
-        >
-          Import
-        </button>
-      </div>
-
-      {/* ■■■ VIEW & MODIFY DATA SECTION ■■■ */}
-      {viewMode !== "none" && (
+        {/* DATA STATUS */}
         <div style={sectionBox}>
-          <div style={boxTitle}>Your Data</div>
+          <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
+            Data Status
+          </h2>
 
-          {/* RAW VIEW */}
-          {viewMode === "raw" && (
-            <>
-              <div style={{ marginBottom: "5px" }}>Raw Imported Data:</div>
-              <textarea
-                style={textarea}
-                value={rawData}
-                onChange={(e) => setRawData(e.target.value)}
-              ></textarea>
-
-              <button
-                style={button}
-                onClick={() => {
-                  const f = "Formatted:\n\n" + rawData.trim(); // placeholder
-                  setFormattedData(f);
-                  setViewMode("formatted");
-                }}
-              >
-                Ask ChatGPT to Improve / Organize
-              </button>
-            </>
-          )}
-
-          {/* FORMATTED VIEW */}
-          {viewMode === "formatted" && (
-            <>
-              <div style={{ marginBottom: "5px" }}>
-                ChatGPT-Organized Version:
-              </div>
-
-              <textarea
-                style={textarea}
-                value={formattedData}
-                onChange={(e) => setFormattedData(e.target.value)}
-              ></textarea>
-
-              <button
-                style={button}
-                onClick={() => setViewMode("raw")}
-              >
-                Back to Raw Data
-              </button>
-            </>
+          {rawData.trim() === "" && formattedData.trim() === "" ? (
+            <div style={{ opacity: 0.8 }}>You currently have no data imported.</div>
+          ) : (
+            <div>Data has been imported.</div>
           )}
         </div>
-      )}
 
-      {/* ■■■ AI DATA ACCESS CONTROL ■■■ */}
-      <div style={sectionBox}>
-        <div style={boxTitle}>AI Data Access Settings</div>
+        {/* IMPORT DATA */}
+        <div style={sectionBox}>
+          <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
+            Import Your Data
+          </h2>
 
-        <div style={{ marginBottom: "10px" }}>
-          Choose what the AI can use when generating tests:
+          <p style={{ marginBottom: "10px", opacity: 0.9 }}>
+            Paste data below (copy/paste, export, generated text, etc):
+          </p>
+
+          <textarea
+            style={textarea}
+            placeholder="Paste your test data here..."
+            value={rawData}
+            onChange={(e) => setRawData(e.target.value)}
+          ></textarea>
+
+          <button
+            style={button}
+            onClick={() => {
+              if (!rawData.trim()) return alert("No data to import.");
+              setViewMode("raw");
+            }}
+          >
+            Import
+          </button>
         </div>
 
-        <div>
-          <label style={{ display: "block", marginBottom: "6px" }}>
+        {/* VIEW / MODIFY DATA */}
+        {viewMode !== "none" && (
+          <div style={sectionBox}>
+            <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
+              Your Data
+            </h2>
+
+            {/* RAW */}
+            {viewMode === "raw" && (
+              <>
+                <p style={{ marginBottom: "6px" }}>Raw Imported Data:</p>
+                <textarea
+                  style={textarea}
+                  value={rawData}
+                  onChange={(e) => setRawData(e.target.value)}
+                ></textarea>
+
+                <button
+                  style={button}
+                  onClick={() => {
+                    const f = "Formatted:\n\n" + rawData.trim();
+                    setFormattedData(f);
+                    setViewMode("formatted");
+                  }}
+                >
+                  Ask ChatGPT to Improve / Organize
+                </button>
+              </>
+            )}
+
+            {/* FORMATTED */}
+            {viewMode === "formatted" && (
+              <>
+                <p style={{ marginBottom: "6px" }}>
+                  ChatGPT-Organized Version:
+                </p>
+
+                <textarea
+                  style={textarea}
+                  value={formattedData}
+                  onChange={(e) => setFormattedData(e.target.value)}
+                ></textarea>
+
+                <button
+                  style={button}
+                  onClick={() => setViewMode("raw")}
+                >
+                  Back to Raw Data
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* AI ACCESS SETTINGS */}
+        <div style={sectionBox}>
+          <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
+            AI Data Access Settings
+          </h2>
+
+          <p style={{ marginBottom: "10px", opacity: 0.9 }}>
+            Choose what the AI can use when generating tests:
+          </p>
+
+          <label style={{ display: "block", marginBottom: "8px" }}>
             <input
               type="radio"
-              name="ai-data"
               checked={dataAllowedForAI === "data-only"}
               onChange={() => setDataAllowedForAI("data-only")}
             />
@@ -172,10 +189,9 @@ export default function DataPage() {
             </span>
           </label>
 
-          <label style={{ display: "block", marginBottom: "6px" }}>
+          <label style={{ display: "block", marginBottom: "8px" }}>
             <input
               type="radio"
-              name="ai-data"
               checked={dataAllowedForAI === "chatgpt-only"}
               onChange={() => setDataAllowedForAI("chatgpt-only")}
             />
@@ -187,7 +203,6 @@ export default function DataPage() {
           <label style={{ display: "block" }}>
             <input
               type="radio"
-              name="ai-data"
               checked={dataAllowedForAI === "both"}
               onChange={() => setDataAllowedForAI("both")}
             />
