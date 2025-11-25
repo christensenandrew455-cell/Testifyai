@@ -8,7 +8,6 @@ const allowedHeaderPaths = [
   "/progress",
   "/profile",
   "/testsetup",
-  "/results",
   "/data",
 ];
 
