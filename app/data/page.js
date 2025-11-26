@@ -1,12 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export default function DataPage() {
   const [rawData, setRawData] = useState("");
   const [formattedData, setFormattedData] = useState("");
-  const [viewMode, setViewMode] = useState("none"); 
+  const [viewMode, setViewMode] = useState("none");
   const [dataAllowedForAI, setDataAllowedForAI] = useState("both");
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const frostedContainer = {
     width: "92%",
@@ -21,20 +22,12 @@ export default function DataPage() {
     fontFamily: "Segoe UI, Roboto, sans-serif",
   };
 
-  const sectionBox = {
-    background: "rgba(255,255,255,0.12)",
-    borderRadius: "16px",
-    padding: "20px",
-    marginBottom: "25px",
-    border: "2px solid rgba(255,255,255,0.25)",
-  };
-
   const textarea = {
     width: "100%",
     minHeight: "150px",
     padding: "12px",
     borderRadius: "12px",
-    border: "none",
+    border: "2px solid rgba(255,255,255,0.5)",
     outline: "none",
     resize: "vertical",
     background: "white",
@@ -53,29 +46,48 @@ export default function DataPage() {
     marginRight: "10px",
   };
 
-  // Function to send raw data to /api/datafix
-  const organizeData = async () => {
-    if (!rawData.trim()) return alert("No data to organize.");
+  // Handle file upload
+  const handleFile = async (file) => {
+    if (!file) return;
+    const text = await file.text();
+    setRawData(text);
+    sendToAPI(text);
+  };
+
+  // Send data to API for organization
+  const sendToAPI = async (data) => {
     setLoading(true);
     try {
       const res = await fetch("/api/datafix", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: rawData }),
+        body: JSON.stringify({ rawData: data }),
       });
-      const result = await res.json();
-      if (result.processedData) {
-        setFormattedData(result.processedData);
-        setViewMode("formatted");
-      } else if (result.error) {
-        alert(result.error);
-      }
+      const json = await res.json();
+      setFormattedData(json.organizedData);
+      setViewMode("formatted");
+      setRawData(""); // Clear the input box
     } catch (err) {
       console.error(err);
       alert("Failed to process data.");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle paste from clipboard
+  const handlePaste = async () => {
+    const text = await navigator.clipboard.readText();
+    if (!text) return alert("Clipboard is empty");
+    setRawData(text);
+    sendToAPI(text);
+  };
+
+  // Handle drag & drop
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    handleFile(file);
   };
 
   return (
@@ -89,59 +101,53 @@ export default function DataPage() {
         padding: "40px 20px",
       }}
     >
-      <div style={frostedContainer}>
-        <h1 style={{ fontSize: "32px", fontWeight: 800, textAlign: "center", marginBottom: "30px" }}>Data</h1>
+      <div
+        style={frostedContainer}
+        onDrop={handleDrop}
+        onDragOver={(e) => e.preventDefault()}
+      >
+        <h1 style={{ fontSize: "32px", fontWeight: "800", textAlign: "center", marginBottom: "30px" }}>
+          Import Your Data
+        </h1>
 
-        <div style={sectionBox}>
-          <h2 style={{ fontWeight: 700, marginBottom: "10px" }}>Import Your Data</h2>
+        {/* Paste / Textarea */}
+        <div style={{ marginBottom: "20px" }}>
+          <p>Paste your data here:</p>
           <textarea
             style={textarea}
-            placeholder="Paste your test data here..."
             value={rawData}
             onChange={(e) => setRawData(e.target.value)}
+            placeholder="Paste text or import via file / clipboard..."
           />
-          <button style={button} onClick={() => setViewMode("raw")}>Import</button>
+          <button style={button} onClick={() => sendToAPI(rawData)} disabled={loading}>
+            {loading ? "Processing..." : "Import Data"}
+          </button>
         </div>
 
+        {/* File Upload */}
+        <div style={{ marginBottom: "20px" }}>
+          <p>Or upload a file (.txt, .csv, .json):</p>
+          <input
+            type="file"
+            accept=".txt,.csv,.json"
+            ref={fileInputRef}
+            onChange={(e) => handleFile(e.target.files[0])}
+          />
+        </div>
+
+        {/* Clipboard */}
+        <div style={{ marginBottom: "20px" }}>
+          <p>Or import from clipboard:</p>
+          <button style={button} onClick={handlePaste}>Paste from Clipboard</button>
+        </div>
+
+        {/* View Organized Data */}
         {viewMode !== "none" && (
-          <div style={sectionBox}>
-            <h2 style={{ fontWeight: 700, marginBottom: "10px" }}>Your Data</h2>
-
-            {viewMode === "raw" && (
-              <>
-                <p style={{ marginBottom: "6px" }}>Raw Imported Data:</p>
-                <textarea style={textarea} value={rawData} onChange={(e) => setRawData(e.target.value)} />
-                <button style={button} onClick={organizeData}>
-                  {loading ? "Organizing..." : "Ask ChatGPT to Improve / Organize"}
-                </button>
-              </>
-            )}
-
-            {viewMode === "formatted" && (
-              <>
-                <p style={{ marginBottom: "6px" }}>ChatGPT-Organized Version:</p>
-                <textarea style={textarea} value={formattedData} onChange={(e) => setFormattedData(e.target.value)} />
-                <button style={button} onClick={() => setViewMode("raw")}>Back to Raw Data</button>
-              </>
-            )}
+          <div style={{ marginTop: "30px" }}>
+            <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>Organized Data:</h2>
+            <textarea style={textarea} value={formattedData} readOnly />
           </div>
         )}
-
-        <div style={sectionBox}>
-          <h2 style={{ fontWeight: 700, marginBottom: "10px" }}>AI Data Access Settings</h2>
-          <label>
-            <input type="radio" checked={dataAllowedForAI === "data-only"} onChange={() => setDataAllowedForAI("data-only")} />
-            <span style={{ marginLeft: "8px" }}>Use only my imported data</span>
-          </label>
-          <label>
-            <input type="radio" checked={dataAllowedForAI === "chatgpt-only"} onChange={() => setDataAllowedForAI("chatgpt-only")} />
-            <span style={{ marginLeft: "8px" }}>Use only ChatGPT knowledge</span>
-          </label>
-          <label>
-            <input type="radio" checked={dataAllowedForAI === "both"} onChange={() => setDataAllowedForAI("both")} />
-            <span style={{ marginLeft: "8px" }}>Use both my data and ChatGPT (recommended)</span>
-          </label>
-        </div>
       </div>
     </div>
   );
