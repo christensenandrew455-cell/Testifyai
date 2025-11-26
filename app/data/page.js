@@ -6,6 +6,7 @@ export default function DataPage() {
   const [formattedData, setFormattedData] = useState("");
   const [viewMode, setViewMode] = useState("none"); 
   const [dataAllowedForAI, setDataAllowedForAI] = useState("both");
+  const [loading, setLoading] = useState(false);
 
   const frostedContainer = {
     width: "92%",
@@ -28,13 +29,6 @@ export default function DataPage() {
     border: "2px solid rgba(255,255,255,0.25)",
   };
 
-  const title = {
-    fontSize: "32px",
-    fontWeight: "800",
-    textAlign: "center",
-    marginBottom: "30px",
-  };
-
   const textarea = {
     width: "100%",
     minHeight: "150px",
@@ -43,20 +37,45 @@ export default function DataPage() {
     border: "none",
     outline: "none",
     resize: "vertical",
-    background: "rgba(255,255,255,0.3)",
-    color: "white",
+    background: "white",
+    color: "black",
   };
 
   const button = {
     padding: "12px 18px",
-    background: "rgba(0,0,0,0.55)",
-    border: "2px solid rgba(255,255,255,0.25)",
+    background: "#1976d2",
+    border: "none",
     color: "white",
     borderRadius: "12px",
     cursor: "pointer",
     fontWeight: "700",
     marginTop: "10px",
     marginRight: "10px",
+  };
+
+  // Function to send raw data to /api/datafix
+  const organizeData = async () => {
+    if (!rawData.trim()) return alert("No data to organize.");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/datafix", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: rawData }),
+      });
+      const result = await res.json();
+      if (result.processedData) {
+        setFormattedData(result.processedData);
+        setViewMode("formatted");
+      } else if (result.error) {
+        alert(result.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to process data.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -71,144 +90,56 @@ export default function DataPage() {
       }}
     >
       <div style={frostedContainer}>
-        <h1 style={title}>Data</h1>
+        <h1 style={{ fontSize: "32px", fontWeight: 800, textAlign: "center", marginBottom: "30px" }}>Data</h1>
 
-        {/* DATA STATUS */}
         <div style={sectionBox}>
-          <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
-            Data Status
-          </h2>
-
-          {rawData.trim() === "" && formattedData.trim() === "" ? (
-            <div style={{ opacity: 0.8 }}>You currently have no data imported.</div>
-          ) : (
-            <div>Data has been imported.</div>
-          )}
-        </div>
-
-        {/* IMPORT DATA */}
-        <div style={sectionBox}>
-          <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
-            Import Your Data
-          </h2>
-
-          <p style={{ marginBottom: "10px", opacity: 0.9 }}>
-            Paste data below (copy/paste, export, generated text, etc):
-          </p>
-
+          <h2 style={{ fontWeight: 700, marginBottom: "10px" }}>Import Your Data</h2>
           <textarea
             style={textarea}
             placeholder="Paste your test data here..."
             value={rawData}
             onChange={(e) => setRawData(e.target.value)}
-          ></textarea>
-
-          <button
-            style={button}
-            onClick={() => {
-              if (!rawData.trim()) return alert("No data to import.");
-              setViewMode("raw");
-            }}
-          >
-            Import
-          </button>
+          />
+          <button style={button} onClick={() => setViewMode("raw")}>Import</button>
         </div>
 
-        {/* VIEW / MODIFY DATA */}
         {viewMode !== "none" && (
           <div style={sectionBox}>
-            <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
-              Your Data
-            </h2>
+            <h2 style={{ fontWeight: 700, marginBottom: "10px" }}>Your Data</h2>
 
-            {/* RAW */}
             {viewMode === "raw" && (
               <>
                 <p style={{ marginBottom: "6px" }}>Raw Imported Data:</p>
-                <textarea
-                  style={textarea}
-                  value={rawData}
-                  onChange={(e) => setRawData(e.target.value)}
-                ></textarea>
-
-                <button
-                  style={button}
-                  onClick={() => {
-                    const f = "Formatted:\n\n" + rawData.trim();
-                    setFormattedData(f);
-                    setViewMode("formatted");
-                  }}
-                >
-                  Ask ChatGPT to Improve / Organize
+                <textarea style={textarea} value={rawData} onChange={(e) => setRawData(e.target.value)} />
+                <button style={button} onClick={organizeData}>
+                  {loading ? "Organizing..." : "Ask ChatGPT to Improve / Organize"}
                 </button>
               </>
             )}
 
-            {/* FORMATTED */}
             {viewMode === "formatted" && (
               <>
-                <p style={{ marginBottom: "6px" }}>
-                  ChatGPT-Organized Version:
-                </p>
-
-                <textarea
-                  style={textarea}
-                  value={formattedData}
-                  onChange={(e) => setFormattedData(e.target.value)}
-                ></textarea>
-
-                <button
-                  style={button}
-                  onClick={() => setViewMode("raw")}
-                >
-                  Back to Raw Data
-                </button>
+                <p style={{ marginBottom: "6px" }}>ChatGPT-Organized Version:</p>
+                <textarea style={textarea} value={formattedData} onChange={(e) => setFormattedData(e.target.value)} />
+                <button style={button} onClick={() => setViewMode("raw")}>Back to Raw Data</button>
               </>
             )}
           </div>
         )}
 
-        {/* AI ACCESS SETTINGS */}
         <div style={sectionBox}>
-          <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
-            AI Data Access Settings
-          </h2>
-
-          <p style={{ marginBottom: "10px", opacity: 0.9 }}>
-            Choose what the AI can use when generating tests:
-          </p>
-
-          <label style={{ display: "block", marginBottom: "8px" }}>
-            <input
-              type="radio"
-              checked={dataAllowedForAI === "data-only"}
-              onChange={() => setDataAllowedForAI("data-only")}
-            />
-            <span style={{ marginLeft: "8px" }}>
-              Use only my imported data
-            </span>
+          <h2 style={{ fontWeight: 700, marginBottom: "10px" }}>AI Data Access Settings</h2>
+          <label>
+            <input type="radio" checked={dataAllowedForAI === "data-only"} onChange={() => setDataAllowedForAI("data-only")} />
+            <span style={{ marginLeft: "8px" }}>Use only my imported data</span>
           </label>
-
-          <label style={{ display: "block", marginBottom: "8px" }}>
-            <input
-              type="radio"
-              checked={dataAllowedForAI === "chatgpt-only"}
-              onChange={() => setDataAllowedForAI("chatgpt-only")}
-            />
-            <span style={{ marginLeft: "8px" }}>
-              Use only ChatGPT knowledge
-            </span>
+          <label>
+            <input type="radio" checked={dataAllowedForAI === "chatgpt-only"} onChange={() => setDataAllowedForAI("chatgpt-only")} />
+            <span style={{ marginLeft: "8px" }}>Use only ChatGPT knowledge</span>
           </label>
-
-          <label style={{ display: "block" }}>
-            <input
-              type="radio"
-              checked={dataAllowedForAI === "both"}
-              onChange={() => setDataAllowedForAI("both")}
-            />
-            <span style={{ marginLeft: "8px" }}>
-              Use both my data and ChatGPT (recommended)
-            </span>
+          <label>
+            <input type="radio" checked={dataAllowedForAI === "both"} onChange={() => setDataAllowedForAI("both")} />
+            <span style={{ marginLeft: "8px" }}>Use both my data and ChatGPT (recommended)</span>
           </label>
         </div>
       </div>
