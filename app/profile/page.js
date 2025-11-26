@@ -1,31 +1,109 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { auth } from "../firebase";
+import { db, storage } from "../firebase";
+import { signOut, updateProfile } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function ProfilePage() {
+  const router = useRouter();
+
   const [profilePic, setProfilePic] = useState(null);
   const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("example@email.com");
-  const [accountCreated, setAccountCreated] = useState("Loading...");
+  const [email, setEmail] = useState("");
+  const [accountCreated, setAccountCreated] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Load Firebase user + Firestore data
   useEffect(() => {
-    setDisplayName("Username");
-    setEmail("user@example.com");
-    setAccountCreated("January 1, 2025");
+    const user = auth.currentUser;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    setEmail(user.email);
+    setDisplayName(user.displayName || "");
+    setProfilePic(user.photoURL || null);
+    setAccountCreated(new Date(user.metadata.creationTime).toDateString());
+
+    // Load Firestore profile data (optional)
+    async function loadFirestoreProfile() {
+      const refDoc = doc(db, "users", user.uid);
+      const snap = await getDoc(refDoc);
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.displayName) setDisplayName(data.displayName);
+        if (data.photoURL) setProfilePic(data.photoURL);
+      }
+      setLoading(false);
+    }
+
+    loadFirestoreProfile();
   }, []);
 
-  const handleProfilePicChange = (e) => {
+  // Upload profile pic
+  const handleProfilePicChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setUploading(true);
 
-    setTimeout(() => {
-      setProfilePic(URL.createObjectURL(file));
-      setUploading(false);
-    }, 1500);
+    try {
+      const user = auth.currentUser;
+      const storageRef = ref(storage, `profilePictures/${user.uid}`);
+
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+
+      await updateProfile(user, { photoURL: url });
+
+      await setDoc(
+        doc(db, "users", user.uid),
+        { photoURL: url },
+        { merge: true }
+      );
+
+      setProfilePic(url);
+    } catch (e) {
+      console.error("Upload error: ", e);
+      alert("Could not upload picture.");
+    }
+
+    setUploading(false);
   };
+
+  // Save changes (name)
+  const saveChanges = async () => {
+    const user = auth.currentUser;
+
+    try {
+      await updateProfile(user, { displayName });
+
+      await setDoc(
+        doc(db, "users", user.uid),
+        { displayName },
+        { merge: true }
+      );
+
+      alert("Profile updated!");
+    } catch (e) {
+      alert("Error saving changes.");
+    }
+  };
+
+  // Logout
+  const logout = async () => {
+    await signOut(auth);
+    router.push("/login");
+  };
+
+  if (loading) return <div style={{ padding: 50, color: "white" }}>Loading...</div>;
 
   return (
     <div
@@ -118,6 +196,8 @@ export default function ProfilePage() {
               marginTop: "6px",
               outline: "none",
               fontSize: "1rem",
+              background: "white",
+              color: "black",
             }}
           />
         </div>
@@ -137,31 +217,14 @@ export default function ProfilePage() {
               marginTop: "6px",
               outline: "none",
               fontSize: "1rem",
-              background: "rgba(255,255,255,0.3)",
-              color: "#eee",
+              background: "white",
+              color: "gray",
               cursor: "not-allowed",
             }}
           />
         </div>
 
-        {/* Change Password */}
-        <button
-          style={{
-            width: "100%",
-            padding: "12px 0",
-            background: "rgba(255,255,255,0.15)",
-            borderRadius: "12px",
-            color: "white",
-            fontWeight: 700,
-            fontSize: "1rem",
-            border: "2px solid rgba(255,255,255,0.3)",
-            cursor: "pointer",
-            marginBottom: "14px",
-          }}
-        >
-          Change Password
-        </button>
-
+        {/* Account Created */}
         <div style={{ marginTop: "16px", opacity: 0.85 }}>
           <p>
             <strong>Account Created:</strong> {accountCreated}
@@ -170,6 +233,7 @@ export default function ProfilePage() {
 
         {/* Save Button */}
         <button
+          onClick={saveChanges}
           style={{
             width: "100%",
             padding: "12px 0",
@@ -184,6 +248,25 @@ export default function ProfilePage() {
           }}
         >
           Save Changes
+        </button>
+
+        {/* Logout */}
+        <button
+          onClick={logout}
+          style={{
+            width: "100%",
+            padding: "12px 0",
+            background: "#d32f2f",
+            borderRadius: "12px",
+            color: "white",
+            fontWeight: 700,
+            fontSize: "1rem",
+            marginTop: "14px",
+            cursor: "pointer",
+            border: "none",
+          }}
+        >
+          Log Out
         </button>
       </div>
     </div>
