@@ -71,7 +71,7 @@ export default function VerifyPage() {
           backgroundColor: checking ? "#9ec4ff" : "#1976d2",
           color: "white",
           fontWeight: 700,
-          fontSize: "1rem`,
+          fontSize: "1rem",
           cursor: checking ? "not-allowed" : "pointer",
         }}>
           {checking ? "Checking..." : "I Verified My Email"}
