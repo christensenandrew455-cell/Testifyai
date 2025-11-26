@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { auth } from "./firebase"; // make sure path is correct
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "./firebase"; // adjust path if needed
+import { onAuthStateChanged } from "firebase/auth";
 
 const allowedHeaderPaths = ["/", "/progress", "/profile", "/testsetup", "/data"];
 
@@ -31,11 +31,6 @@ export default function Header() {
     } else {
       router.push(href);
     }
-  };
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    router.push("/login");
   };
 
   return (
@@ -86,12 +81,6 @@ export default function Header() {
         <span style={{ color: "#333", cursor: "pointer" }} onClick={() => handleProtectedRoute("/profile")}>
           Profile
         </span>
-
-        {user && (
-          <span style={{ color: "#333", cursor: "pointer" }} onClick={handleLogout}>
-            Logout
-          </span>
-        )}
       </nav>
     </header>
   );
