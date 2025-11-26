@@ -1,58 +1,26 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth, db } from "../firebase";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { auth } from "../firebase";
 
-export default function VerificationPage() {
+export default function VerifyPage() {
   const router = useRouter();
-  const [code, setCode] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const signupData = JSON.parse(localStorage.getItem("signupData"));
 
-  const inputStyle = {
-    padding: "14px",
-    borderRadius: "12px",
-    border: "2px solid rgba(0,0,0,0.2)",
-    outline: "none",
-    backgroundColor: "white",
-    color: "black",
-  };
+  async function handleContinue() {
+    setChecking(true);
 
-  async function handleVerify(e) {
-    e.preventDefault();
-    setError("");
+    // Reload Firebase user
+    await auth.currentUser.reload();
 
-    const signupData = JSON.parse(localStorage.getItem("signupData"));
-    if (!signupData) return setError("No signup data found. Go back to signup.");
-
-    if (Number(code) !== signupData.otp) return setError("Invalid code");
-
-    setLoading(true);
-
-    try {
-      // Create Firebase Auth account
-      const userCred = await createUserWithEmailAndPassword(auth, signupData.email, signupData.pass);
-
-      // Set display name
-      await updateProfile(userCred.user, { displayName: signupData.name });
-
-      // Add user to Firestore
-      await setDoc(doc(db, "users", userCred.user.uid), {
-        name: signupData.name,
-        email: signupData.email,
-        createdAt: Date.now(),
-      });
-
-      localStorage.removeItem("signupData");
+    if (auth.currentUser.emailVerified) {
       router.push("/profile");
-    } catch (err) {
-      console.error(err);
-      setError("Failed to create account.");
-    } finally {
-      setLoading(false);
+    } else {
+      alert("Your email is not verified yet. Please check your inbox.");
     }
+
+    setChecking(false);
   }
 
   return (
@@ -73,7 +41,7 @@ export default function VerificationPage() {
         TheTestifyAI
       </div>
 
-      <form onSubmit={handleVerify} style={{
+      <div style={{
         backgroundColor: "rgba(255,255,255,0.08)",
         backdropFilter: "blur(10px)",
         borderRadius: "40px",
@@ -84,39 +52,35 @@ export default function VerificationPage() {
         display: "flex",
         flexDirection: "column",
         gap: "18px",
-        color: "white",
         textAlign: "center",
         boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
       }}>
-        <h2 style={{ fontWeight: 800, fontSize: "1.4rem" }}>Email Verification</h2>
-        <p style={{ opacity: 0.9 }}>Enter the 6-digit code sent to your email</p>
+        <h2 style={{ fontWeight: 800, fontSize: "1.4rem" }}>Verify Your Email</h2>
 
-        {error && (
-          <div style={{ color: "#ffdddd", background: "rgba(0,0,0,0.12)", padding: "10px", borderRadius: 8 }}>
-            {error}
-          </div>
-        )}
+        <p style={{ opacity: 0.9 }}>
+          We sent a verification link to <b>{signupData?.email}</b>.  
+          <br /><br />
+          Click the link, then press the button below.
+        </p>
 
-        <input type="number" placeholder="Enter code" value={code} onChange={(e) => setCode(e.target.value)} style={inputStyle} />
-
-        <button type="submit" disabled={loading} style={{
+        <button onClick={handleContinue} disabled={checking} style={{
           width: "100%",
           padding: "14px 0",
           borderRadius: "12px",
           border: "none",
-          backgroundColor: loading ? "#9ec4ff" : "#1976d2",
+          backgroundColor: checking ? "#9ec4ff" : "#1976d2",
           color: "white",
           fontWeight: 700,
-          fontSize: "1rem",
-          cursor: loading ? "not-allowed" : "pointer",
+          fontSize: "1rem`,
+          cursor: checking ? "not-allowed" : "pointer",
         }}>
-          {loading ? "Verifying..." : "Verify & Create Account"}
+          {checking ? "Checking..." : "I Verified My Email"}
         </button>
 
-        <a href="/signup" style={{ marginTop: "6px", color: "white", opacity: 0.85, fontSize: "0.9rem" }}>
+        <a href="/signup" style={{ color: "white", opacity: 0.85, fontSize: "0.9rem" }}>
           Back to Signup
         </a>
-      </form>
+      </div>
     </div>
   );
 }
