@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { auth } from "../firebase";
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -30,21 +32,23 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      // Generate 6-digit OTP
-      const otp = Math.floor(100000 + Math.random() * 900000);
-      localStorage.setItem("signupData", JSON.stringify({ name, email, pass, otp }));
+      // Create Firebase Auth user
+      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
 
-      // Send OTP via backend
-      await fetch("/api/sendOtp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
-      });
+      // Set display name
+      await updateProfile(userCred.user, { displayName: name });
 
+      // Send Firebase verification email
+      await sendEmailVerification(userCred.user);
+
+      // Save signup info for the next page
+      localStorage.setItem("signupData", JSON.stringify({ name, email }));
+
+      // Go to verification page
       router.push("/verification");
     } catch (err) {
       console.error(err);
-      setError("Failed to send verification email.");
+      setError(err.message || "Signup failed.");
     } finally {
       setLoading(false);
     }
@@ -106,9 +110,8 @@ export default function SignUpPage() {
           fontWeight: 700,
           fontSize: "1rem",
           cursor: loading ? "not-allowed" : "pointer",
-          marginTop: "6px",
         }}>
-          {loading ? "Sending OTP..." : "Create Account"}
+          {loading ? "Creating account..." : "Create Account"}
         </button>
 
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem" }}>
