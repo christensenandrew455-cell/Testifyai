@@ -45,7 +45,7 @@ export default function SignUpPage() {
       localStorage.setItem("signupData", JSON.stringify({ name, email }));
 
       // Go to verification page
-      router.push("/verification");
+      router.push("/verify");
     } catch (err) {
       console.error(err);
       setError(err.message || "Signup failed.");
