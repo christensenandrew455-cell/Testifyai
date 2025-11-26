@@ -3,47 +3,39 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { auth } from "./firebase"; // make sure path is correct
+import { onAuthStateChanged, signOut } from "firebase/auth";
 
 const allowedHeaderPaths = ["/", "/progress", "/profile", "/testsetup", "/data"];
-
-// Check login status
-function isLoggedIn() {
-  if (typeof window !== "undefined") {
-    return !!localStorage.getItem("authToken");
-  }
-  return false;
-}
 
 export default function Header() {
   const path = usePathname();
   const router = useRouter();
   const show = allowedHeaderPaths.includes(path);
 
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
 
-  // Sync login status on mount + whenever localStorage changes
+  // Listen for Firebase auth changes
   useEffect(() => {
-    setLoggedIn(isLoggedIn());
-
-    function syncLoginState() {
-      setLoggedIn(isLoggedIn());
-    }
-
-    window.addEventListener("storage", syncLoginState);
-
-    return () => {
-      window.removeEventListener("storage", syncLoginState);
-    };
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
   }, []);
 
   if (!show) return null;
 
   const handleProtectedRoute = (href) => {
-    if (!loggedIn) {
+    if (!user) {
       router.push("/signuplogin");
     } else {
       router.push(href);
     }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push("/login");
   };
 
   return (
@@ -58,7 +50,6 @@ export default function Header() {
         alignItems: "center",
       }}
     >
-      {/* LEFT: LOGO */}
       <span
         style={{
           fontWeight: "800",
@@ -70,7 +61,6 @@ export default function Header() {
         thetestifyai
       </span>
 
-      {/* RIGHT: NAVIGATION */}
       <nav
         style={{
           display: "flex",
@@ -85,26 +75,23 @@ export default function Header() {
         <Link href="/" style={{ color: "#333" }}>Home</Link>
         <Link href="/testsetup" style={{ color: "#333" }}>Test Me</Link>
 
-        <span
-          style={{ color: "#333", cursor: "pointer" }}
-          onClick={() => handleProtectedRoute("/data")}
-        >
+        <span style={{ color: "#333", cursor: "pointer" }} onClick={() => handleProtectedRoute("/data")}>
           Data
         </span>
 
-        <span
-          style={{ color: "#333", cursor: "pointer" }}
-          onClick={() => handleProtectedRoute("/progress")}
-        >
+        <span style={{ color: "#333", cursor: "pointer" }} onClick={() => handleProtectedRoute("/progress")}>
           Progress
         </span>
 
-        <span
-          style={{ color: "#333", cursor: "pointer" }}
-          onClick={() => handleProtectedRoute("/profile")}
-        >
+        <span style={{ color: "#333", cursor: "pointer" }} onClick={() => handleProtectedRoute("/profile")}>
           Profile
         </span>
+
+        {user && (
+          <span style={{ color: "#333", cursor: "pointer" }} onClick={handleLogout}>
+            Logout
+          </span>
+        )}
       </nav>
     </header>
   );
