@@ -100,7 +100,7 @@ export default function ProfilePage() {
   // Logout
   const logout = async () => {
     await signOut(auth);
-    router.push("/login");
+    router.push("/");
   };
 
   if (loading) return <div style={{ padding: 50, color: "white" }}>Loading...</div>;
