@@ -32,10 +32,10 @@ export default function LoginPage() {
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, pass);
 
-      // 🔍 HERE is where we add email verification enforcement
+      // Block login if email not verified
       if (!userCred.user.emailVerified) {
         setError(
-          "Your email is not verified. Please check your inbox and verify before logging in."
+          "Your email is not verified. Please check your inbox and click the verification link."
         );
         setLoading(false);
         return;
@@ -44,6 +44,7 @@ export default function LoginPage() {
       router.push("/profile");
     } catch (err) {
       const code = err?.code || "";
+
       if (code.includes("user-not-found") || code.includes("wrong-password")) {
         setError("Invalid email or password.");
       } else if (code.includes("invalid-email")) {
@@ -51,7 +52,7 @@ export default function LoginPage() {
       } else {
         setError(err.message || "Login failed.");
       }
-    } finally {
+
       setLoading(false);
     }
   }
@@ -162,7 +163,7 @@ export default function LoginPage() {
           {loading ? "Logging in..." : "Log In"}
         </button>
 
-        {/* 🔵 Forgot password link */}
+        {/* Forgot password */}
         <Link
           href="/passwordreset"
           style={{
