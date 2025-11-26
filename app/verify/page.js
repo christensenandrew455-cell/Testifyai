@@ -1,15 +1,28 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "../firebase";
 
 export default function VerifyPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(false);
-  const signupData = JSON.parse(localStorage.getItem("signupData"));
+  const [signupData, setSignupData] = useState(null);
+
+  // Load localStorage safely
+  useEffect(() => {
+    const stored = localStorage.getItem("signupData");
+    if (stored) setSignupData(JSON.parse(stored));
+  }, []);
 
   async function handleContinue() {
     setChecking(true);
+
+    // Protect against null user
+    if (!auth.currentUser) {
+      alert("No user logged in. Please sign up again.");
+      router.push("/signup");
+      return;
+    }
 
     // Reload Firebase user
     await auth.currentUser.reload();
@@ -21,6 +34,11 @@ export default function VerifyPage() {
     }
 
     setChecking(false);
+  }
+
+  // Prevent rendering until signupData is loaded
+  if (!signupData) {
+    return <div style={{ padding: 40, color: "white" }}>Loading...</div>;
   }
 
   return (
@@ -58,7 +76,7 @@ export default function VerifyPage() {
         <h2 style={{ fontWeight: 800, fontSize: "1.4rem" }}>Verify Your Email</h2>
 
         <p style={{ opacity: 0.9 }}>
-          We sent a verification link to <b>{signupData?.email}</b>.  
+          We sent a verification link to <b>{signupData.email}</b>.
           <br /><br />
           Click the link, then press the button below.
         </p>
