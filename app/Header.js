@@ -4,15 +4,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const allowedHeaderPaths = [
-  "/",
-  "/progress",
-  "/profile",
-  "/testsetup",
-  "/data",
-];
+const allowedHeaderPaths = ["/", "/progress", "/profile", "/testsetup", "/data"];
 
-// Simple login check (change this later to match your auth)
+// Check login status
 function isLoggedIn() {
   if (typeof window !== "undefined") {
     return !!localStorage.getItem("authToken");
@@ -24,15 +18,26 @@ export default function Header() {
   const path = usePathname();
   const router = useRouter();
   const show = allowedHeaderPaths.includes(path);
+
   const [loggedIn, setLoggedIn] = useState(false);
 
+  // Sync login status on mount + whenever localStorage changes
   useEffect(() => {
     setLoggedIn(isLoggedIn());
+
+    function syncLoginState() {
+      setLoggedIn(isLoggedIn());
+    }
+
+    window.addEventListener("storage", syncLoginState);
+
+    return () => {
+      window.removeEventListener("storage", syncLoginState);
+    };
   }, []);
 
   if (!show) return null;
 
-  // Protect certain links (data, progress, profile)
   const handleProtectedRoute = (href) => {
     if (!loggedIn) {
       router.push("/signuplogin");
@@ -53,7 +58,7 @@ export default function Header() {
         alignItems: "center",
       }}
     >
-      {/* LEFT SIDE: LOGO */}
+      {/* LEFT: LOGO */}
       <span
         style={{
           fontWeight: "800",
@@ -65,7 +70,7 @@ export default function Header() {
         thetestifyai
       </span>
 
-      {/* RIGHT SIDE: NAVIGATION LINKS */}
+      {/* RIGHT: NAVIGATION */}
       <nav
         style={{
           display: "flex",
@@ -77,16 +82,9 @@ export default function Header() {
           letterSpacing: "0.6px",
         }}
       >
-        {/* Always allowed */}
-        <Link href="/" style={{ color: "#333" }}>
-          Home
-        </Link>
+        <Link href="/" style={{ color: "#333" }}>Home</Link>
+        <Link href="/testsetup" style={{ color: "#333" }}>Test Me</Link>
 
-        <Link href="/testsetup" style={{ color: "#333" }}>
-          Test Me
-        </Link>
-
-        {/* PROTECTED LINKS */}
         <span
           style={{ color: "#333", cursor: "pointer" }}
           onClick={() => handleProtectedRoute("/data")}
