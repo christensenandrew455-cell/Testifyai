@@ -12,36 +12,39 @@ export async function POST(req) {
     // 1. GET USER + THEIR DATA
     // --------------------------
     const session = await getServerSession();
-    const uid = session?.user?.uid || session?.user?.id || null; // safer fallback
+    const uid = session?.user?.uid || session?.user?.id || null;
 
-    let rawData = "";
-    if (uid) {
-      const userData = await getUserData(uid);
-      rawData = userData?.raw || "";
+    let userData = uid ? await getUserData(uid) : null;
+    let aiAccess = userData?.aiAccess || "both";
+
+    // Use formatted first, fall back to raw
+    let userText = userData?.formatted?.trim() || userData?.raw?.trim() || "";
+
+    // --------------------------
+    // 2. DECIDE DATA USAGE
+    // --------------------------
+    let promptDataSection = "";
+    if (aiAccess === "data-only") {
+      if (!userText) {
+        return new Response(
+          JSON.stringify({ error: "No user data available to generate questions." }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+      promptDataSection = `Use ONLY the following user-imported data to generate questions:\n${userText}`;
+    } else if (aiAccess === "chatgpt-only") {
+      promptDataSection = `Do NOT use any user-imported data. Use only your general knowledge to generate questions about "${topic}".`;
+    } else if (aiAccess === "both") {
+      promptDataSection = userText
+        ? `Use the following user-imported data as primary source, but supplement with your general knowledge if needed:\n${userText}`
+        : `User has no imported data. Use your general knowledge to generate questions about "${topic}".`;
     }
 
     // --------------------------
-    // 2. DATA RELEVANCY CHECK
+    // 3. BUILD PROMPT
     // --------------------------
-    const lowerTopic = topic.toLowerCase();
-    const lowerRaw = rawData.toLowerCase();
-    const shouldUseData =
-      rawData &&
-      (lowerRaw.includes(lowerTopic) ||
-        lowerTopic.includes("my data") ||
-        lowerTopic.includes("my info") ||
-        lowerTopic.includes("based on my") ||
-        lowerTopic.includes("from my"));
-
-    // --------------------------
-    // 3. BUILD THE PROMPT
-    // --------------------------
-    const dataSection = shouldUseData
-      ? `User Data Context:\n------------------\n${rawData}\nUse this data ONLY when creating the questions.`
-      : `The user has NO relevant data OR the topic does not relate to their stored data.\nDo NOT reference any user data.`;
-
     const prompt = `
-${dataSection}
+${promptDataSection}
 
 You are a test question generator.
 
@@ -102,10 +105,11 @@ RULES:
     let content = response.choices?.[0]?.message?.content?.trim();
     if (!content) throw new Error("OpenAI returned empty content");
 
-    // strip code fences
     content = content.replace(/```json|```/g, "").trim();
 
-    // parse safely
+    // --------------------------
+    // 5. PARSE AND VALIDATE
+    // --------------------------
     let questions = [];
     try {
       questions = JSON.parse(content);
@@ -114,36 +118,24 @@ RULES:
       throw new Error("Invalid JSON from OpenAI");
     }
 
-    // --------------------------
-    // 5. CLEANUP & VALIDATION
-    // --------------------------
     questions = questions.map((q) => {
       let answers = Array.from(new Set(q.answers || []));
-
       while (answers.length < numAnswers) answers.push(`Extra option ${answers.length + 1}`);
-
       answers = answers.slice(0, numAnswers);
-
       if (!answers.includes(q.correct)) answers[answers.length - 1] = q.correct;
-
-      // shuffle answers
       answers = answers.sort(() => Math.random() - 0.5);
-
-      return {
-        question: q.question,
-        answers,
-        correct: q.correct,
-        explanation: q.explanation,
-      };
+      return { question: q.question, answers, correct: q.correct, explanation: q.explanation };
     });
 
-    return new Response(JSON.stringify({ questions, usedData: shouldUseData }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ questions, usedData: aiAccess !== "chatgpt-only" }),
+      { headers: { "Content-Type": "application/json" } }
+    );
   } catch (err) {
     console.error("MC error:", err);
-    return new Response(JSON.stringify({ error: "MC generation failed", message: err.message }), {
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({ error: "MC generation failed", message: err.message }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 }
