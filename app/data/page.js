@@ -1,15 +1,44 @@
 "use client";
+
 import { useState } from "react";
+import { db } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { useAuth } from "@/hooks/useAuth"; // <-- you MUST have your auth hook
 
 export default function DataPage() {
+  const { user } = useAuth(); // <-- current logged-in user
+
   const [rawData, setRawData] = useState("");
   const [formattedData, setFormattedData] = useState("");
   const [viewMode, setViewMode] = useState("none"); // none | raw | formatted
   const [importMethod, setImportMethod] = useState("text");
-  const [importBuffer, setImportBuffer] = useState(""); // holds new data before import
+  const [importBuffer, setImportBuffer] = useState("");
   const [aiAccess, setAiAccess] = useState("both");
   const [loading, setLoading] = useState(false);
 
+  // 🔥 SAVE USER DATA TO FIRESTORE
+  const saveUserData = async (newRaw, newFormatted) => {
+    if (!user) return;
+
+    try {
+      const ref = doc(db, "users", user.uid, "data", "main");
+
+      await setDoc(ref, {
+        raw: newRaw,
+        formatted: newFormatted,
+        aiAccess,
+        updatedAt: Date.now(),
+      });
+
+      console.log("🔥 Data saved to firestore");
+    } catch (err) {
+      console.error("Firestore save error:", err);
+    }
+  };
+
+  // -----------------------------
+  // FILE UPLOAD / DRAG-DROP / CLIPBOARD
+  // -----------------------------
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -38,18 +67,31 @@ export default function DataPage() {
     }
   };
 
-  const handleImport = () => {
+  // -----------------------------
+  // IMPORT DATA
+  // -----------------------------
+  const handleImport = async () => {
     if (!importBuffer.trim()) return alert("No data to import.");
 
-    setRawData((prev) => (prev ? prev + "\n" + importBuffer : importBuffer));
+    const newRaw = rawData
+      ? rawData + "\n" + importBuffer
+      : importBuffer;
+
+    setRawData(newRaw);
     setImportBuffer("");
     setViewMode("raw");
+
+    // 🔥 auto-save on import
+    await saveUserData(newRaw, formattedData);
   };
 
+  // -----------------------------
+  // SEND TO DATAFIX API
+  // -----------------------------
   const sendToDataFix = async () => {
     if (!rawData.trim()) return alert("No data to process.");
     if (aiAccess === "chatgpt-only")
-      return alert("No user data selected for AI processing.");
+      return alert("AI is not allowed to use your data.");
 
     setLoading(true);
     try {
@@ -63,6 +105,9 @@ export default function DataPage() {
       if (data.organizedData) {
         setFormattedData(data.organizedData);
         setViewMode("formatted");
+
+        // 🔥 auto-save organized data
+        await saveUserData(rawData, data.organizedData);
       }
     } catch (err) {
       console.error(err);
@@ -72,6 +117,9 @@ export default function DataPage() {
     }
   };
 
+  // -----------------------------
+  // UI
+  // -----------------------------
   return (
     <div
       style={{
@@ -108,7 +156,7 @@ export default function DataPage() {
           Data
         </h1>
 
-        {/* Import Method Selection */}
+        {/* Import Type Selection */}
         <div style={{ display: "flex", gap: "16px", marginBottom: "20px" }}>
           {["text", "file", "drag", "clipboard"].map((method) => (
             <button
@@ -197,7 +245,7 @@ export default function DataPage() {
           </button>
         )}
 
-        {/* Import Preview Area */}
+        {/* Import Preview */}
         {importBuffer.trim() !== "" && (
           <textarea
             readOnly={importMethod !== "text"}
@@ -230,20 +278,20 @@ export default function DataPage() {
           Import
         </button>
 
+        {/* ----------------------------- */}
         {/* DATA SECTION */}
+        {/* ----------------------------- */}
         <div style={{ marginTop: "40px" }}>
           <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
             Your Data
           </h2>
 
-          {/* No Data */}
           {!rawData.trim() && (
             <p style={{ opacity: 0.8, fontStyle: "italic" }}>
               You have no data.
             </p>
           )}
 
-          {/* View Mode Label */}
           {rawData.trim() && (
             <p style={{ marginBottom: "8px", fontStyle: "italic" }}>
               {viewMode === "raw"
@@ -252,7 +300,6 @@ export default function DataPage() {
             </p>
           )}
 
-          {/* Data Textarea */}
           {rawData.trim() && (
             <textarea
               style={{
@@ -265,11 +312,15 @@ export default function DataPage() {
                 marginBottom: "12px",
               }}
               value={viewMode === "raw" ? rawData : formattedData}
-              onChange={(e) =>
-                viewMode === "raw"
-                  ? setRawData(e.target.value)
-                  : setFormattedData(e.target.value)
-              }
+              onChange={(e) => {
+                if (viewMode === "raw") {
+                  setRawData(e.target.value);
+                  saveUserData(e.target.value, formattedData);
+                } else {
+                  setFormattedData(e.target.value);
+                  saveUserData(rawData, e.target.value);
+                }
+              }}
             />
           )}
 
@@ -310,7 +361,9 @@ export default function DataPage() {
           )}
         </div>
 
+        {/* ----------------------------- */}
         {/* AI ACCESS SETTINGS */}
+        {/* ----------------------------- */}
         <div style={{ marginTop: "40px" }}>
           <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
             AI Data Access Settings
@@ -320,16 +373,24 @@ export default function DataPage() {
             <input
               type="radio"
               checked={aiAccess === "data-only"}
-              onChange={() => setAiAccess("data-only")}
+              onChange={() => {
+                setAiAccess("data-only");
+                saveUserData(rawData, formattedData);
+              }}
             />
-            <span style={{ marginLeft: "8px" }}>Use only my imported data</span>
+            <span style={{ marginLeft: "8px" }}>
+              Use only my imported data
+            </span>
           </label>
 
           <label style={{ display: "block", marginBottom: "8px" }}>
             <input
               type="radio"
               checked={aiAccess === "chatgpt-only"}
-              onChange={() => setAiAccess("chatgpt-only")}
+              onChange={() => {
+                setAiAccess("chatgpt-only");
+                saveUserData(rawData, formattedData);
+              }}
             />
             <span style={{ marginLeft: "8px" }}>
               Use only ChatGPT knowledge
@@ -340,7 +401,10 @@ export default function DataPage() {
             <input
               type="radio"
               checked={aiAccess === "both"}
-              onChange={() => setAiAccess("both")}
+              onChange={() => {
+                setAiAccess("both");
+                saveUserData(rawData, formattedData);
+              }}
             />
             <span style={{ marginLeft: "8px" }}>
               Use both my data and ChatGPT (recommended)
