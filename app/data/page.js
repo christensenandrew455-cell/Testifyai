@@ -318,29 +318,38 @@ export default function DataPage() {
           )}
 
           {rawData.trim() && (
-            <textarea
-              style={{
-                width: "100%",
-                minHeight: "120px",
-                padding: "12px",
-                borderRadius: "12px",
-                background: "white",
-                color: "black",
-                marginBottom: "12px",
-                overflow: "hidden",     // ← prevents inner scroll
-                resize: "none",         // ← optional: hides drag handle
-              }}
-              value={viewMode === "raw" ? rawData : formattedData}
-              onChange={(e) => {
-                if (viewMode === "raw") {
-                  setRawData(e.target.value);
-                  saveUserData(e.target.value, formattedData);
-                } else {
-                  setFormattedData(e.target.value);
-                  saveUserData(rawData, e.target.value);
-                }
-              }}
-            />
+          <textarea
+            style={{
+              width: "100%",
+              padding: "12px",
+              borderRadius: "12px",
+              background: "white",
+              color: "black",
+              marginBottom: "12px",
+              overflow: "hidden",    // no internal scroll
+              resize: "none",        // optional: user can't drag-resize
+            }}
+            value={viewMode === "raw" ? rawData : formattedData}
+            ref={(el) => {
+              if (el) {
+                el.style.height = "auto";              // reset
+                el.style.height = el.scrollHeight + "px"; // resize to content
+              }
+            }}
+            onInput={(e) => {
+              e.target.style.height = "auto";              // reset
+              e.target.style.height = e.target.scrollHeight + "px"; // grow
+            }}
+            onChange={(e) => {
+              if (viewMode === "raw") {
+                setRawData(e.target.value);
+                saveUserData(e.target.value, formattedData);
+              } else {
+                setFormattedData(e.target.value);
+                saveUserData(rawData, e.target.value);
+              }
+            }}
+          />
           )}
 
           {rawData.trim() && (
