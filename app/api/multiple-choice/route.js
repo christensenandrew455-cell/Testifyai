@@ -1,11 +1,67 @@
 import OpenAI from "openai";
+import { getUserData } from "@/lib/firestore"; // ⬅️ REQUIRED
+import { getServerSession } from "next-auth";  // ⬅️ REQUIRED (if using next-auth)
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
   try {
     const { topic, difficulty, numQuestions = 5, numAnswers = 4 } = await req.json();
 
+    // --------------------------
+    // 1. GET USER + THEIR DATA
+    // --------------------------
+    const session = await getServerSession();
+    const uid = session?.user?.id || null;
+
+    let userData = null;
+
+    if (uid) {
+      userData = await getUserData(uid);
+    }
+
+    // If user has no stored data
+    const rawData = userData?.raw || "";
+
+    // --------------------------
+    // 2. DATA RELEVANCY CHECK
+    // --------------------------
+    let shouldUseData = false;
+
+    if (rawData && typeof rawData === "string") {
+      const lowerRaw = rawData.toLowerCase();
+      const lowerTopic = topic.toLowerCase();
+
+      // Basic topic match detection
+      if (
+        lowerRaw.includes(lowerTopic) ||
+        lowerTopic.includes("my data") ||
+        lowerTopic.includes("my info") ||
+        lowerTopic.includes("based on my") ||
+        lowerTopic.includes("from my")
+      ) {
+        shouldUseData = true;
+      }
+    }
+
+    // --------------------------
+    // 3. BUILD THE PROMPT
+    // --------------------------
+
+    const dataSection = shouldUseData
+      ? `
+User Data Context:
+------------------
+${rawData}
+
+Use this data ONLY when creating the questions.`
+      : `
+The user has NO relevant data OR the topic does not relate to their stored data.
+Do NOT reference any user data.`;
+
     const prompt = `
+
+${dataSection}
 
 You are a test question generator.
 
@@ -53,7 +109,11 @@ RULES:
 - The correct answer MUST appear in the answers array EXACTLY as extracted.
 - Return ONLY valid JSON. No text outside the JSON.
 `;
-    
+
+    // --------------------------
+    // 4. CALL OPENAI
+    // --------------------------
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
@@ -65,38 +125,33 @@ RULES:
 
     let questions = JSON.parse(content);
 
+    // --------------------------
+    // 5. CLEANUP & VALIDATION
+    // --------------------------
     questions = questions.map((q, i) => {
-      // Use the answers exactly as ChatGPT generated
       let answers = Array.from(new Set(q.answers || []));
 
-      // Fill missing answers
       while (answers.length < numAnswers) {
         answers.push(`Extra option ${answers.length + 1}`);
       }
 
       answers = answers.slice(0, numAnswers);
 
-      // Ensure the correct answer is present
       if (!answers.includes(q.correct)) {
-        // Replace last option to avoid overwriting existing valid ones
         answers[answers.length - 1] = q.correct;
       }
 
-      // Shuffle answers but KEEP the correct answer text intact
       answers = answers.sort(() => Math.random() - 0.5);
-
-      // DO NOT CHANGE ChatGPT’s correct answer — EVER
-      const correct = q.correct;
 
       return {
         question: q.question,
         answers,
-        correct,
+        correct: q.correct, // never modify correct answer text
         explanation: q.explanation
       };
     });
 
-    return new Response(JSON.stringify({ questions }), {
+    return new Response(JSON.stringify({ questions, usedData: shouldUseData }), {
       headers: { "Content-Type": "application/json" }
     });
 
