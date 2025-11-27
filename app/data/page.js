@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { db } from "@/lib/firebase";
+import { db } from "../firebase";        // points to app/firebase.js
 import { doc, setDoc } from "firebase/firestore";
-import { useAuth } from "@/hooks/useAuth"; // <-- you MUST have your auth hook
+import { useAuth } from "../hooks/useAuth"; // points to app/hooks/useAuth.js
 
 export default function DataPage() {
   const { user } = useAuth(); // <-- current logged-in user
