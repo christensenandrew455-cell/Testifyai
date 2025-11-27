@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { getUserData } from "../../lib/firestore";
-import { getServerSession } from "next-auth";  // ⬅️ REQUIRED (if using next-auth)
+import { getServerSession } from "next-auth";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -12,55 +12,35 @@ export async function POST(req) {
     // 1. GET USER + THEIR DATA
     // --------------------------
     const session = await getServerSession();
-    const uid = session?.user?.id || null;
+    const uid = session?.user?.uid || session?.user?.id || null; // safer fallback
 
-    let userData = null;
-
+    let rawData = "";
     if (uid) {
-      userData = await getUserData(uid);
+      const userData = await getUserData(uid);
+      rawData = userData?.raw || "";
     }
-
-    // If user has no stored data
-    const rawData = userData?.raw || "";
 
     // --------------------------
     // 2. DATA RELEVANCY CHECK
     // --------------------------
-    let shouldUseData = false;
-
-    if (rawData && typeof rawData === "string") {
-      const lowerRaw = rawData.toLowerCase();
-      const lowerTopic = topic.toLowerCase();
-
-      // Basic topic match detection
-      if (
-        lowerRaw.includes(lowerTopic) ||
+    const lowerTopic = topic.toLowerCase();
+    const lowerRaw = rawData.toLowerCase();
+    const shouldUseData =
+      rawData &&
+      (lowerRaw.includes(lowerTopic) ||
         lowerTopic.includes("my data") ||
         lowerTopic.includes("my info") ||
         lowerTopic.includes("based on my") ||
-        lowerTopic.includes("from my")
-      ) {
-        shouldUseData = true;
-      }
-    }
+        lowerTopic.includes("from my"));
 
     // --------------------------
     // 3. BUILD THE PROMPT
     // --------------------------
-
     const dataSection = shouldUseData
-      ? `
-User Data Context:
-------------------
-${rawData}
-
-Use this data ONLY when creating the questions.`
-      : `
-The user has NO relevant data OR the topic does not relate to their stored data.
-Do NOT reference any user data.`;
+      ? `User Data Context:\n------------------\n${rawData}\nUse this data ONLY when creating the questions.`
+      : `The user has NO relevant data OR the topic does not relate to their stored data.\nDo NOT reference any user data.`;
 
     const prompt = `
-
 ${dataSection}
 
 You are a test question generator.
@@ -113,52 +93,57 @@ RULES:
     // --------------------------
     // 4. CALL OPENAI
     // --------------------------
-
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.6
+      temperature: 0.6,
     });
 
-    let content = response.choices[0].message.content.trim();
+    let content = response.choices?.[0]?.message?.content?.trim();
+    if (!content) throw new Error("OpenAI returned empty content");
+
+    // strip code fences
     content = content.replace(/```json|```/g, "").trim();
 
-    let questions = JSON.parse(content);
+    // parse safely
+    let questions = [];
+    try {
+      questions = JSON.parse(content);
+    } catch (err) {
+      console.error("JSON parse error:", err, "Content:", content);
+      throw new Error("Invalid JSON from OpenAI");
+    }
 
     // --------------------------
     // 5. CLEANUP & VALIDATION
     // --------------------------
-    questions = questions.map((q, i) => {
+    questions = questions.map((q) => {
       let answers = Array.from(new Set(q.answers || []));
 
-      while (answers.length < numAnswers) {
-        answers.push(`Extra option ${answers.length + 1}`);
-      }
+      while (answers.length < numAnswers) answers.push(`Extra option ${answers.length + 1}`);
 
       answers = answers.slice(0, numAnswers);
 
-      if (!answers.includes(q.correct)) {
-        answers[answers.length - 1] = q.correct;
-      }
+      if (!answers.includes(q.correct)) answers[answers.length - 1] = q.correct;
 
+      // shuffle answers
       answers = answers.sort(() => Math.random() - 0.5);
 
       return {
         question: q.question,
         answers,
-        correct: q.correct, // never modify correct answer text
-        explanation: q.explanation
+        correct: q.correct,
+        explanation: q.explanation,
       };
     });
 
     return new Response(JSON.stringify({ questions, usedData: shouldUseData }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     });
-
   } catch (err) {
     console.error("MC error:", err);
-    return new Response(JSON.stringify({ error: "MC generation failed" }), {
-      status: 500
+    return new Response(JSON.stringify({ error: "MC generation failed", message: err.message }), {
+      status: 500,
     });
   }
 }
