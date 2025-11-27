@@ -2,17 +2,18 @@
 import { useState } from "react";
 
 export default function DataPage() {
-  const [rawData, setRawData] = useState(""); 
+  const [rawData, setRawData] = useState("");
   const [formattedData, setFormattedData] = useState("");
-  const [viewMode, setViewMode] = useState("none"); 
-  const [importMethod, setImportMethod] = useState("text"); 
-  const [importBuffer, setImportBuffer] = useState(""); 
-  const [aiAccess, setAiAccess] = useState("both"); 
+  const [viewMode, setViewMode] = useState("none"); // none | raw | formatted
+  const [importMethod, setImportMethod] = useState("text");
+  const [importBuffer, setImportBuffer] = useState(""); // holds new data before import
+  const [aiAccess, setAiAccess] = useState("both");
   const [loading, setLoading] = useState(false);
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (event) => setImportBuffer(event.target.result);
     reader.readAsText(file);
@@ -22,13 +23,13 @@ export default function DataPage() {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (event) => setImportBuffer(event.target.result);
     reader.readAsText(file);
   };
 
-  const handleClipboardPaste = async (e) => {
-    e.preventDefault();
+  const handleClipboardPaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
       setImportBuffer(text);
@@ -39,6 +40,7 @@ export default function DataPage() {
 
   const handleImport = () => {
     if (!importBuffer.trim()) return alert("No data to import.");
+
     setRawData((prev) => (prev ? prev + "\n" + importBuffer : importBuffer));
     setImportBuffer("");
     setViewMode("raw");
@@ -106,7 +108,7 @@ export default function DataPage() {
           Data
         </h1>
 
-        {/* Import Method */}
+        {/* Import Method Selection */}
         <div style={{ display: "flex", gap: "16px", marginBottom: "20px" }}>
           {["text", "file", "drag", "clipboard"].map((method) => (
             <button
@@ -135,7 +137,7 @@ export default function DataPage() {
           ))}
         </div>
 
-        {/* Import Input UI */}
+        {/* Import Inputs */}
         {importMethod === "text" && (
           <textarea
             placeholder="Paste your data here..."
@@ -158,6 +160,7 @@ export default function DataPage() {
             type="file"
             accept=".txt,.csv,.json"
             onChange={handleFileUpload}
+            style={{ marginBottom: "12px" }}
           />
         )}
 
@@ -170,6 +173,7 @@ export default function DataPage() {
               padding: "40px",
               borderRadius: "12px",
               textAlign: "center",
+              marginBottom: "12px",
             }}
           >
             Drag & drop a file here
@@ -186,10 +190,29 @@ export default function DataPage() {
               color: "white",
               fontWeight: 700,
               cursor: "pointer",
+              marginBottom: "12px",
             }}
           >
             Paste from Clipboard
           </button>
+        )}
+
+        {/* Import Preview Area */}
+        {importBuffer.trim() !== "" && (
+          <textarea
+            readOnly={importMethod !== "text"}
+            value={importBuffer}
+            style={{
+              width: "100%",
+              minHeight: "120px",
+              padding: "12px",
+              borderRadius: "12px",
+              background: "white",
+              color: "black",
+              marginBottom: "12px",
+              opacity: 0.9,
+            }}
+          />
         )}
 
         <button
@@ -213,26 +236,23 @@ export default function DataPage() {
             Your Data
           </h2>
 
-          {/* View Mode Indicator */}
-          {rawData.trim() ? (
-            <p
-              style={{
-                marginBottom: "8px",
-                fontStyle: "italic",
-                opacity: 0.9,
-              }}
-            >
-              {viewMode === "raw"
-                ? "Viewing Raw Data"
-                : "Viewing Organized Data"}
-            </p>
-          ) : (
+          {/* No Data */}
+          {!rawData.trim() && (
             <p style={{ opacity: 0.8, fontStyle: "italic" }}>
               You have no data.
             </p>
           )}
 
-          {/* Data textarea (only if data exists) */}
+          {/* View Mode Label */}
+          {rawData.trim() && (
+            <p style={{ marginBottom: "8px", fontStyle: "italic" }}>
+              {viewMode === "raw"
+                ? "Viewing Raw Data"
+                : "Viewing Organized Data"}
+            </p>
+          )}
+
+          {/* Data Textarea */}
           {rawData.trim() && (
             <textarea
               style={{
@@ -253,7 +273,6 @@ export default function DataPage() {
             />
           )}
 
-          {/* Buttons only if data exists */}
           {rawData.trim() && (
             <>
               <button
@@ -291,7 +310,7 @@ export default function DataPage() {
           )}
         </div>
 
-        {/* AI ACCESS SETTINGS — ALWAYS VISIBLE */}
+        {/* AI ACCESS SETTINGS */}
         <div style={{ marginTop: "40px" }}>
           <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
             AI Data Access Settings
@@ -302,7 +321,7 @@ export default function DataPage() {
               type="radio"
               checked={aiAccess === "data-only"}
               onChange={() => setAiAccess("data-only")}
-            />{" "}
+            />
             <span style={{ marginLeft: "8px" }}>Use only my imported data</span>
           </label>
 
@@ -311,7 +330,7 @@ export default function DataPage() {
               type="radio"
               checked={aiAccess === "chatgpt-only"}
               onChange={() => setAiAccess("chatgpt-only")}
-            />{" "}
+            />
             <span style={{ marginLeft: "8px" }}>
               Use only ChatGPT knowledge
             </span>
@@ -322,7 +341,7 @@ export default function DataPage() {
               type="radio"
               checked={aiAccess === "both"}
               onChange={() => setAiAccess("both")}
-            />{" "}
+            />
             <span style={{ marginLeft: "8px" }}>
               Use both my data and ChatGPT (recommended)
             </span>
