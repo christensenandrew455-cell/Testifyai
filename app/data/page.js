@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { db } from "../firebase";        // points to app/firebase.js
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth"; // points to app/hooks/useAuth.js
 
 export default function DataPage() {
@@ -15,6 +15,29 @@ export default function DataPage() {
   const [importBuffer, setImportBuffer] = useState("");
   const [aiAccess, setAiAccess] = useState("both");
   const [loading, setLoading] = useState(false);
+
+  // 🔥 LOAD USER DATA FROM FIRESTORE ON MOUNT
+  useEffect(() => {
+    if (!user) return;
+
+    const loadUserData = async () => {
+      try {
+        const ref = doc(db, "users", user.uid, "data", "main");
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const data = snap.data();
+          setRawData(data.raw || "");
+          setFormattedData(data.formatted || "");
+          setAiAccess(data.aiAccess || "both");
+          setViewMode(data.raw ? "raw" : "none");
+        }
+      } catch (err) {
+        console.error("Failed to load user data:", err);
+      }
+    };
+
+    loadUserData();
+  }, [user]);
 
   // 🔥 SAVE USER DATA TO FIRESTORE
   const saveUserData = async (newRaw, newFormatted) => {
