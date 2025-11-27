@@ -1,4 +1,4 @@
-import { db } from "@/app/firebase";
+import { db } from "../firebase";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
 export async function saveUserData(uid, data) {
