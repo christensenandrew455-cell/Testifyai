@@ -327,6 +327,8 @@ export default function DataPage() {
                 background: "white",
                 color: "black",
                 marginBottom: "12px",
+                overflow: "hidden",     // ← prevents inner scroll
+                resize: "none",         // ← optional: hides drag handle
               }}
               value={viewMode === "raw" ? rawData : formattedData}
               onChange={(e) => {
