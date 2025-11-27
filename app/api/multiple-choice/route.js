@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { getUserData } from "@/lib/firestore"; // ⬅️ REQUIRED
+import { getUserData } from "../../lib/firestore";
 import { getServerSession } from "next-auth";  // ⬅️ REQUIRED (if using next-auth)
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
