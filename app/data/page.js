@@ -16,29 +16,6 @@ export default function DataPage() {
   const [aiAccess, setAiAccess] = useState("both");
   const [loading, setLoading] = useState(false);
 
-  // 🔥 LOAD USER DATA FROM FIRESTORE ON MOUNT
-  useEffect(() => {
-    if (!user) return;
-
-    const loadUserData = async () => {
-      try {
-        const ref = doc(db, "users", user.uid, "data", "main");
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          const data = snap.data();
-          setRawData(data.raw || "");
-          setFormattedData(data.formatted || "");
-          setAiAccess(data.aiAccess || "both");
-          setViewMode(data.raw ? "raw" : "none");
-        }
-      } catch (err) {
-        console.error("Failed to load user data:", err);
-      }
-    };
-
-    loadUserData();
-  }, [user]);
-
   // 🔥 SAVE USER DATA TO FIRESTORE
   const saveUserData = async (newRaw, newFormatted) => {
     if (!user) return;
@@ -58,6 +35,29 @@ export default function DataPage() {
       console.error("Firestore save error:", err);
     }
   };
+
+  // 🔥 LOAD USER DATA ON REFRESH OR LOGIN
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const loadUserData = async () => {
+      try {
+        const ref = doc(db, "users", user.uid, "data", "main");
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const data = snap.data();
+          setRawData(data.raw || "");
+          setFormattedData(data.formatted || "");
+          setAiAccess(data.aiAccess || "both");
+          setViewMode(data.raw ? "raw" : "none");
+        }
+      } catch (err) {
+        console.error("Failed to load user data:", err);
+      }
+    };
+
+    loadUserData();
+  }, [user?.uid]);
 
   // -----------------------------
   // FILE UPLOAD / DRAG-DROP / CLIPBOARD
@@ -305,21 +305,15 @@ export default function DataPage() {
         {/* DATA SECTION */}
         {/* ----------------------------- */}
         <div style={{ marginTop: "40px" }}>
-          <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
-            Your Data
-          </h2>
+          <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>Your Data</h2>
 
           {!rawData.trim() && (
-            <p style={{ opacity: 0.8, fontStyle: "italic" }}>
-              You have no data.
-            </p>
+            <p style={{ opacity: 0.8, fontStyle: "italic" }}>You have no data.</p>
           )}
 
           {rawData.trim() && (
             <p style={{ marginBottom: "8px", fontStyle: "italic" }}>
-              {viewMode === "raw"
-                ? "Viewing Raw Data"
-                : "Viewing Organized Data"}
+              {viewMode === "raw" ? "Viewing Raw Data" : "Viewing Organized Data"}
             </p>
           )}
 
@@ -388,9 +382,7 @@ export default function DataPage() {
         {/* AI ACCESS SETTINGS */}
         {/* ----------------------------- */}
         <div style={{ marginTop: "40px" }}>
-          <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>
-            AI Data Access Settings
-          </h2>
+          <h2 style={{ fontWeight: "700", marginBottom: "10px" }}>AI Data Access Settings</h2>
 
           <label style={{ display: "block", marginBottom: "8px" }}>
             <input
@@ -401,9 +393,7 @@ export default function DataPage() {
                 saveUserData(rawData, formattedData);
               }}
             />
-            <span style={{ marginLeft: "8px" }}>
-              Use only my imported data
-            </span>
+            <span style={{ marginLeft: "8px" }}>Use only my imported data</span>
           </label>
 
           <label style={{ display: "block", marginBottom: "8px" }}>
@@ -415,9 +405,7 @@ export default function DataPage() {
                 saveUserData(rawData, formattedData);
               }}
             />
-            <span style={{ marginLeft: "8px" }}>
-              Use only ChatGPT knowledge
-            </span>
+            <span style={{ marginLeft: "8px" }}>Use only ChatGPT knowledge</span>
           </label>
 
           <label style={{ display: "block" }}>
@@ -429,9 +417,7 @@ export default function DataPage() {
                 saveUserData(rawData, formattedData);
               }}
             />
-            <span style={{ marginLeft: "8px" }}>
-              Use both my data and ChatGPT (recommended)
-            </span>
+            <span style={{ marginLeft: "8px" }}>Use both my data and ChatGPT (recommended)</span>
           </label>
         </div>
       </div>
