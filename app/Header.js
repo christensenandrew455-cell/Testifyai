@@ -29,12 +29,15 @@ export default function Header() {
     if (!user) {
       router.push("/signuplogin"); // not logged in → redirect
     } else {
-      // logged in → show under construction
-      alert("⚠️ Page Under Construction");
-      // optionally, you can also navigate to a placeholder page:
-      // router.push("/under-construction");
-    }
-  };
+     // Only show "under construction" for /data
+  if (href === "/data") {
+    alert("⚠️ Page Under Construction");
+    return;
+  }
+
+  // Redirect normally for other pages
+  router.push(href);
+};
 
   return (
     <header
