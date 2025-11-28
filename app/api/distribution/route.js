@@ -9,10 +9,6 @@ export async function POST(req) {
       return NextResponse.json({ error: "Missing data" }, { status: 400 });
     }
 
-    if (!userId) {
-      console.warn("⚠️ userId not provided — inner APIs will use default ChatGPT mode.");
-    }
-
     console.log("🧩 Distribution starting:", { topic, difficulty, questionsPerType, userId });
 
     const allQuestions = [];
@@ -32,11 +28,10 @@ export async function POST(req) {
           headers["x-vercel-protection-bypass"] = bypassToken;
         }
 
-        // ✅ Pass userId to inner API
         const res = await fetch(apiUrl, {
           method: "POST",
           headers,
-          body: JSON.stringify({ topic, difficulty, numQuestions: count, userId }),
+          body: JSON.stringify({ topic, difficulty, numQuestions: count, userId }), // 👈 forward userId
         });
 
         if (!res.ok) {
