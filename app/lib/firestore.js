@@ -12,7 +12,25 @@ import {
 // ✅ Save a new test as /users/{uid}/data/{testId}
 export async function saveTest(uid, testId, testData) {
   try {
+    // ❗ STOP empty tests from being saved
+    if (
+      !testData ||
+      !testData.questions ||
+      !Array.isArray(testData.questions) ||
+      testData.questions.length === 0
+    ) {
+      console.warn("❌ saveTest aborted — test has no question data");
+      return { success: false, error: "EMPTY_TEST" };
+    }
+
+    // ❗ extra protection — must have topic & total
+    if (!testData.topic || !testData.total) {
+      console.warn("❌ saveTest aborted — test missing essential fields");
+      return { success: false, error: "INCOMPLETE_TEST" };
+    }
+
     const ref = doc(db, "users", uid, "data", testId);
+
     await setDoc(ref, {
       ...testData,
       createdAt: Date.now(),
@@ -68,7 +86,7 @@ export async function updateTest(uid, testId, updates) {
   }
 }
 
-// ❌ Delete test (if needed)
+// ❌ Delete test (optional)
 export async function deleteTest(uid, testId) {
   try {
     const ref = doc(db, "users", uid, "data", testId);
