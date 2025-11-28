@@ -27,9 +27,12 @@ export default function Header() {
 
   const handleProtectedRoute = (href) => {
     if (!user) {
-      router.push("/signuplogin");
+      router.push("/signuplogin"); // not logged in → redirect
     } else {
-      router.push(href);
+      // logged in → show under construction
+      alert("⚠️ Page Under Construction");
+      // optionally, you can also navigate to a placeholder page:
+      // router.push("/under-construction");
     }
   };
 
