@@ -1,47 +1,45 @@
 "use client";
 
-import { useAuth } from "../hooks/useAuth";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-
-// Fake auth
-const useUser = () => {
-  const [user, setUser] = useState(null);
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
-  return user;
-};
+import { useAuth } from "../hooks/useAuth"; // <-- FIX: use real Firebase auth
 
 function ResultsInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const user = useUser();
+  const { user } = useAuth(); // <-- FIX: uses Firebase auth correctly
 
-  const [testData, setTestData] = useState(null);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [topic, setTopic] = useState("Unknown Topic");
+  const [testData, setTestData] = useState(null);
 
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("testData");
       if (stored) {
         const data = JSON.parse(stored);
-
-        const questions = Array.isArray(data.questions) ? data.questions : [];
-        const correctCount = questions.filter((q) => q.isCorrect).length;
-        const testTopic = questions[0]?.topic || "Unknown Topic";
-
         setTestData(data);
+
+        const totalQuestions = data.questions?.length || 0;
+        const correctCount =
+          data.questions?.filter((q) => q.isCorrect)?.length || 0;
+
         setScore(correctCount);
-        setTotal(questions.length);
-        setTopic(testTopic);
+        setTotal(totalQuestions);
+        setTopic(data.topic || "Unknown Topic");
+      } else {
+        const scoreParam = parseInt(searchParams.get("score") || "0", 10);
+        const totalParam = parseInt(searchParams.get("total") || "0", 10);
+        const topicParam = searchParams.get("topic") || "Unknown Topic";
+
+        setScore(scoreParam);
+        setTotal(totalParam);
+        setTopic(topicParam);
       }
     } catch (err) {
-      console.error("Error loading test data:", err);
+      console.error("Error parsing test data:", err);
     }
   }, [searchParams]);
 
@@ -54,113 +52,122 @@ function ResultsInner() {
     return "📘 Keep going — you’ll improve!";
   };
 
-  const handleSave = () => {
-    if (!user) return router.push("/signuplogin");
-    if (!testData) return;
+  const saveTest = () => {
+    if (!user) {
+      router.push("/signuplogin");
+      return;
+    }
 
-    // FULL rebuilt test object to ensure correctness
-    const fullTest = {
-      topic: testData.topic || topic,
-      type: testData.type || "Unknown",
-      difficulty: testData.difficulty || 1,
+    // Build the full test object you wanted
+    const testToSave = {
+      topic: testData?.topic || topic,
+      type: testData?.type || "Unknown",
+      difficulty: testData?.difficulty || 1,
       date: new Date().toISOString(),
-      score,
-      total,
-      percent,
-      questions: testData.questions || [],
+      questions: testData?.questions || [],
     };
 
-    const savedTests = JSON.parse(localStorage.getItem("savedTests") || "[]");
-    savedTests.push(fullTest);
-    localStorage.setItem("savedTests", JSON.stringify(savedTests));
+    // Save locally for now
+    const saved = JSON.parse(localStorage.getItem("savedTests") || "[]");
+    saved.push(testToSave);
+    localStorage.setItem("savedTests", JSON.stringify(saved));
 
     router.push("/progress");
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "#f8fafc",
-      color: "#222",
-      padding: "40px 20px",
-      fontFamily: "Segoe UI, Roboto, sans-serif",
-    }}>
-      <div style={{
-        border: "3px solid #1976d2",
-        borderRadius: "24px",
-        backgroundColor: "white",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-        padding: "40px",
-        textAlign: "center",
-        width: "100%",
-        maxWidth: "600px",
-      }}>
-        <h1 style={{
-          fontSize: "2rem",
-          fontWeight: "800",
-          color: "#1976d2",
-          marginBottom: "25px",
-        }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f8fafc",
+        color: "#222",
+        padding: "40px 20px",
+      }}
+    >
+      <div
+        style={{
+          border: "3px solid #1976d2",
+          borderRadius: "24px",
+          backgroundColor: "white",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          padding: "40px",
+          textAlign: "center",
+          width: "100%",
+          maxWidth: "600px",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "2rem",
+            fontWeight: "800",
+            color: "#1976d2",
+            marginBottom: "25px",
+          }}
+        >
           Your Results
         </h1>
 
-        <h2 style={{
-          fontSize: "1.4rem",
-          fontWeight: "700",
-          color: "#333",
-          marginBottom: "10px",
-        }}>
+        <h2
+          style={{
+            fontSize: "1.4rem",
+            fontWeight: "700",
+            color: "#333",
+            marginBottom: "10px",
+          }}
+        >
           {topic}
         </h2>
 
-        <p style={{
-          fontSize: "1.8rem",
-          fontWeight: "800",
-          color: "#333",
-          marginBottom: "5px",
-        }}>
+        <p
+          style={{
+            fontSize: "1.8rem",
+            fontWeight: "800",
+            color: "#333",
+            marginBottom: "5px",
+          }}
+        >
           {score} / {total}
         </p>
 
-        <p style={{
-          fontSize: "1.3rem",
-          fontWeight: "600",
-          color: "#555",
-          marginBottom: "20px",
-        }}>
+        <p
+          style={{
+            fontSize: "1.3rem",
+            fontWeight: "600",
+            color: "#555",
+            marginBottom: "20px",
+          }}
+        >
           {percent}%
         </p>
 
-        <p style={{
-          fontSize: "1.1rem",
-          marginBottom: "30px",
-          color: "#555",
-        }}>
+        <p style={{ fontSize: "1.1rem", marginBottom: "30px", color: "#555" }}>
           {getMessage()}
         </p>
 
         <div style={{ display: "flex", justifyContent: "center", gap: "16px" }}>
           <Link href="/">
-            <button style={{
-              backgroundColor: "#e0e0e0",
-              color: "#333",
-              border: "none",
-              borderRadius: "12px",
-              padding: "10px 20px",
-              fontWeight: "700",
-              cursor: "pointer",
-              fontSize: "1rem",
-            }}>
+            <button
+              style={{
+                backgroundColor: "#e0e0e0",
+                color: "#333",
+                border: "none",
+                borderRadius: "12px",
+                padding: "10px 20px",
+                fontWeight: "700",
+                cursor: "pointer",
+                fontSize: "1rem",
+              }}
+            >
               Home
             </button>
           </Link>
 
           <button
-            onClick={handleSave}
+            onClick={saveTest}
             style={{
               backgroundColor: "#1976d2",
               color: "white",
@@ -170,18 +177,21 @@ function ResultsInner() {
               fontWeight: "700",
               cursor: "pointer",
               fontSize: "1rem",
-            }}>
+            }}
+          >
             Save
           </button>
         </div>
       </div>
 
-      <div style={{
-        marginTop: "20px",
-        fontWeight: "700",
-        color: "#1976d2",
-        fontSize: "1.1rem",
-      }}>
+      <div
+        style={{
+          marginTop: "20px",
+          fontWeight: "700",
+          color: "#1976d2",
+          fontSize: "1.1rem",
+        }}
+      >
         TheTestifyAI
       </div>
     </div>
