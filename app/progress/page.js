@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { getAllTests } from "../lib/firestore"; // <-- use helper
+import { getAllTests } from "../lib/firestore";
 import { db } from "../firebase";
 import { doc, deleteDoc } from "firebase/firestore";
 
@@ -25,7 +25,12 @@ export default function ProgressPage() {
     const fallbackLoadLocal = () => {
       try {
         const local = JSON.parse(localStorage.getItem("savedTests") || "[]");
-        const normalized = local.map((t, i) => ({ ...t, id: t.id || `local-${i}` }));
+        const normalized = local.map((t, i) => ({
+          ...t,
+          id: t.id || `local-${i}`,
+          questions: Array.isArray(t.questions) ? t.questions : [],
+          difficultyNumber: Number(t.difficultyNumber || t.difficulty || 1),
+        }));
         setTests(normalized);
       } catch {
         setTests([]);
@@ -42,7 +47,12 @@ export default function ProgressPage() {
     const fetchTests = async () => {
       try {
         const docs = await getAllTests(user.uid);
-        setTests(docs);
+        const safeDocs = docs.map((t) => ({
+          ...t,
+          questions: Array.isArray(t.questions) ? t.questions : [],
+          difficultyNumber: Number(t.difficultyNumber || 1),
+        }));
+        setTests(safeDocs);
       } catch (err) {
         console.error("Error fetching tests:", err);
         setError("Failed to load saved tests — using local fallback.");
@@ -55,22 +65,28 @@ export default function ProgressPage() {
     fetchTests();
   }, [user]);
 
-  // Stats calculations
+  // Stats
   const totalTests = tests.length;
   const avgPercent = totalTests
     ? Math.round(tests.reduce((acc, t) => acc + (Number(t.percent) || 0), 0) / totalTests)
     : 0;
+
   const avgNumQuestions = totalTests
     ? Math.round(
-        tests.reduce((acc, t) => acc + (Array.isArray(t.questions) ? t.questions.length : 0), 0) /
+        tests.reduce(
+          (acc, t) => acc + (Array.isArray(t.questions) ? t.questions.length : 0),
+          0
+        ) / totalTests
+      )
+    : 0;
+
+  const avgDifficultyNumber = totalTests
+    ? Math.round(
+        tests.reduce((acc, t) => acc + (Number(t.difficultyNumber) || 1), 0) /
           totalTests
       )
     : 0;
-  const avgDifficultyNumber = totalTests
-    ? Math.round(
-        tests.reduce((acc, t) => acc + (Number(t.difficultyNumber) || 1), 0) / totalTests
-      )
-    : 0;
+
   const avgDifficultyLabel = difficultyLabel(avgDifficultyNumber);
 
   const mostUsedType = (() => {
@@ -116,9 +132,7 @@ export default function ProgressPage() {
     }
   };
 
-  // ===================
-  // Styles (unchanged)
-  // ===================
+  // Styles
   const grayCardStyle = {
     background: "rgba(255,255,255,0.12)",
     borderRadius: "16px",
@@ -161,9 +175,7 @@ export default function ProgressPage() {
     cursor: "pointer",
   };
 
-  // ===================
   // Render
-  // ===================
   return (
     <div
       style={{
@@ -194,7 +206,9 @@ export default function ProgressPage() {
         </h1>
 
         {error && (
-          <div style={{ marginBottom: 12, color: "#ffdddd", textAlign: "center" }}>{error}</div>
+          <div style={{ marginBottom: 12, color: "#ffdddd", textAlign: "center" }}>
+            {error}
+          </div>
         )}
 
         {/* Top stats */}
@@ -247,7 +261,7 @@ export default function ProgressPage() {
           </div>
         </div>
 
-        {/* Best test */}
+        {/* Best Test */}
         <div
           style={{
             background: tests.length === 0 ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.18)",
@@ -263,13 +277,15 @@ export default function ProgressPage() {
             <p style={{ opacity: 0.8 }}>No test data yet</p>
           ) : (
             <p style={{ opacity: 0.95 }}>
-              Topic: <b>{bestTest.topic}</b> — Score: <b>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
+              Topic: <b>{bestTest.topic}</b> — Score:{" "}
+              <b>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
             </p>
           )}
         </div>
 
-        {/* Saved tests */}
+        {/* Saved Tests */}
         <h2 style={{ marginBottom: "20px", fontWeight: 700 }}>Your Saved Tests</h2>
+
         {tests.length === 0 ? (
           <p style={{ textAlign: "center", opacity: 0.8 }}>No saved tests yet.</p>
         ) : (
@@ -286,19 +302,35 @@ export default function ProgressPage() {
                 color: "white",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <div>
                   <h3 style={{ margin: 0, fontWeight: 700 }}>{test.topic}</h3>
                   <p style={{ margin: 0, opacity: 0.9 }}>
-                    Score: {test.score}/{test.total} ({test.percent}%) — {test.questions.length} questions — Difficulty: {difficultyLabel(test.difficulty || test.difficultyNumber)}
+                    Score: {test.score}/{test.total} ({test.percent}%) —{" "}
+                    {(test.questions || []).length} questions — Difficulty:{" "}
+                    {difficultyLabel(test.difficultyNumber)}
                   </p>
                 </div>
 
                 <div style={{ display: "flex", gap: "12px" }}>
-                  <button onClick={() => setExpandedIndex(expandedIndex === index ? null : index)} style={btnStyle}>
+                  <button
+                    onClick={() =>
+                      setExpandedIndex(expandedIndex === index ? null : index)
+                    }
+                    style={btnStyle}
+                  >
                     👁
                   </button>
-                  <button onClick={() => handleDelete(test.id, index)} style={deleteBtnStyle}>
+                  <button
+                    onClick={() => handleDelete(test.id, index)}
+                    style={deleteBtnStyle}
+                  >
                     🗑
                   </button>
                 </div>
@@ -306,9 +338,11 @@ export default function ProgressPage() {
 
               {expandedIndex === index && (
                 <div style={{ marginTop: "14px", paddingLeft: "10px" }}>
-                  {test.questions.map((q, i) => (
+                  {(test.questions || []).map((q, i) => (
                     <div key={i} style={{ marginBottom: "12px" }}>
-                      <p><b>Q{i + 1}:</b> {q.question}</p>
+                      <p>
+                        <b>Q{i + 1}:</b> {q.question}
+                      </p>
                       <p>User Answer: {q.userAnswer}</p>
                       <p>Correct Answer: {q.correctAnswer}</p>
                       {q.explanation && <p>Explanation: {q.explanation}</p>}
