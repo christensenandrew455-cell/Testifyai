@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { adminDb } from "@/app/lib/firestoreAdmin";
+import { adminDb } from "../../lib/firestoreAdmin";
 
 // ----------------------------------
 // REAL FIRESTORE FUNCTIONS
