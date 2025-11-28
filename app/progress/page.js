@@ -4,6 +4,12 @@
 
 import { useState, useEffect } from "react";
 
+function difficultyLabel(num) {
+  if (num <= 3) return "Beginner";
+  if (num <= 6) return "Apprentice";
+  return "Master";
+}
+
 export default function ProgressPage() {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
