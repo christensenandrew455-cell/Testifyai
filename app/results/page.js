@@ -4,12 +4,10 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
-// Dummy user state for now (replace with your auth system)
+// Replace this with your real auth system
 const useUser = () => {
-  // Replace with your real user state from context/auth
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(null);
   useEffect(() => {
-    // Example: check localStorage or session for user
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
@@ -21,11 +19,12 @@ function ResultsInner() {
   const router = useRouter();
   const user = useUser();
 
+  const [testData, setTestData] = useState(null);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [topic, setTopic] = useState("Unknown Topic");
-  const [testData, setTestData] = useState(null);
 
+  // Load test data either from sessionStorage or URL params
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("testData");
@@ -33,14 +32,15 @@ function ResultsInner() {
         const data = JSON.parse(stored);
         setTestData(data);
 
-        const totalQuestions = data.questions?.length || 0;
-        const correctCount = data.questions?.filter((q) => q.isCorrect)?.length || 0;
-        const testTopic = data.questions?.[0]?.topic || "Unknown Topic";
+        const questions = Array.isArray(data.questions) ? data.questions : [];
+        const correctCount = questions.filter((q) => q.isCorrect).length;
+        const testTopic = questions[0]?.topic || "Unknown Topic";
 
         setScore(correctCount);
-        setTotal(totalQuestions);
+        setTotal(questions.length);
         setTopic(testTopic);
       } else {
+        // fallback to URL params
         const scoreParam = parseInt(searchParams.get("score") || "0", 10);
         const totalParam = parseInt(searchParams.get("total") || "0", 10);
         const topicParam = searchParams.get("topic") || "Unknown Topic";
@@ -50,7 +50,7 @@ function ResultsInner() {
         setTopic(topicParam);
       }
     } catch (err) {
-      console.error("Error parsing test data:", err);
+      console.error("Error loading test data:", err);
     }
   }, [searchParams]);
 
@@ -63,12 +63,19 @@ function ResultsInner() {
     return "📘 Keep going — you’ll improve!";
   };
 
-  const handleProtectedRoute = (href) => {
+  const handleSave = () => {
     if (!user) {
-      router.push("/signuplogin"); // not logged in → redirect
-    } else {
-      router.push(href); // logged in → go to progress
+      router.push("/signuplogin");
+      return;
     }
+
+    if (!testData) return;
+
+    const savedTests = JSON.parse(localStorage.getItem("savedTests") || "[]");
+    savedTests.push(testData); // push current test
+    localStorage.setItem("savedTests", JSON.stringify(savedTests));
+
+    router.push("/progress");
   };
 
   return (
@@ -170,18 +177,7 @@ function ResultsInner() {
           </Link>
 
           <button
-            onClick={() => {
-              if (!user) {
-                router.push("/signuplogin");
-              } else {
-                // Save test to localStorage or backend
-                const savedTests = JSON.parse(localStorage.getItem("savedTests") || "[]");
-                if (testData) savedTests.push(testData);
-                localStorage.setItem("savedTests", JSON.stringify(savedTests));
-
-                router.push("/progress");
-              }
-            }}
+            onClick={handleSave}
             style={{
               backgroundColor: "#1976d2",
               color: "white",
