@@ -1,12 +1,8 @@
-// app/api/short-answer/route.js
 import OpenAI from "openai";
 import { adminDb } from "../../lib/firestoreAdmin"; 
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// -----------------------------
-// FIRESTORE HELPERS
-// -----------------------------
 async function getUserData(uid) {
   if (!uid) return "";
   try {
@@ -38,9 +34,6 @@ async function getAiAccess(uid) {
   }
 }
 
-// -----------------------------
-// API ROUTE
-// -----------------------------
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -53,9 +46,6 @@ export async function POST(req) {
       });
     }
 
-    // -----------------------------
-    // GET USER DATA & SETTINGS
-    // -----------------------------
     const userData = await getUserData(userId);
     const aiAccess = await getAiAccess(userId);
     const finalMode = userData.trim() ? aiAccess : "chatgpt";
@@ -65,9 +55,6 @@ export async function POST(req) {
     else if (finalMode === "both") dataInstructions = `Use the user-provided data first, fill gaps with ChatGPT.\n${userData}`;
     else dataInstructions = `Ignore user data. Use ONLY ChatGPT knowledge.`;
 
-    // -----------------------------
-    // BUILD PROMPT
-    // -----------------------------
     const prompt = `
 You are TestifyAI. Generate ${numQuestions} short-answer questions on "${topic}".
 Difficulty: ${difficulty}.
@@ -80,9 +67,6 @@ Rules:
 [ { "question": "string" } ]
 `;
 
-    // -----------------------------
-    // CALL OPENAI
-    // -----------------------------
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
