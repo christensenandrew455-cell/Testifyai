@@ -5,9 +5,12 @@
 import { useState, useEffect } from "react";
 
 function difficultyLabel(num) {
-  if (num <= 3) return "Beginner";
-  if (num <= 6) return "Apprentice";
-  return "Master";
+  const n = Number(num);  // force convert
+
+  if (n >= 1 && n <= 3) return "Beginner";
+  if (n >= 4 && n <= 6) return "Apprentice";
+  if (n >= 7 && n <= 9) return "Master";
+  return "Unknown"; // fallback for weird values
 }
 
 export default function ProgressPage() {
