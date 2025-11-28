@@ -58,14 +58,26 @@ function ResultsInner() {
       return;
     }
 
-    // Build the full test object you wanted
-    const testToSave = {
-      topic: testData?.topic || topic,
-      type: testData?.type || "Unknown",
-      difficulty: testData?.difficulty || 1,
-      date: new Date().toISOString(),
-      questions: testData?.questions || [],
-    };
+   // Convert difficulty number → label
+function difficultyLabel(num) {
+  if (num <= 3) return "Beginner";
+  if (num <= 6) return "Apprentice";
+  return "Master";
+}
+
+const testToSave = {
+  topic: testData?.topic || topic,
+  type: testData?.type || "Unknown",
+  difficulty: difficultyLabel(testData?.difficulty || 1),   // FIX
+  difficultyNumber: testData?.difficulty || 1,              // still save original number
+  date: new Date().toISOString(),
+  questions: testData?.questions || [],
+
+  // 🔥 NEW (needed for progress page)
+  score,
+  total,
+  percent,
+};
 
     // Save locally for now
     const saved = JSON.parse(localStorage.getItem("savedTests") || "[]");
