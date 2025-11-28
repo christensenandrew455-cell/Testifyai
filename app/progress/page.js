@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { getAllTests } from "../lib/firestore";
 import { db } from "../firebase";
 import { doc, deleteDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 export default function ProgressPage() {
   const { user } = useAuth();
@@ -12,6 +13,7 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [error, setError] = useState(null);
+  const router = useRouter();
 
   const difficultyLabel = (num) => {
     const n = Number(num);
@@ -65,7 +67,6 @@ export default function ProgressPage() {
     fetchTests();
   }, [user]);
 
-  // Stats
   const totalTests = tests.length;
   const avgPercent = totalTests
     ? Math.round(tests.reduce((acc, t) => acc + (Number(t.percent) || 0), 0) / totalTests)
@@ -113,13 +114,14 @@ export default function ProgressPage() {
     ? [...tests].sort((a, b) => (b.percent || 0) - (a.percent || 0))[0]
     : null;
 
+  // DELETE TEST
   const handleDelete = async (testId, index) => {
-    const confirmDelete = confirm("Delete this saved test? This action cannot be undone.");
+    const confirmDelete = confirm("Delete this saved test? This cannot be undone.");
     if (!confirmDelete) return;
 
     try {
       if (user?.uid && testId && !String(testId).startsWith("local-")) {
-        await deleteDoc(doc(db, "users", user.uid, "savedTests", testId));
+        await deleteDoc(doc(db, "users", user.uid, "data", testId));
         setTests((prev) => prev.filter((t) => t.id !== testId));
       } else {
         const newTests = tests.filter((_, i) => i !== index);
@@ -132,50 +134,29 @@ export default function ProgressPage() {
     }
   };
 
-  // Styles
-  const grayCardStyle = {
-    background: "rgba(255,255,255,0.12)",
-    borderRadius: "16px",
-    padding: "20px",
-    textAlign: "center",
-    flex: 1,
-    minWidth: "160px",
-    border: "2px solid rgba(255,255,255,0.25)",
-    color: "rgba(255,255,255,0.9)",
-  };
-
-  const cardStyle = {
-    background: "rgba(255,255,255,0.18)",
-    backdropFilter: "blur(12px)",
-    borderRadius: "16px",
-    border: "3px solid rgba(255,255,255,0.35)",
-    padding: "20px",
-    textAlign: "center",
-    flex: 1,
-    minWidth: "160px",
-    color: "white",
-    boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
-  };
-
-  const btnStyle = {
+  // Button Styles
+  const btn = {
     padding: "8px 12px",
-    background: "rgba(25,118,210,0.4)",
-    border: "2px solid rgba(255,255,255,0.25)",
-    color: "white",
+    background: "white",
+    border: "2px solid #1976d2",
+    color: "#1976d2",
     borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: "600",
   };
 
-  const deleteBtnStyle = {
-    padding: "8px 12px",
-    background: "rgba(211,47,47,0.5)",
-    border: "2px solid rgba(255,255,255,0.25)",
-    color: "white",
-    borderRadius: "8px",
-    cursor: "pointer",
+  const deleteBtn = {
+    ...btn,
+    border: "2px solid #d32f2f",
+    color: "#d32f2f",
   };
 
-  // Render
+  const restartBtn = {
+    ...btn,
+    border: "2px solid #ff9800",
+    color: "#ff9800",
+  };
+
   return (
     <div
       style={{
@@ -198,20 +179,13 @@ export default function ProgressPage() {
           borderRadius: "36px",
           border: "3px solid rgba(255,255,255,0.18)",
           padding: "40px",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
         }}
       >
         <h1 style={{ textAlign: "center", marginBottom: "30px", fontWeight: 800 }}>
           Your Progress
         </h1>
 
-        {error && (
-          <div style={{ marginBottom: 12, color: "#ffdddd", textAlign: "center" }}>
-            {error}
-          </div>
-        )}
-
-        {/* Top stats */}
+        {/* TOP STATS */}
         <div
           style={{
             display: "flex",
@@ -221,85 +195,70 @@ export default function ProgressPage() {
             marginBottom: "40px",
           }}
         >
-          <div style={tests.length === 0 ? grayCardStyle : cardStyle}>
+          {/* WHITE CARDS */}
+          {[ 
+            { label: "Average Score", value: tests.length ? `${avgPercent}%` : "0%" },
+            { label: "Avg Number of Questions", value: tests.length ? avgNumQuestions : 0 },
+            { label: "Avg Difficulty", value: tests.length ? avgDifficultyLabel : "—" },
+            { label: "Most Used Test Type", value: tests.length ? mostUsedType : "—" },
+            { label: "Most Common Topic", value: tests.length ? mostUsedTopic : "—" }
+          ].map((item, i) => (
             <div
+              key={i}
               style={{
-                width: "80px",
-                height: "80px",
-                margin: "0 auto 10px",
-                borderRadius: "50%",
-                border: "6px solid rgba(255,255,255,0.25)",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                fontSize: "1.2rem",
+                background: "white",
+                color: "black",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.2)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
               }}
             >
-              {tests.length === 0 ? "0%" : `${avgPercent}%`}
+              <h2 style={{ margin: 0 }}>{item.value}</h2>
+              <p style={{ fontSize: "0.9rem", marginTop: 6 }}>{item.label}</p>
             </div>
-            <p style={{ fontSize: "0.9rem" }}>Average Score</p>
-          </div>
-
-          <div style={tests.length === 0 ? grayCardStyle : cardStyle}>
-            <h2 style={{ margin: 0 }}>{tests.length === 0 ? 0 : avgNumQuestions}</h2>
-            <p style={{ fontSize: "0.9rem" }}>Avg Number of Questions</p>
-          </div>
-
-          <div style={tests.length === 0 ? grayCardStyle : cardStyle}>
-            <h2 style={{ margin: 0 }}>{tests.length === 0 ? "—" : avgDifficultyLabel}</h2>
-            <p style={{ fontSize: "0.9rem" }}>Avg Difficulty</p>
-          </div>
-
-          <div style={tests.length === 0 ? grayCardStyle : cardStyle}>
-            <h2 style={{ margin: 0 }}>{tests.length === 0 ? "—" : mostUsedType}</h2>
-            <p style={{ fontSize: "0.9rem" }}>Most Used Test Type</p>
-          </div>
-
-          <div style={tests.length === 0 ? grayCardStyle : cardStyle}>
-            <h2 style={{ margin: 0 }}>{tests.length === 0 ? "—" : mostUsedTopic}</h2>
-            <p style={{ fontSize: "0.9rem" }}>Most Common Topic</p>
-          </div>
+          ))}
         </div>
 
-        {/* Best Test */}
+        {/* BEST TEST */}
         <div
           style={{
-            background: tests.length === 0 ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.18)",
-            backdropFilter: "blur(10px)",
+            background: "white",
+            color: "black",
             borderRadius: "20px",
             padding: "24px",
+            border: "2px solid rgba(0,0,0,0.25)",
             marginBottom: "40px",
-            border: "2px solid rgba(255,255,255,0.25)",
           }}
         >
-          <h2 style={{ marginBottom: "10px", fontWeight: 700 }}>Your Best Test Ever</h2>
-          {tests.length === 0 ? (
-            <p style={{ opacity: 0.8 }}>No test data yet</p>
-          ) : (
-            <p style={{ opacity: 0.95 }}>
+          <h2 style={{ fontWeight: 700 }}>Your Best Test Ever</h2>
+          {bestTest ? (
+            <p>
               Topic: <b>{bestTest.topic}</b> — Score:{" "}
               <b>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
             </p>
+          ) : (
+            <p>No test data yet.</p>
           )}
         </div>
 
-        {/* Saved Tests */}
+        {/* SAVED TESTS */}
         <h2 style={{ marginBottom: "20px", fontWeight: 700 }}>Your Saved Tests</h2>
 
         {tests.length === 0 ? (
-          <p style={{ textAlign: "center", opacity: 0.8 }}>No saved tests yet.</p>
+          <p style={{ textAlign: "center" }}>No saved tests yet.</p>
         ) : (
           tests.map((test, index) => (
             <div
               key={test.id || index}
               style={{
-                background: "rgba(255,255,255,0.18)",
+                background: "white",
+                color: "black",
                 borderRadius: "12px",
                 padding: "15px",
                 marginBottom: "18px",
-                border: "2px solid rgba(255,255,255,0.25)",
-                backdropFilter: "blur(8px)",
-                color: "white",
+                border: "2px solid rgba(0,0,0,0.25)",
               }}
             >
               <div
@@ -310,8 +269,8 @@ export default function ProgressPage() {
                 }}
               >
                 <div>
-                  <h3 style={{ margin: 0, fontWeight: 700 }}>{test.topic}</h3>
-                  <p style={{ margin: 0, opacity: 0.9 }}>
+                  <h3 style={{ margin: 0 }}>{test.topic}</h3>
+                  <p style={{ margin: 0 }}>
                     Score: {test.score}/{test.total} ({test.percent}%) —{" "}
                     {(test.questions || []).length} questions — Difficulty:{" "}
                     {difficultyLabel(test.difficultyNumber)}
@@ -323,13 +282,21 @@ export default function ProgressPage() {
                     onClick={() =>
                       setExpandedIndex(expandedIndex === index ? null : index)
                     }
-                    style={btnStyle}
+                    style={btn}
                   >
                     👁
                   </button>
+
+                  <button
+                    onClick={() => router.push(`/testretake?testId=${test.id}`)}
+                    style={restartBtn}
+                  >
+                    ↻
+                  </button>
+
                   <button
                     onClick={() => handleDelete(test.id, index)}
-                    style={deleteBtnStyle}
+                    style={deleteBtn}
                   >
                     🗑
                   </button>
@@ -337,7 +304,7 @@ export default function ProgressPage() {
               </div>
 
               {expandedIndex === index && (
-                <div style={{ marginTop: "14px", paddingLeft: "10px" }}>
+                <div style={{ marginTop: "14px" }}>
                   {(test.questions || []).map((q, i) => (
                     <div key={i} style={{ marginBottom: "12px" }}>
                       <p>
@@ -346,7 +313,7 @@ export default function ProgressPage() {
                       <p>User Answer: {q.userAnswer}</p>
                       <p>Correct Answer: {q.correctAnswer}</p>
                       {q.explanation && <p>Explanation: {q.explanation}</p>}
-                      <p style={{ color: q.isCorrect ? "#00ff95" : "#ff7b7b" }}>
+                      <p style={{ color: q.isCorrect ? "green" : "red" }}>
                         {q.isCorrect ? "Correct" : "Incorrect"}
                       </p>
                     </div>
