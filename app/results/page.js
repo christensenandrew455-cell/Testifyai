@@ -1,21 +1,37 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+
+// Dummy user state for now (replace with your auth system)
+const useUser = () => {
+  // Replace with your real user state from context/auth
+  const [user, setUser] = useState(null); 
+  useEffect(() => {
+    // Example: check localStorage or session for user
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+  return user;
+};
 
 function ResultsInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const user = useUser();
 
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [topic, setTopic] = useState("Unknown Topic");
+  const [testData, setTestData] = useState(null);
 
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("testData");
       if (stored) {
         const data = JSON.parse(stored);
+        setTestData(data);
 
         const totalQuestions = data.questions?.length || 0;
         const correctCount = data.questions?.filter((q) => q.isCorrect)?.length || 0;
@@ -25,7 +41,6 @@ function ResultsInner() {
         setTotal(totalQuestions);
         setTopic(testTopic);
       } else {
-        // Fallback to URL parameters if sessionStorage is empty
         const scoreParam = parseInt(searchParams.get("score") || "0", 10);
         const totalParam = parseInt(searchParams.get("total") || "0", 10);
         const topicParam = searchParams.get("topic") || "Unknown Topic";
@@ -46,6 +61,14 @@ function ResultsInner() {
     if (percent >= 70) return "💪 Great work! You’re learning fast.";
     if (percent >= 50) return "🧠 Not bad — keep studying!";
     return "📘 Keep going — you’ll improve!";
+  };
+
+  const handleProtectedRoute = (href) => {
+    if (!user) {
+      router.push("/signuplogin"); // not logged in → redirect
+    } else {
+      router.push(href); // logged in → go to progress
+    }
   };
 
   return (
@@ -145,6 +168,33 @@ function ResultsInner() {
               Home
             </button>
           </Link>
+
+          <button
+            onClick={() => {
+              if (!user) {
+                router.push("/signuplogin");
+              } else {
+                // Save test to localStorage or backend
+                const savedTests = JSON.parse(localStorage.getItem("savedTests") || "[]");
+                if (testData) savedTests.push(testData);
+                localStorage.setItem("savedTests", JSON.stringify(savedTests));
+
+                router.push("/progress");
+              }
+            }}
+            style={{
+              backgroundColor: "#1976d2",
+              color: "white",
+              border: "none",
+              borderRadius: "12px",
+              padding: "10px 20px",
+              fontWeight: "700",
+              cursor: "pointer",
+              fontSize: "1rem",
+            }}
+          >
+            Save
+          </button>
         </div>
       </div>
 
