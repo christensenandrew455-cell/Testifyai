@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { auth } from "./firebase"; // adjust path if needed
+import { auth } from "./firebase"; 
 import { onAuthStateChanged } from "firebase/auth";
 
 const allowedHeaderPaths = ["/", "/progress", "/profile", "/testsetup", "/data"];
@@ -27,17 +27,19 @@ export default function Header() {
 
   const handleProtectedRoute = (href) => {
     if (!user) {
-      router.push("/signuplogin"); // not logged in → redirect
-    } else {
-     // Only show "under construction" for /data
-  if (href === "/data") {
-    alert("⚠️ Page Under Construction");
-    return;
-  }
+      router.push("/signuplogin");
+      return;
+    }
 
-  // Redirect normally for other pages
-  router.push(href);
-};
+    // Only show "under construction" for /data
+    if (href === "/data") {
+      alert("⚠️ Page Under Construction");
+      return;
+    }
+
+    // Normal redirect
+    router.push(href);
+  }; // ← THIS WAS MISSING
 
   return (
     <header
@@ -90,4 +92,5 @@ export default function Header() {
       </nav>
     </header>
   );
+}
 }
