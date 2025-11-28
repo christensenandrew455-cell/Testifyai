@@ -109,7 +109,7 @@ export default function ProgressPage() {
           <StatCard label="Avg Number of Questions" value={avgNumQuestions} gray={!tests.length} />
 
           {/* AVG DIFFICULTY */}
-          <StatCard label="Avg Difficulty" value={avgDifficulty} gray={!tests.length} />
+          <StatCard label="Avg Difficulty" value={difficultyLabel(avgDifficulty)} gray={!tests.length} />
 
           {/* MOST USED TYPE */}
           <StatCard label="Most Used Test Type" value={mostUsedType} gray={!tests.length} />
