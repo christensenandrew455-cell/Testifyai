@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function TestSetupPage() {
+export default function TestSetupPage({ user }) {
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState(1);
@@ -66,6 +66,7 @@ export default function TestSetupPage() {
           topic,
           difficulty,
           questionsPerType: selectedTypes,
+          userId: user?.uid, // 👈 pass UID to distribution API
         }),
       });
 
