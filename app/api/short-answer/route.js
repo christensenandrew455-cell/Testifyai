@@ -1,7 +1,6 @@
 // app/api/short-answer/route.js
 import OpenAI from "openai";
 import { adminDb } from "../../lib/firestoreAdmin"; 
-import admin from "firebase-admin"; // needed to verify ID tokens
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -9,6 +8,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // FIRESTORE HELPERS
 // -----------------------------
 async function getUserData(uid) {
+  if (!uid) return "";
   try {
     const snap = await adminDb.doc(`users/${uid}/data/main`).get();
     if (!snap.exists) return "";
@@ -21,6 +21,7 @@ async function getUserData(uid) {
 }
 
 async function getAiAccess(uid) {
+  if (!uid) return "chatgpt";
   try {
     const snap = await adminDb.doc(`users/${uid}/data/main`).get();
     if (!snap.exists) return "chatgpt";
@@ -43,29 +44,20 @@ async function getAiAccess(uid) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { topic, difficulty, numQuestions = 5 } = body;
+    const { topic, difficulty, numQuestions = 5, userId } = body;
 
-    if (!topic) return new Response(JSON.stringify({ error: "Missing topic" }), { status: 400, headers: { "Content-Type": "application/json" }});
-
-    // -----------------------------
-    // VERIFY USER FROM AUTH TOKEN
-    // -----------------------------
-    const authHeader = req.headers.get("authorization") || "";
-    const idToken = authHeader.replace("Bearer ", "");
-
-    let uid;
-    try {
-      const decoded = await admin.auth().verifyIdToken(idToken);
-      uid = decoded.uid;
-    } catch (err) {
-      return new Response(JSON.stringify({ error: "Invalid or missing auth token" }), { status: 401, headers: { "Content-Type": "application/json" }});
+    if (!topic) {
+      return new Response(JSON.stringify({ error: "Missing topic" }), { 
+        status: 400, 
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     // -----------------------------
     // GET USER DATA & SETTINGS
     // -----------------------------
-    const userData = await getUserData(uid);
-    const aiAccess = await getAiAccess(uid);
+    const userData = await getUserData(userId);
+    const aiAccess = await getAiAccess(userId);
     const finalMode = userData.trim() ? aiAccess : "chatgpt";
 
     let dataInstructions = "";
@@ -99,15 +91,24 @@ Rules:
 
     let content = response.choices?.[0]?.message?.content?.trim() || "";
     content = content.replace(/```(json)?/g, "").trim();
+
     try {
       const questions = JSON.parse(content);
-      return new Response(JSON.stringify({ questions }), { headers: { "Content-Type": "application/json" }});
+      return new Response(JSON.stringify({ questions }), { 
+        headers: { "Content-Type": "application/json" }
+      });
     } catch {
-      return new Response(JSON.stringify({ error: "AI returned invalid JSON", raw: content }), { status: 502, headers: { "Content-Type": "application/json" }});
+      return new Response(JSON.stringify({ error: "AI returned invalid JSON", raw: content }), { 
+        status: 502, 
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
   } catch (err) {
     console.error("Short-answer route error:", err);
-    return new Response(JSON.stringify({ error: err.message || "Internal error" }), { status: 500, headers: { "Content-Type": "application/json" }});
+    return new Response(JSON.stringify({ error: err.message || "Internal error" }), { 
+      status: 500, 
+      headers: { "Content-Type": "application/json" }
+    });
   }
 }
