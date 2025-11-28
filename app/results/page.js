@@ -3,33 +3,37 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "../hooks/useAuth"; // <-- FIX: use real Firebase auth
+import { useAuth } from "../hooks/useAuth";
+import { saveTest } from "../lib/firestore";  // <-- Firestore save
+import { v4 as uuidv4 } from "uuid";          // <-- testId generator
 
 function ResultsInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user } = useAuth(); // <-- FIX: uses Firebase auth correctly
+  const { user } = useAuth();
 
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [topic, setTopic] = useState("Unknown Topic");
   const [testData, setTestData] = useState(null);
 
+  // Load test data from sessionStorage
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("testData");
+
       if (stored) {
         const data = JSON.parse(stored);
         setTestData(data);
 
         const totalQuestions = data.questions?.length || 0;
-        const correctCount =
-          data.questions?.filter((q) => q.isCorrect)?.length || 0;
+        const correctCount = data.questions?.filter((q) => q.isCorrect)?.length || 0;
 
         setScore(correctCount);
         setTotal(totalQuestions);
         setTopic(data.topic || "Unknown Topic");
       } else {
+        // Fallback if needed
         const scoreParam = parseInt(searchParams.get("score") || "0", 10);
         const totalParam = parseInt(searchParams.get("total") || "0", 10);
         const topicParam = searchParams.get("topic") || "Unknown Topic";
@@ -45,44 +49,48 @@ function ResultsInner() {
 
   const percent = total > 0 ? Math.round((score / total) * 100) : 0;
 
-  const getMessage = () => {
+  function getMessage() {
     if (percent >= 90) return "🔥 Master Level! Excellent job!";
     if (percent >= 70) return "💪 Great work! You’re learning fast.";
     if (percent >= 50) return "🧠 Not bad — keep studying!";
     return "📘 Keep going — you’ll improve!";
-  };
+  }
 
-  const saveTest = () => {
+  // Convert difficulty number → label
+  function difficultyLabel(num) {
+    if (num >= 1 && num <= 3) return "Beginner";
+    if (num >= 4 && num <= 6) return "Apprentice";
+    if (num >= 7 && num <= 9) return "Master";
+    return "Unknown";
+  }
+
+  // --------------------------
+  // 🔥 SAVE TEST TO FIRESTORE
+  // --------------------------
+  const handleSave = async () => {
     if (!user) {
       router.push("/signuplogin");
       return;
     }
 
-   // Convert difficulty number → label
-function difficultyLabel(num) {
-  if (num <= 3) return "Beginner";
-  if (num <= 6) return "Apprentice";
-  return "Master";
-}
+    const testId = uuidv4(); // unique doc ID
 
-const testToSave = {
-  topic: testData?.topic || topic,
-  type: testData?.type || "Unknown",
-  difficulty: difficultyLabel(testData?.difficulty || 1),   // FIX
-  difficultyNumber: testData?.difficulty || 1,              // still save original number
-  date: new Date().toISOString(),
-  questions: testData?.questions || [],
+    const difficultyNum = testData?.difficulty || 1;
 
-  // 🔥 NEW (needed for progress page)
-  score,
-  total,
-  percent,
-};
+    const testToSave = {
+      topic: testData?.topic || topic,
+      type: testData?.type || "Unknown",
+      difficulty: difficultyLabel(difficultyNum),
+      difficultyNumber: difficultyNum,
+      date: new Date().toISOString(),
+      questions: testData?.questions || [],
+      score,
+      total,
+      percent,
+    };
 
-    // Save locally for now
-    const saved = JSON.parse(localStorage.getItem("savedTests") || "[]");
-    saved.push(testToSave);
-    localStorage.setItem("savedTests", JSON.stringify(saved));
+    // Save to Firestore
+    await saveTest(user.uid, testId, testToSave);
 
     router.push("/progress");
   };
@@ -179,7 +187,7 @@ const testToSave = {
           </Link>
 
           <button
-            onClick={saveTest}
+            onClick={handleSave}
             style={{
               backgroundColor: "#1976d2",
               color: "white",
