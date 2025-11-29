@@ -118,12 +118,12 @@ a.btn-secondary {
 
 h1, h2, h3 {
   font-weight: 800;
-  color: #ffffff;
+  color: #000000;
 }
 
 p {
   font-size: 1.125rem;
-  color: rgba(255, 255, 255, 0.95);
+  color: #000000;
   line-height: 1.6;
   margin-bottom: 1.25rem;
 }
