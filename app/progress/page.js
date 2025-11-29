@@ -15,7 +15,7 @@ export default function ProgressPage() {
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  // Modal State
+  // Modal state
   const [retakeModalOpen, setRetakeModalOpen] = useState(false);
   const [selectedTestId, setSelectedTestId] = useState(null);
 
@@ -38,7 +38,8 @@ export default function ProgressPage() {
           difficultyNumber: Number(t.difficultyNumber || t.difficulty || 1),
         }));
         setTests(normalized);
-      } catch {
+      } catch (e) {
+        console.error("fallbackLoadLocal error:", e);
         setTests([]);
       } finally {
         setLoading(false);
@@ -71,19 +72,64 @@ export default function ProgressPage() {
     fetchTests();
   }, [user]);
 
+  // Stats
   const totalTests = tests.length;
+  const avgPercent = totalTests
+    ? Math.round(
+        tests.reduce((acc, t) => acc + (Number(t.percent) || 0), 0) / totalTests
+      )
+    : 0;
+
+  const avgNumQuestions = totalTests
+    ? Math.round(
+        tests.reduce(
+          (acc, t) => acc + (Array.isArray(t.questions) ? t.questions.length : 0),
+          0
+        ) / totalTests
+      )
+    : 0;
+
+  const avgDifficultyNumber = totalTests
+    ? Math.round(
+        tests.reduce((acc, t) => acc + (Number(t.difficultyNumber) || 1), 0) /
+          totalTests
+      )
+    : 0;
+
+  const avgDifficultyLabel = difficultyLabel(avgDifficultyNumber);
+
+  const mostUsedType = (() => {
+    if (!totalTests) return "—";
+    const counts = {};
+    tests.forEach((t) => {
+      const k = t.type || "Unknown";
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  })();
+
+  const mostUsedTopic = (() => {
+    if (!totalTests) return "—";
+    const counts = {};
+    tests.forEach((t) => {
+      const k = t.topic || "Unknown";
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  })();
 
   const bestTest = tests.length
     ? [...tests].sort((a, b) => (b.percent || 0) - (a.percent || 0))[0]
     : null;
 
-  // DELETE TEST
+  // Delete a test (Firestore if signed in, else localStorage fallback)
   const handleDelete = async (testId, index) => {
     const confirmDelete = confirm("Delete this saved test? This cannot be undone.");
     if (!confirmDelete) return;
 
     try {
       if (user?.uid && testId && !String(testId).startsWith("local-")) {
+        // delete from Firestore location used elsewhere: /users/{uid}/data/{testId}
         await deleteDoc(doc(db, "users", user.uid, "data", testId));
         setTests((prev) => prev.filter((t) => t.id !== testId));
       } else {
@@ -97,44 +143,90 @@ export default function ProgressPage() {
     }
   };
 
-  // BUTTON STYLES
-  const btn = {
+  // Button styles (colored, visible)
+  const restartBtnStyle = {
     padding: "8px 12px",
-    background: "white",
-    border: "2px solid #1976d2",
-    color: "#1976d2",
+    background: "#ff9800",
+    border: "2px solid rgba(0,0,0,0.08)",
+    color: "white",
     borderRadius: "8px",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: 700,
   };
 
-  const deleteBtn = {
-    ...btn,
-    border: "2px solid #d32f2f",
-    color: "#d32f2f",
+  const viewBtnStyle = {
+    padding: "8px 12px",
+    background: "#1976d2",
+    border: "2px solid rgba(0,0,0,0.08)",
+    color: "white",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: 700,
   };
 
-  const restartBtn = {
-    ...btn,
-    border: "2px solid #ff9800",
-    color: "#ff9800",
+  const deleteBtnStyle = {
+    padding: "8px 12px",
+    background: "#d32f2f",
+    border: "2px solid rgba(0,0,0,0.08)",
+    color: "white",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: 700,
   };
 
-  // OPEN MODAL
-  const openRetakeModal = (id) => {
-    setSelectedTestId(id);
+  // open modal
+  const openRetakeModal = (testId) => {
+    setSelectedTestId(testId);
     setRetakeModalOpen(true);
   };
 
-  // CLOSE MODAL
   const closeModal = () => {
     setRetakeModalOpen(false);
     setSelectedTestId(null);
   };
 
+  // POST to API and then navigate to testcontroller with mode param
+  const handleRetake = async () => {
+    if (!selectedTestId) return;
+    try {
+      const res = await fetch("/api/retake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ testId: selectedTestId }),
+      });
+      if (!res.ok) {
+        console.error("retake API returned error", res.statusText);
+      }
+    } catch (err) {
+      console.error("retake fetch error:", err);
+    } finally {
+      closeModal();
+      router.push(`/testcontroller?mode=retake&testId=${encodeURIComponent(selectedTestId)}`);
+    }
+  };
+
+  const handleRevised = async () => {
+    if (!selectedTestId) return;
+    try {
+      const res = await fetch("/api/revised", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ testId: selectedTestId }),
+      });
+      if (!res.ok) {
+        console.error("revised API returned error", res.statusText);
+      }
+    } catch (err) {
+      console.error("revised fetch error:", err);
+    } finally {
+      closeModal();
+      router.push(`/testcontroller?mode=revised&testId=${encodeURIComponent(selectedTestId)}`);
+    }
+  };
+
   return (
     <>
-      {/* RETAKE/REVISE MODAL */}
+      {/* Retake/Revised Modal */}
       {retakeModalOpen && (
         <div
           style={{
@@ -156,26 +248,20 @@ export default function ProgressPage() {
               padding: "30px",
               borderRadius: "18px",
               width: "90%",
-              maxWidth: "420px",
+              maxWidth: "480px",
               textAlign: "center",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.25)",
             }}
           >
-            <h2 style={{ marginBottom: "15px", color: "black" }}>
-              Retake Options
-            </h2>
-            <p style={{ color: "black", marginBottom: "25px" }}>
-              Would you like to retake the exact same test, or take a revised
-              version of it with similar questions worded differently?
+            <h2 style={{ marginBottom: "12px", color: "black" }}>Retake Options</h2>
+            <p style={{ color: "black", marginBottom: "22px" }}>
+              Would you like to retake the exact same test, or take a revised version
+              with similar questions worded differently?
             </p>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: "14px",
-              }}
-            >
+            <div style={{ display: "flex", justifyContent: "center", gap: "14px" }}>
               <button
+                onClick={handleRetake}
                 style={{
                   padding: "10px 16px",
                   background: "#1976d2",
@@ -183,16 +269,14 @@ export default function ProgressPage() {
                   borderRadius: "8px",
                   border: "none",
                   cursor: "pointer",
-                  fontWeight: "700",
+                  fontWeight: 700,
                 }}
-                onClick={() =>
-                  router.push(`/retake`)
-                }
               >
                 Retake
               </button>
 
               <button
+                onClick={handleRevised}
                 style={{
                   padding: "10px 16px",
                   background: "#ff9800",
@@ -200,11 +284,8 @@ export default function ProgressPage() {
                   borderRadius: "8px",
                   border: "none",
                   cursor: "pointer",
-                  fontWeight: "700",
+                  fontWeight: 700,
                 }}
-                onClick={() =>
-                  router.push(`/revised`)
-                }
               >
                 Revised
               </button>
@@ -213,7 +294,7 @@ export default function ProgressPage() {
             <button
               onClick={closeModal}
               style={{
-                marginTop: "20px",
+                marginTop: "18px",
                 background: "transparent",
                 border: "none",
                 textDecoration: "underline",
@@ -227,7 +308,7 @@ export default function ProgressPage() {
         </div>
       )}
 
-      {/* PAGE CONTENT */}
+      {/* MAIN PAGE */}
       <div
         style={{
           minHeight: "100vh",
@@ -249,47 +330,155 @@ export default function ProgressPage() {
             borderRadius: "36px",
             border: "3px solid rgba(255,255,255,0.18)",
             padding: "40px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
           }}
         >
-          <h1
-            style={{
-              textAlign: "center",
-              marginBottom: "30px",
-              fontWeight: 800,
-            }}
-          >
+          <h1 style={{ textAlign: "center", marginBottom: "30px", fontWeight: 800 }}>
             Your Progress
           </h1>
 
-          {/* BEST TEST */}
+          {error && (
+            <div style={{ marginBottom: 12, color: "#ffdddd", textAlign: "center" }}>
+              {error}
+            </div>
+          )}
+
+          {/* Top stats */}
+          <div
+            style={{
+              display: "flex",
+              gap: "20px",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              marginBottom: "40px",
+            }}
+          >
+            <div
+              style={{
+                background: "rgba(255,255,255,0.18)",
+                backdropFilter: "blur(12px)",
+                borderRadius: "16px",
+                border: "3px solid rgba(255,255,255,0.35)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: "black",
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <div
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  margin: "0 auto 10px",
+                  borderRadius: "50%",
+                  border: "6px solid rgba(0,0,0,0.08)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  fontSize: "1.2rem",
+                }}
+              >
+                {tests.length === 0 ? "0%" : `${avgPercent}%`}
+              </div>
+              <p style={{ fontSize: "0.9rem", color: "#222" }}>Average Score</p>
+            </div>
+
+            <div
+              style={{
+                background: "rgba(255,255,255,0.18)",
+                backdropFilter: "blur(12px)",
+                borderRadius: "16px",
+                border: "3px solid rgba(255,255,255,0.35)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: "black",
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>{tests.length === 0 ? 0 : avgNumQuestions}</h2>
+              <p style={{ fontSize: "0.9rem", color: "#222" }}>Avg Number of Questions</p>
+            </div>
+
+            <div
+              style={{
+                background: "rgba(255,255,255,0.18)",
+                backdropFilter: "blur(12px)",
+                borderRadius: "16px",
+                border: "3px solid rgba(255,255,255,0.35)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: "black",
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>{tests.length === 0 ? "—" : avgDifficultyLabel}</h2>
+              <p style={{ fontSize: "0.9rem", color: "#222" }}>Avg Difficulty</p>
+            </div>
+
+            <div
+              style={{
+                background: "rgba(255,255,255,0.18)",
+                backdropFilter: "blur(12px)",
+                borderRadius: "16px",
+                border: "3px solid rgba(255,255,255,0.35)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: "black",
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>{tests.length === 0 ? "—" : mostUsedType}</h2>
+              <p style={{ fontSize: "0.9rem", color: "#222" }}>Most Used Test Type</p>
+            </div>
+
+            <div
+              style={{
+                background: "rgba(255,255,255,0.18)",
+                backdropFilter: "blur(12px)",
+                borderRadius: "16px",
+                border: "3px solid rgba(255,255,255,0.35)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: "black",
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>{tests.length === 0 ? "—" : mostUsedTopic}</h2>
+              <p style={{ fontSize: "0.9rem", color: "#222" }}>Most Common Topic</p>
+            </div>
+          </div>
+
+          {/* Best Test */}
           <div
             style={{
               background: "white",
               color: "black",
               borderRadius: "20px",
               padding: "24px",
-              border: "2px solid rgba(0,0,0,0.25)",
               marginBottom: "40px",
+              border: "2px solid rgba(0,0,0,0.08)",
             }}
           >
-            <h2 style={{ fontWeight: 700 }}>Your Best Test Ever</h2>
+            <h2 style={{ marginBottom: "10px", fontWeight: 700 }}>Your Best Test Ever</h2>
             {bestTest ? (
               <p>
-                Topic: <b>{bestTest.topic}</b> — Score:{" "}
-                <b>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
+                Topic: <b>{bestTest.topic}</b> — Score: <b>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
               </p>
             ) : (
-              <p>No test data yet.</p>
+              <p>No test data yet</p>
             )}
           </div>
 
-          {/* SAVED TESTS */}
-          <h2 style={{ marginBottom: "20px", fontWeight: 700 }}>
-            Your Saved Tests
-          </h2>
+          {/* Saved Tests */}
+          <h2 style={{ marginBottom: "20px", fontWeight: 700 }}>Your Saved Tests</h2>
 
           {tests.length === 0 ? (
-            <p style={{ textAlign: "center" }}>No saved tests yet.</p>
+            <p style={{ textAlign: "center", opacity: 0.8 }}>No saved tests yet.</p>
           ) : (
             tests.map((test, index) => (
               <div
@@ -300,7 +489,7 @@ export default function ProgressPage() {
                   borderRadius: "12px",
                   padding: "15px",
                   marginBottom: "18px",
-                  border: "2px solid rgba(0,0,0,0.25)",
+                  border: "2px solid rgba(0,0,0,0.06)",
                 }}
               >
                 <div
@@ -311,35 +500,41 @@ export default function ProgressPage() {
                   }}
                 >
                   <div>
-                    <h3 style={{ margin: 0 }}>{test.topic}</h3>
+                    <h3 style={{ margin: 0, fontWeight: 700 }}>{test.topic}</h3>
                     <p style={{ margin: 0 }}>
-                      Score: {test.score}/{test.total} ({test.percent}%)
+                      Score: {test.score}/{test.total} ({test.percent}%) —{" "}
+                      {(test.questions || []).length} questions — Difficulty:{" "}
+                      {difficultyLabel(test.difficultyNumber)}
                     </p>
                   </div>
 
                   <div style={{ display: "flex", gap: "12px" }}>
-                    <button
-                      onClick={() =>
-                        setExpandedIndex(
-                          expandedIndex === index ? null : index
-                        )
-                      }
-                      style={btn}
-                    >
-                      👁
-                    </button>
-
-                    {/* NEW MODAL TRIGGER */}
+                    {/* ORDER: ↻  👁  🗑 */}
                     <button
                       onClick={() => openRetakeModal(test.id)}
-                      style={restartBtn}
+                      style={restartBtnStyle}
+                      aria-label="Retake / Revised"
+                      title="Retake / Revised"
                     >
                       ↻
                     </button>
 
                     <button
+                      onClick={() =>
+                        setExpandedIndex(expandedIndex === index ? null : index)
+                      }
+                      style={viewBtnStyle}
+                      aria-label="View test"
+                      title="View"
+                    >
+                      👁
+                    </button>
+
+                    <button
                       onClick={() => handleDelete(test.id, index)}
-                      style={deleteBtn}
+                      style={deleteBtnStyle}
+                      aria-label="Delete test"
+                      title="Delete"
                     >
                       🗑
                     </button>
@@ -347,7 +542,7 @@ export default function ProgressPage() {
                 </div>
 
                 {expandedIndex === index && (
-                  <div style={{ marginTop: "14px" }}>
+                  <div style={{ marginTop: "14px", paddingLeft: "10px" }}>
                     {(test.questions || []).map((q, i) => (
                       <div key={i} style={{ marginBottom: "12px" }}>
                         <p>
@@ -356,11 +551,7 @@ export default function ProgressPage() {
                         <p>User Answer: {q.userAnswer}</p>
                         <p>Correct Answer: {q.correctAnswer}</p>
                         {q.explanation && <p>Explanation: {q.explanation}</p>}
-                        <p
-                          style={{
-                            color: q.isCorrect ? "green" : "red",
-                          }}
-                        >
+                        <p style={{ color: q.isCorrect ? "green" : "red" }}>
                           {q.isCorrect ? "Correct" : "Incorrect"}
                         </p>
                       </div>
