@@ -217,6 +217,9 @@ export default function ProgressPage() {
     }
   };
 
+  // light gray to use inside white boxes
+  const cardTextColor = "#666";
+
   return (
     <>
       {retakeModalOpen && (
@@ -243,11 +246,13 @@ export default function ProgressPage() {
               maxWidth: "480px",
               textAlign: "center",
               boxShadow: "0 10px 40px rgba(0,0,0,0.25)",
+              color: cardTextColor,
             }}
           >
-            <h2 style={{ marginBottom: "12px", color: "black" }}>Retake Options</h2>
-            <p style={{ color: "black", marginBottom: "22px" }}>
-              Would you like to retake the exact same test, or take a revised version with similar questions worded differently?
+            <h2 style={{ marginBottom: "12px", color: cardTextColor }}>Retake Options</h2>
+            <p style={{ color: cardTextColor, marginBottom: "22px" }}>
+              Would you like to retake the exact same test, or take a revised version
+              with similar questions worded differently?
             </p>
 
             <div style={{ display: "flex", justifyContent: "center", gap: "14px" }}>
@@ -352,7 +357,7 @@ export default function ProgressPage() {
                 padding: "20px",
                 textAlign: "center",
                 minWidth: "160px",
-                color: "black",
+                color: cardTextColor,
                 boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
               }}
             >
@@ -367,13 +372,13 @@ export default function ProgressPage() {
                   justifyContent: "center",
                   alignItems: "center",
                   fontSize: "1.2rem",
-                  color: "black",
                   background: "white",
+                  color: cardTextColor,
                 }}
               >
                 {tests.length === 0 ? "0%" : `${avgPercent}%`}
               </div>
-              <p style={{ fontSize: "0.9rem", color: "#222" }}>Average Score</p>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Average Score</p>
             </div>
 
             {/* Avg Questions */}
@@ -385,12 +390,12 @@ export default function ProgressPage() {
                 padding: "20px",
                 textAlign: "center",
                 minWidth: "160px",
-                color: "black",
+                color: cardTextColor,
                 boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
               }}
             >
-              <h2 style={{ margin: 0 }}>{avgNumQuestions}</h2>
-              <p style={{ fontSize: "0.9rem", color: "#222" }}>Avg Number of Questions</p>
+              <h2 style={{ margin: 0, color: cardTextColor }}>{avgNumQuestions}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Avg Number of Questions</p>
             </div>
 
             {/* Avg Difficulty */}
@@ -402,12 +407,12 @@ export default function ProgressPage() {
                 padding: "20px",
                 textAlign: "center",
                 minWidth: "160px",
-                color: "black",
+                color: cardTextColor,
                 boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
               }}
             >
-              <h2 style={{ margin: 0 }}>{avgDifficultyLabel}</h2>
-              <p style={{ fontSize: "0.9rem", color: "#222" }}>Avg Difficulty</p>
+              <h2 style={{ margin: 0, color: cardTextColor }}>{avgDifficultyLabel}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Avg Difficulty</p>
             </div>
 
             {/* Most Used Type */}
@@ -419,12 +424,12 @@ export default function ProgressPage() {
                 padding: "20px",
                 textAlign: "center",
                 minWidth: "160px",
-                color: "black",
+                color: cardTextColor,
                 boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
               }}
             >
-              <h2 style={{ margin: 0 }}>{mostUsedType}</h2>
-              <p style={{ fontSize: "0.9rem", color: "#222" }}>Most Used Test Type</p>
+              <h2 style={{ margin: 0, color: cardTextColor }}>{mostUsedType}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Most Used Test Type</p>
             </div>
 
             {/* Most Used Topic */}
@@ -436,12 +441,12 @@ export default function ProgressPage() {
                 padding: "20px",
                 textAlign: "center",
                 minWidth: "160px",
-                color: "black",
+                color: cardTextColor,
                 boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
               }}
             >
-              <h2 style={{ margin: 0 }}>{mostUsedTopic}</h2>
-              <p style={{ fontSize: "0.9rem", color: "#222" }}>Most Common Topic</p>
+              <h2 style={{ margin: 0, color: cardTextColor }}>{mostUsedTopic}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Most Common Topic</p>
             </div>
           </div>
 
@@ -449,35 +454,35 @@ export default function ProgressPage() {
           <div
             style={{
               background: "white",
-              color: "black",
+              color: cardTextColor,
               borderRadius: "20px",
               padding: "24px",
               marginBottom: "40px",
               border: "2px solid rgba(0,0,0,0.08)",
             }}
           >
-            <h2 style={{ marginBottom: "10px", fontWeight: 700 }}>Your Best Test Ever</h2>
+            <h2 style={{ marginBottom: "10px", fontWeight: 700, color: cardTextColor }}>Your Best Test Ever</h2>
             {bestTest ? (
-              <p>
-                Topic: <b>{bestTest.topic}</b> — Score: <b>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
+              <p style={{ color: cardTextColor }}>
+                Topic: <b style={{ color: cardTextColor }}>{bestTest.topic}</b> — Score: <b style={{ color: cardTextColor }}>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
               </p>
             ) : (
-              <p>No test data yet</p>
+              <p style={{ color: cardTextColor }}>No test data yet</p>
             )}
           </div>
 
           {/* Saved Tests */}
-          <h2 style={{ marginBottom: "20px", fontWeight: 700 }}>Your Saved Tests</h2>
+          <h2 style={{ marginBottom: "20px", fontWeight: 700, color: cardTextColor }}>Your Saved Tests</h2>
 
           {tests.length === 0 ? (
-            <p style={{ textAlign: "center", opacity: 0.8 }}>No saved tests yet.</p>
+            <p style={{ textAlign: "center", opacity: 0.8, color: cardTextColor }}>No saved tests yet.</p>
           ) : (
             tests.map((test, index) => (
               <div
                 key={test.id || index}
                 style={{
                   background: "white",
-                  color: "black",
+                  color: cardTextColor,
                   borderRadius: "12px",
                   padding: "15px",
                   marginBottom: "18px",
@@ -492,8 +497,8 @@ export default function ProgressPage() {
                   }}
                 >
                   <div>
-                    <h3 style={{ margin: 0, fontWeight: 700 }}>{test.topic}</h3>
-                    <p style={{ margin: 0 }}>
+                    <h3 style={{ margin: 0, fontWeight: 700, color: cardTextColor }}>{test.topic}</h3>
+                    <p style={{ margin: 0, color: cardTextColor }}>
                       Score: {test.score}/{test.total} ({test.percent}%) —{" "}
                       {(test.questions || []).length} questions — Difficulty:{" "}
                       {difficultyLabel(test.difficultyNumber)}
@@ -504,8 +509,8 @@ export default function ProgressPage() {
                     <button
                       onClick={() => openRetakeModal(test.id)}
                       style={restartBtnStyle}
-                      aria-label="Retake"
-                      title="Retake"
+                      aria-label="Retake / Revised"
+                      title="Retake / Revised"
                     >
                       ↻
                     </button>
@@ -515,7 +520,7 @@ export default function ProgressPage() {
                         setExpandedIndex(expandedIndex === index ? null : index)
                       }
                       style={viewBtnStyle}
-                      aria-label="View"
+                      aria-label="View test"
                       title="View"
                     >
                       👁
@@ -524,7 +529,7 @@ export default function ProgressPage() {
                     <button
                       onClick={() => handleDelete(test.id, index)}
                       style={deleteBtnStyle}
-                      aria-label="Delete"
+                      aria-label="Delete test"
                       title="Delete"
                     >
                       🗑
@@ -535,13 +540,13 @@ export default function ProgressPage() {
                 {expandedIndex === index && (
                   <div style={{ marginTop: "14px", paddingLeft: "10px" }}>
                     {(test.questions || []).map((q, i) => (
-                      <div key={i} style={{ marginBottom: "12px" }}>
-                        <p>
+                      <div key={i} style={{ marginBottom: "12px", color: cardTextColor }}>
+                        <p style={{ color: cardTextColor }}>
                           <b>Q{i + 1}:</b> {q.question}
                         </p>
-                        <p>User Answer: {q.userAnswer}</p>
-                        <p>Correct Answer: {q.correctAnswer}</p>
-                        {q.explanation && <p>Explanation: {q.explanation}</p>}
+                        <p style={{ color: cardTextColor }}>User Answer: {q.userAnswer}</p>
+                        <p style={{ color: cardTextColor }}>Correct Answer: {q.correctAnswer}</p>
+                        {q.explanation && <p style={{ color: cardTextColor }}>Explanation: {q.explanation}</p>}
                         <p style={{ color: q.isCorrect ? "green" : "red" }}>
                           {q.isCorrect ? "Correct" : "Incorrect"}
                         </p>
