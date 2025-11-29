@@ -186,7 +186,7 @@ export default function ProgressPage() {
                   fontWeight: "700",
                 }}
                 onClick={() =>
-                  router.push(`/testretake?testId=${selectedTestId}&mode=normal`)
+                  router.push(`/retake`)
                 }
               >
                 Retake
@@ -203,7 +203,7 @@ export default function ProgressPage() {
                   fontWeight: "700",
                 }}
                 onClick={() =>
-                  router.push(`/testretake?testId=${selectedTestId}&mode=revised`)
+                  router.push(`/revised`)
                 }
               >
                 Revised
