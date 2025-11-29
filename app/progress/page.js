@@ -15,7 +15,6 @@ export default function ProgressPage() {
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  // Modal state
   const [retakeModalOpen, setRetakeModalOpen] = useState(false);
   const [selectedTestId, setSelectedTestId] = useState(null);
 
@@ -72,14 +71,12 @@ export default function ProgressPage() {
     fetchTests();
   }, [user]);
 
-  // Stats
   const totalTests = tests.length;
   const avgPercent = totalTests
     ? Math.round(
         tests.reduce((acc, t) => acc + (Number(t.percent) || 0), 0) / totalTests
       )
     : 0;
-
   const avgNumQuestions = totalTests
     ? Math.round(
         tests.reduce(
@@ -88,14 +85,12 @@ export default function ProgressPage() {
         ) / totalTests
       )
     : 0;
-
   const avgDifficultyNumber = totalTests
     ? Math.round(
         tests.reduce((acc, t) => acc + (Number(t.difficultyNumber) || 1), 0) /
           totalTests
       )
     : 0;
-
   const avgDifficultyLabel = difficultyLabel(avgDifficultyNumber);
 
   const mostUsedType = (() => {
@@ -122,14 +117,12 @@ export default function ProgressPage() {
     ? [...tests].sort((a, b) => (b.percent || 0) - (a.percent || 0))[0]
     : null;
 
-  // Delete a test (Firestore if signed in, else localStorage fallback)
   const handleDelete = async (testId, index) => {
     const confirmDelete = confirm("Delete this saved test? This cannot be undone.");
     if (!confirmDelete) return;
 
     try {
       if (user?.uid && testId && !String(testId).startsWith("local-")) {
-        // delete from Firestore location used elsewhere: /users/{uid}/data/{testId}
         await deleteDoc(doc(db, "users", user.uid, "data", testId));
         setTests((prev) => prev.filter((t) => t.id !== testId));
       } else {
@@ -143,7 +136,6 @@ export default function ProgressPage() {
     }
   };
 
-  // Button styles (colored, visible)
   const restartBtnStyle = {
     padding: "8px 12px",
     background: "#ff9800",
@@ -174,50 +166,39 @@ export default function ProgressPage() {
     fontWeight: 700,
   };
 
-  // open modal
   const openRetakeModal = (testId) => {
     setSelectedTestId(testId);
     setRetakeModalOpen(true);
   };
-
   const closeModal = () => {
     setRetakeModalOpen(false);
     setSelectedTestId(null);
   };
-
-  // POST to API and then navigate to testcontroller with mode param
   const handleRetake = async () => {
     if (!selectedTestId) return;
     try {
-      const res = await fetch("/api/retake", {
+      await fetch("/api/retake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ testId: selectedTestId }),
       });
-      if (!res.ok) {
-        console.error("retake API returned error", res.statusText);
-      }
     } catch (err) {
-      console.error("retake fetch error:", err);
+      console.error(err);
     } finally {
       closeModal();
       router.push(`/testcontroller?mode=retake&testId=${encodeURIComponent(selectedTestId)}`);
     }
   };
-
   const handleRevised = async () => {
     if (!selectedTestId) return;
     try {
-      const res = await fetch("/api/revised", {
+      await fetch("/api/revised", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ testId: selectedTestId }),
       });
-      if (!res.ok) {
-        console.error("revised API returned error", res.statusText);
-      }
     } catch (err) {
-      console.error("revised fetch error:", err);
+      console.error(err);
     } finally {
       closeModal();
       router.push(`/testcontroller?mode=revised&testId=${encodeURIComponent(selectedTestId)}`);
@@ -226,7 +207,6 @@ export default function ProgressPage() {
 
   return (
     <>
-      {/* Retake/Revised Modal */}
       {retakeModalOpen && (
         <div
           style={{
@@ -251,10 +231,11 @@ export default function ProgressPage() {
               maxWidth: "480px",
               textAlign: "center",
               boxShadow: "0 10px 40px rgba(0,0,0,0.25)",
+              color: "#222",
             }}
           >
-            <h2 style={{ marginBottom: "12px", color: "black" }}>Retake Options</h2>
-            <p style={{ color: "black", marginBottom: "22px" }}>
+            <h2 style={{ marginBottom: "12px" }}>Retake Options</h2>
+            <p style={{ marginBottom: "22px" }}>
               Would you like to retake the exact same test, or take a revised version
               with similar questions worded differently?
             </p>
@@ -308,7 +289,6 @@ export default function ProgressPage() {
         </div>
       )}
 
-      {/* MAIN PAGE */}
       <div
         style={{
           minHeight: "100vh",
@@ -326,7 +306,6 @@ export default function ProgressPage() {
             width: "92%",
             maxWidth: "980px",
             backgroundColor: "rgba(255,255,255,0.08)",
-            backdropFilter: "blur(14px)",
             borderRadius: "36px",
             border: "3px solid rgba(255,255,255,0.18)",
             padding: "40px",
@@ -353,111 +332,59 @@ export default function ProgressPage() {
               marginBottom: "40px",
             }}
           >
-            <div
-              style={{
-                background: "rgba(255,255,255,0.18)",
-                backdropFilter: "blur(12px)",
-                borderRadius: "16px",
-                border: "3px solid rgba(255,255,255,0.35)",
-                padding: "20px",
-                textAlign: "center",
-                minWidth: "160px",
-                color: "black",
-                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-              }}
-            >
-              <div
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  margin: "0 auto 10px",
-                  borderRadius: "50%",
-                  border: "6px solid rgba(0,0,0,0.08)",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  fontSize: "1.2rem",
-                }}
-              >
-                {tests.length === 0 ? "0%" : `${avgPercent}%`}
-              </div>
-              <p style={{ fontSize: "0.9rem", color: "#222" }}>Average Score</p>
-            </div>
-
-            <div
-              style={{
-                background: "rgba(255,255,255,0.18)",
-                backdropFilter: "blur(12px)",
-                borderRadius: "16px",
-                border: "3px solid rgba(255,255,255,0.35)",
-                padding: "20px",
-                textAlign: "center",
-                minWidth: "160px",
-                color: "black",
-                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-              }}
-            >
-              <h2 style={{ margin: 0 }}>{tests.length === 0 ? 0 : avgNumQuestions}</h2>
-              <p style={{ fontSize: "0.9rem", color: "#222" }}>Avg Number of Questions</p>
-            </div>
-
-            <div
-              style={{
-                background: "rgba(255,255,255,0.18)",
-                backdropFilter: "blur(12px)",
-                borderRadius: "16px",
-                border: "3px solid rgba(255,255,255,0.35)",
-                padding: "20px",
-                textAlign: "center",
-                minWidth: "160px",
-                color: "black",
-                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-              }}
-            >
-              <h2 style={{ margin: 0 }}>{tests.length === 0 ? "—" : avgDifficultyLabel}</h2>
-              <p style={{ fontSize: "0.9rem", color: "#222" }}>Avg Difficulty</p>
-            </div>
-
-            <div
-              style={{
-                background: "rgba(255,255,255,0.18)",
-                backdropFilter: "blur(12px)",
-                borderRadius: "16px",
-                border: "3px solid rgba(255,255,255,0.35)",
-                padding: "20px",
-                textAlign: "center",
-                minWidth: "160px",
-                color: "black",
-                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-              }}
-            >
-              <h2 style={{ margin: 0 }}>{tests.length === 0 ? "—" : mostUsedType}</h2>
-              <p style={{ fontSize: "0.9rem", color: "#222" }}>Most Used Test Type</p>
-            </div>
-
-            <div
-              style={{
-                background: "rgba(255,255,255,0.18)",
-                backdropFilter: "blur(12px)",
-                borderRadius: "16px",
-                border: "3px solid rgba(255,255,255,0.35)",
-                padding: "20px",
-                textAlign: "center",
-                minWidth: "160px",
-                color: "black",
-                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-              }}
-            >
-              <h2 style={{ margin: 0 }}>{tests.length === 0 ? "—" : mostUsedTopic}</h2>
-              <p style={{ fontSize: "0.9rem", color: "#222" }}>Most Common Topic</p>
-            </div>
+            {[avgPercent, avgNumQuestions, avgDifficultyLabel, mostUsedType, mostUsedTopic].map(
+              (value, i) => (
+                <div
+                  key={i}
+                  style={{
+                    backgroundColor: "white",
+                    color: "#222",
+                    borderRadius: "16px",
+                    border: "2px solid rgba(0,0,0,0.08)",
+                    padding: "20px",
+                    textAlign: "center",
+                    minWidth: "160px",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  {i === 0 && (
+                    <div
+                      style={{
+                        width: "80px",
+                        height: "80px",
+                        margin: "0 auto 10px",
+                        borderRadius: "50%",
+                        border: "6px solid rgba(0,0,0,0.08)",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        fontSize: "1.2rem",
+                      }}
+                    >
+                      {tests.length === 0 ? "0%" : `${avgPercent}%`}
+                    </div>
+                  )}
+                  <p style={{ fontSize: "0.9rem", color: "#222" }}>
+                    {i === 0
+                      ? "Average Score"
+                      : i === 1
+                      ? "Avg Number of Questions"
+                      : i === 2
+                      ? "Avg Difficulty"
+                      : i === 3
+                      ? "Most Used Test Type"
+                      : "Most Common Topic"}
+                  </p>
+                </div>
+              )
+            )}
           </div>
 
           {/* Best Test */}
           <div
             style={{
               background: "white",
-              color: "black",
+              color: "#222",
               borderRadius: "20px",
               padding: "24px",
               marginBottom: "40px",
@@ -485,7 +412,7 @@ export default function ProgressPage() {
                 key={test.id || index}
                 style={{
                   background: "white",
-                  color: "black",
+                  color: "#222",
                   borderRadius: "12px",
                   padding: "15px",
                   marginBottom: "18px",
@@ -509,7 +436,6 @@ export default function ProgressPage() {
                   </div>
 
                   <div style={{ display: "flex", gap: "12px" }}>
-                    {/* ORDER: ↻  👁  🗑 */}
                     <button
                       onClick={() => openRetakeModal(test.id)}
                       style={restartBtnStyle}
