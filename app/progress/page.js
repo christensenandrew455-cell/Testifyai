@@ -15,6 +15,10 @@ export default function ProgressPage() {
   const [error, setError] = useState(null);
   const router = useRouter();
 
+  // Modal State
+  const [retakeModalOpen, setRetakeModalOpen] = useState(false);
+  const [selectedTestId, setSelectedTestId] = useState(null);
+
   const difficultyLabel = (num) => {
     const n = Number(num);
     if (n >= 1 && n <= 3) return "Beginner";
@@ -68,47 +72,6 @@ export default function ProgressPage() {
   }, [user]);
 
   const totalTests = tests.length;
-  const avgPercent = totalTests
-    ? Math.round(tests.reduce((acc, t) => acc + (Number(t.percent) || 0), 0) / totalTests)
-    : 0;
-
-  const avgNumQuestions = totalTests
-    ? Math.round(
-        tests.reduce(
-          (acc, t) => acc + (Array.isArray(t.questions) ? t.questions.length : 0),
-          0
-        ) / totalTests
-      )
-    : 0;
-
-  const avgDifficultyNumber = totalTests
-    ? Math.round(
-        tests.reduce((acc, t) => acc + (Number(t.difficultyNumber) || 1), 0) /
-          totalTests
-      )
-    : 0;
-
-  const avgDifficultyLabel = difficultyLabel(avgDifficultyNumber);
-
-  const mostUsedType = (() => {
-    if (!totalTests) return "—";
-    const counts = {};
-    tests.forEach((t) => {
-      const k = t.type || "Unknown";
-      counts[k] = (counts[k] || 0) + 1;
-    });
-    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-  })();
-
-  const mostUsedTopic = (() => {
-    if (!totalTests) return "—";
-    const counts = {};
-    tests.forEach((t) => {
-      const k = t.topic || "Unknown";
-      counts[k] = (counts[k] || 0) + 1;
-    });
-    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-  })();
 
   const bestTest = tests.length
     ? [...tests].sort((a, b) => (b.percent || 0) - (a.percent || 0))[0]
@@ -134,7 +97,7 @@ export default function ProgressPage() {
     }
   };
 
-  // Button Styles
+  // BUTTON STYLES
   const btn = {
     padding: "8px 12px",
     background: "white",
@@ -157,173 +120,258 @@ export default function ProgressPage() {
     color: "#ff9800",
   };
 
+  // OPEN MODAL
+  const openRetakeModal = (id) => {
+    setSelectedTestId(id);
+    setRetakeModalOpen(true);
+  };
+
+  // CLOSE MODAL
+  const closeModal = () => {
+    setRetakeModalOpen(false);
+    setSelectedTestId(null);
+  };
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        width: "100vw",
-        background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
-        display: "flex",
-        justifyContent: "center",
-        padding: "40px 20px",
-        color: "white",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-      }}
-    >
+    <>
+      {/* RETAKE/REVISE MODAL */}
+      {retakeModalOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: "30px",
+              borderRadius: "18px",
+              width: "90%",
+              maxWidth: "420px",
+              textAlign: "center",
+            }}
+          >
+            <h2 style={{ marginBottom: "15px", color: "black" }}>
+              Retake Options
+            </h2>
+            <p style={{ color: "black", marginBottom: "25px" }}>
+              Would you like to retake the exact same test, or take a revised
+              version of it with similar questions worded differently?
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: "14px",
+              }}
+            >
+              <button
+                style={{
+                  padding: "10px 16px",
+                  background: "#1976d2",
+                  color: "white",
+                  borderRadius: "8px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: "700",
+                }}
+                onClick={() =>
+                  router.push(`/testretake?testId=${selectedTestId}&mode=normal`)
+                }
+              >
+                Retake
+              </button>
+
+              <button
+                style={{
+                  padding: "10px 16px",
+                  background: "#ff9800",
+                  color: "white",
+                  borderRadius: "8px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: "700",
+                }}
+                onClick={() =>
+                  router.push(`/testretake?testId=${selectedTestId}&mode=revised`)
+                }
+              >
+                Revised
+              </button>
+            </div>
+
+            <button
+              onClick={closeModal}
+              style={{
+                marginTop: "20px",
+                background: "transparent",
+                border: "none",
+                textDecoration: "underline",
+                color: "#444",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* PAGE CONTENT */}
       <div
         style={{
-          width: "92%",
-          maxWidth: "980px",
-          backgroundColor: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(14px)",
-          borderRadius: "36px",
-          border: "3px solid rgba(255,255,255,0.18)",
-          padding: "40px",
+          minHeight: "100vh",
+          width: "100vw",
+          background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
+          display: "flex",
+          justifyContent: "center",
+          padding: "40px 20px",
+          color: "white",
+          fontFamily: "Segoe UI, Roboto, sans-serif",
         }}
       >
-        <h1 style={{ textAlign: "center", marginBottom: "30px", fontWeight: 800 }}>
-          Your Progress
-        </h1>
-
-        {/* TOP STATS */}
         <div
           style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            marginBottom: "40px",
+            width: "92%",
+            maxWidth: "980px",
+            backgroundColor: "rgba(255,255,255,0.08)",
+            backdropFilter: "blur(14px)",
+            borderRadius: "36px",
+            border: "3px solid rgba(255,255,255,0.18)",
+            padding: "40px",
           }}
         >
-          {/* WHITE CARDS */}
-          {[ 
-            { label: "Average Score", value: tests.length ? `${avgPercent}%` : "0%" },
-            { label: "Avg Number of Questions", value: tests.length ? avgNumQuestions : 0 },
-            { label: "Avg Difficulty", value: tests.length ? avgDifficultyLabel : "—" },
-            { label: "Most Used Test Type", value: tests.length ? mostUsedType : "—" },
-            { label: "Most Common Topic", value: tests.length ? mostUsedTopic : "—" }
-          ].map((item, i) => (
-            <div
-              key={i}
-              style={{
-                background: "white",
-                color: "black",
-                borderRadius: "16px",
-                border: "3px solid rgba(0,0,0,0.2)",
-                padding: "20px",
-                textAlign: "center",
-                minWidth: "160px",
-              }}
-            >
-              <h2 style={{ margin: 0 }}>{item.value}</h2>
-              <p style={{ fontSize: "0.9rem", marginTop: 6 }}>{item.label}</p>
-            </div>
-          ))}
-        </div>
+          <h1
+            style={{
+              textAlign: "center",
+              marginBottom: "30px",
+              fontWeight: 800,
+            }}
+          >
+            Your Progress
+          </h1>
 
-        {/* BEST TEST */}
-        <div
-          style={{
-            background: "white",
-            color: "black",
-            borderRadius: "20px",
-            padding: "24px",
-            border: "2px solid rgba(0,0,0,0.25)",
-            marginBottom: "40px",
-          }}
-        >
-          <h2 style={{ fontWeight: 700 }}>Your Best Test Ever</h2>
-          {bestTest ? (
-            <p>
-              Topic: <b>{bestTest.topic}</b> — Score:{" "}
-              <b>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
-            </p>
+          {/* BEST TEST */}
+          <div
+            style={{
+              background: "white",
+              color: "black",
+              borderRadius: "20px",
+              padding: "24px",
+              border: "2px solid rgba(0,0,0,0.25)",
+              marginBottom: "40px",
+            }}
+          >
+            <h2 style={{ fontWeight: 700 }}>Your Best Test Ever</h2>
+            {bestTest ? (
+              <p>
+                Topic: <b>{bestTest.topic}</b> — Score:{" "}
+                <b>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
+              </p>
+            ) : (
+              <p>No test data yet.</p>
+            )}
+          </div>
+
+          {/* SAVED TESTS */}
+          <h2 style={{ marginBottom: "20px", fontWeight: 700 }}>
+            Your Saved Tests
+          </h2>
+
+          {tests.length === 0 ? (
+            <p style={{ textAlign: "center" }}>No saved tests yet.</p>
           ) : (
-            <p>No test data yet.</p>
-          )}
-        </div>
-
-        {/* SAVED TESTS */}
-        <h2 style={{ marginBottom: "20px", fontWeight: 700 }}>Your Saved Tests</h2>
-
-        {tests.length === 0 ? (
-          <p style={{ textAlign: "center" }}>No saved tests yet.</p>
-        ) : (
-          tests.map((test, index) => (
-            <div
-              key={test.id || index}
-              style={{
-                background: "white",
-                color: "black",
-                borderRadius: "12px",
-                padding: "15px",
-                marginBottom: "18px",
-                border: "2px solid rgba(0,0,0,0.25)",
-              }}
-            >
+            tests.map((test, index) => (
               <div
+                key={test.id || index}
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  background: "white",
+                  color: "black",
+                  borderRadius: "12px",
+                  padding: "15px",
+                  marginBottom: "18px",
+                  border: "2px solid rgba(0,0,0,0.25)",
                 }}
               >
-                <div>
-                  <h3 style={{ margin: 0 }}>{test.topic}</h3>
-                  <p style={{ margin: 0 }}>
-                    Score: {test.score}/{test.total} ({test.percent}%) —{" "}
-                    {(test.questions || []).length} questions — Difficulty:{" "}
-                    {difficultyLabel(test.difficultyNumber)}
-                  </p>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <h3 style={{ margin: 0 }}>{test.topic}</h3>
+                    <p style={{ margin: 0 }}>
+                      Score: {test.score}/{test.total} ({test.percent}%)
+                    </p>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    <button
+                      onClick={() =>
+                        setExpandedIndex(
+                          expandedIndex === index ? null : index
+                        )
+                      }
+                      style={btn}
+                    >
+                      👁
+                    </button>
+
+                    {/* NEW MODAL TRIGGER */}
+                    <button
+                      onClick={() => openRetakeModal(test.id)}
+                      style={restartBtn}
+                    >
+                      ↻
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(test.id, index)}
+                      style={deleteBtn}
+                    >
+                      🗑
+                    </button>
+                  </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "12px" }}>
-                  <button
-                    onClick={() =>
-                      setExpandedIndex(expandedIndex === index ? null : index)
-                    }
-                    style={btn}
-                  >
-                    👁
-                  </button>
-
-                  <button
-                    onClick={() => router.push(`/testretake?testId=${test.id}`)}
-                    style={restartBtn}
-                  >
-                    ↻
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(test.id, index)}
-                    style={deleteBtn}
-                  >
-                    🗑
-                  </button>
-                </div>
+                {expandedIndex === index && (
+                  <div style={{ marginTop: "14px" }}>
+                    {(test.questions || []).map((q, i) => (
+                      <div key={i} style={{ marginBottom: "12px" }}>
+                        <p>
+                          <b>Q{i + 1}:</b> {q.question}
+                        </p>
+                        <p>User Answer: {q.userAnswer}</p>
+                        <p>Correct Answer: {q.correctAnswer}</p>
+                        {q.explanation && <p>Explanation: {q.explanation}</p>}
+                        <p
+                          style={{
+                            color: q.isCorrect ? "green" : "red",
+                          }}
+                        >
+                          {q.isCorrect ? "Correct" : "Incorrect"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-
-              {expandedIndex === index && (
-                <div style={{ marginTop: "14px" }}>
-                  {(test.questions || []).map((q, i) => (
-                    <div key={i} style={{ marginBottom: "12px" }}>
-                      <p>
-                        <b>Q{i + 1}:</b> {q.question}
-                      </p>
-                      <p>User Answer: {q.userAnswer}</p>
-                      <p>Correct Answer: {q.correctAnswer}</p>
-                      {q.explanation && <p>Explanation: {q.explanation}</p>}
-                      <p style={{ color: q.isCorrect ? "green" : "red" }}>
-                        {q.isCorrect ? "Correct" : "Incorrect"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
