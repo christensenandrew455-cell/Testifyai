@@ -154,6 +154,7 @@ export default function Header() {
                 marginBottom: "10px",
                 fontWeight: 800,
                 fontSize: "1.6rem",
+                color: "black",
               }}
             >
               Sign In Required
@@ -165,6 +166,7 @@ export default function Header() {
                 opacity: 0.85,
                 fontSize: "1.05rem",
                 lineHeight: "1.45",
+                color: "black",
               }}
             >
               To access this feature, you need to be signed in.  
