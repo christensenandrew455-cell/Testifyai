@@ -6,7 +6,6 @@ import { getAllTests } from "../lib/firestore";
 import { db } from "../firebase";
 import { doc, deleteDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { RotateCw, Eye, Trash2 } from "lucide-react";   // <-- ADDED
 
 export default function ProgressPage() {
   const { user } = useAuth();
@@ -188,7 +187,9 @@ export default function ProgressPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ testId: selectedTestId }),
       });
-      if (!res.ok) console.error("retake API error");
+      if (!res.ok) {
+        console.error("retake API error");
+      }
     } catch (err) {
       console.error("retake error:", err);
     } finally {
@@ -205,7 +206,9 @@ export default function ProgressPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ testId: selectedTestId }),
       });
-      if (!res.ok) console.error("revised API error");
+      if (!res.ok) {
+        console.error("revised API error");
+      }
     } catch (err) {
       console.error("revised error:", err);
     } finally {
@@ -214,11 +217,92 @@ export default function ProgressPage() {
     }
   };
 
+  // light gray to use inside white boxes
   const cardTextColor = "#666";
 
   return (
     <>
-      {/* Modal ... unchanged */}
+      {retakeModalOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: "30px",
+              borderRadius: "18px",
+              width: "90%",
+              maxWidth: "480px",
+              textAlign: "center",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.25)",
+              color: cardTextColor,
+            }}
+          >
+            <h2 style={{ marginBottom: "12px", color: cardTextColor }}>Retake Options</h2>
+            <p style={{ color: cardTextColor, marginBottom: "22px" }}>
+              Would you like to retake the exact same test, or take a revised version
+              with similar questions worded differently?
+            </p>
+
+            <div style={{ display: "flex", justifyContent: "center", gap: "14px" }}>
+              <button
+                onClick={handleRetake}
+                style={{
+                  padding: "10px 16px",
+                  background: "#1976d2",
+                  color: "white",
+                  borderRadius: "8px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                }}
+              >
+                Retake
+              </button>
+
+              <button
+                onClick={handleRevised}
+                style={{
+                  padding: "10px 16px",
+                  background: "#ff9800",
+                  color: "white",
+                  borderRadius: "8px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                }}
+              >
+                Revised
+              </button>
+            </div>
+
+            <button
+              onClick={closeModal}
+              style={{
+                marginTop: "18px",
+                background: "transparent",
+                border: "none",
+                textDecoration: "underline",
+                color: "#444",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div
         style={{
@@ -244,17 +328,155 @@ export default function ProgressPage() {
             boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
           }}
         >
-          {/* … all other sections unchanged … */}
+          <h1 style={{ textAlign: "center", marginBottom: "30px", fontWeight: 800 }}>
+            Your Progress
+          </h1>
+
+          {error && (
+            <div style={{ marginBottom: 12, color: "#ffdddd", textAlign: "center" }}>
+              {error}
+            </div>
+          )}
+
+          {/* Top Stats */}
+          <div
+            style={{
+              display: "flex",
+              gap: "20px",
+              flexWrap: "nowrap",    // <--- THIS forces all 5 in one row
+              justifyContent: "center",
+              marginBottom: "40px",
+              overflowX: "auto",     // <--- prevents layout breaking on smaller screens
+            }}
+          >
+            {/* Average Score */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.12)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: cardTextColor,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <div
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  margin: "0 auto 10px",
+                  borderRadius: "50%",
+                  border: "6px solid rgba(0,0,0,0.08)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  fontSize: "1.2rem",
+                  background: "white",
+                  color: cardTextColor,
+                }}
+              >
+                {tests.length === 0 ? "0%" : `${avgPercent}%`}
+              </div>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Average Score</p>
+            </div>
+
+            {/* Avg Questions */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.12)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: cardTextColor,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0, color: cardTextColor }}>{avgNumQuestions}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Avg Number of Questions</p>
+            </div>
+
+            {/* Avg Difficulty */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.12)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: cardTextColor,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0, color: cardTextColor }}>{avgDifficultyLabel}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Avg Difficulty</p>
+            </div>
+
+            {/* Most Used Type */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.12)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: cardTextColor,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0, color: cardTextColor }}>{mostUsedType}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Most Used Test Type</p>
+            </div>
+
+            {/* Most Used Topic */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.12)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: cardTextColor,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0, color: cardTextColor }}>{mostUsedTopic}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Most Common Topic</p>
+            </div>
+          </div>
+
+          {/* Best Test */}
+          <div
+            style={{
+              background: "white",
+              color: cardTextColor,
+              borderRadius: "20px",
+              padding: "24px",
+              marginBottom: "40px",
+              border: "2px solid rgba(0,0,0,0.08)",
+            }}
+          >
+            <h2 style={{ marginBottom: "10px", fontWeight: 700, color: cardTextColor }}>Your Best Test Ever</h2>
+            {bestTest ? (
+              <p style={{ color: cardTextColor }}>
+                Topic: <b style={{ color: cardTextColor }}>{bestTest.topic}</b> — Score: <b style={{ color: cardTextColor }}>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
+              </p>
+            ) : (
+              <p style={{ color: cardTextColor }}>No test data yet</p>
+            )}
+          </div>
 
           {/* Saved Tests */}
-          <h2 style={{ marginBottom: "20px", fontWeight: 700, color: "white" }}>
-            Your Saved Tests
-          </h2>
+          <h2 style={{ marginBottom: "20px", fontWeight: 700, color: "white" }}>Your Saved Tests</h2>
 
           {tests.length === 0 ? (
-            <p style={{ textAlign: "center", opacity: 0.8, color: "white" }}>
-              No saved tests yet.
-            </p>
+            <p style={{ textAlign: "center", opacity: 0.8, color: "white" }}>No saved tests yet.</p>
           ) : (
             tests.map((test, index) => (
               <div
@@ -276,9 +498,7 @@ export default function ProgressPage() {
                   }}
                 >
                   <div>
-                    <h3 style={{ margin: 0, fontWeight: 700, color: cardTextColor }}>
-                      {test.topic}
-                    </h3>
+                    <h3 style={{ margin: 0, fontWeight: 700, color: cardTextColor }}>{test.topic}</h3>
                     <p style={{ margin: 0, color: cardTextColor }}>
                       Score: {test.score}/{test.total} ({test.percent}%) —{" "}
                       {(test.questions || []).length} questions — Difficulty:{" "}
@@ -293,7 +513,7 @@ export default function ProgressPage() {
                       aria-label="Retake / Revised"
                       title="Retake / Revised"
                     >
-                      <RotateCw size={18} color="black" />
+                      ↻
                     </button>
 
                     <button
@@ -304,7 +524,7 @@ export default function ProgressPage() {
                       aria-label="View test"
                       title="View"
                     >
-                      <Eye size={18} color="black" />
+                      👁
                     </button>
 
                     <button
@@ -313,7 +533,7 @@ export default function ProgressPage() {
                       aria-label="Delete test"
                       title="Delete"
                     >
-                      <Trash2 size={18} color="black" />
+                      🗑
                     </button>
                   </div>
                 </div>
@@ -321,24 +541,13 @@ export default function ProgressPage() {
                 {expandedIndex === index && (
                   <div style={{ marginTop: "14px", paddingLeft: "10px" }}>
                     {(test.questions || []).map((q, i) => (
-                      <div
-                        key={i}
-                        style={{ marginBottom: "12px", color: cardTextColor }}
-                      >
+                      <div key={i} style={{ marginBottom: "12px", color: cardTextColor }}>
                         <p style={{ color: cardTextColor }}>
                           <b>Q{i + 1}:</b> {q.question}
                         </p>
-                        <p style={{ color: cardTextColor }}>
-                          User Answer: {q.userAnswer}
-                        </p>
-                        <p style={{ color: cardTextColor }}>
-                          Correct Answer: {q.correctAnswer}
-                        </p>
-                        {q.explanation && (
-                          <p style={{ color: cardTextColor }}>
-                            Explanation: {q.explanation}
-                          </p>
-                        )}
+                        <p style={{ color: cardTextColor }}>User Answer: {q.userAnswer}</p>
+                        <p style={{ color: cardTextColor }}>Correct Answer: {q.correctAnswer}</p>
+                        {q.explanation && <p style={{ color: cardTextColor }}>Explanation: {q.explanation}</p>}
                         <p style={{ color: q.isCorrect ? "green" : "red" }}>
                           {q.isCorrect ? "Correct" : "Incorrect"}
                         </p>
