@@ -345,6 +345,7 @@ export default function ProgressPage() {
               overflowX: "auto",
             }}
           >
+
             {/* Average Score */}
             <div
               style={{
@@ -506,27 +507,20 @@ export default function ProgressPage() {
                   </div>
 
                   <div style={{ display: "flex", gap: "12px" }}>
-                    {/* RETAKE BUTTON (FIXED) */}
+
+                    {/* RETAKE BUTTON (SVG FIX) */}
                     <button
                       onClick={() => openRetakeModal(test.id)}
                       style={restartBtnStyle}
                       aria-label="Retake / Revised"
                       title="Retake / Revised"
                     >
-                      <div style={{
-                        width: "20px",
-                        height: "20px",
-                        background: "black",
-                        borderRadius: "4px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center"
-                      }}>
-                        ↻
-                      </div>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="black">
+                        <path d="M17.65 6.35A8 8 0 1 0 19 12h-2a6 6 0 1 1-1.76-4.24L12 10h8V2l-2.35 2.35z"/>
+                      </svg>
                     </button>
 
-                    {/* VIEW BUTTON (FIXED) */}
+                    {/* VIEW BUTTON (SVG FIX) */}
                     <button
                       onClick={() =>
                         setExpandedIndex(expandedIndex === index ? null : index)
@@ -535,38 +529,23 @@ export default function ProgressPage() {
                       aria-label="View test"
                       title="View"
                     >
-                      <div style={{
-                        width: "20px",
-                        height: "20px",
-                        background: "black",
-                        borderRadius: "4px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center"
-                      }}>
-                        👁
-                      </div>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="black">
+                        <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+                      </svg>
                     </button>
 
-                    {/* DELETE BUTTON (FIXED) */}
+                    {/* DELETE BUTTON (SVG FIX) */}
                     <button
                       onClick={() => handleDelete(test.id, index)}
                       style={deleteBtnStyle}
                       aria-label="Delete test"
                       title="Delete"
                     >
-                      <div style={{
-                        width: "20px",
-                        height: "20px",
-                        background: "black",
-                        borderRadius: "4px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center"
-                      }}>
-                        🗑
-                      </div>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="black">
+                        <path d="M3 6l3 18h12l3-18H3zm5 16V10h2v12H8zm6 0V10h2v12h-2zM19 4h-4l-1-2h-4l-1 2H5v2h14V4z"/>
+                      </svg>
                     </button>
+
                   </div>
                 </div>
 
