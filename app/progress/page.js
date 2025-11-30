@@ -1,4 +1,3 @@
-// FULL FILE WITH BEST TEST AS PROMINENT SAVED TEST
 "use client";
 
 import { useEffect, useState } from "react";
@@ -75,6 +74,38 @@ export default function ProgressPage() {
   const bestTest = tests.length
     ? [...tests].sort((a, b) => (b.percent || 0) - (a.percent || 0))[0]
     : null;
+
+  const totalTests = tests.length;
+  const avgPercent = totalTests
+    ? Math.round(tests.reduce((acc, t) => acc + (Number(t.percent) || 0), 0) / totalTests)
+    : 0;
+  const avgNumQuestions = totalTests
+    ? Math.round(tests.reduce((acc, t) => acc + ((t.questions || []).length || 0), 0) / totalTests)
+    : 0;
+  const avgDifficultyNumber = totalTests
+    ? Math.round(tests.reduce((acc, t) => acc + (Number(t.difficultyNumber) || 1), 0) / totalTests)
+    : 0;
+  const avgDifficultyLabel = difficultyLabel(avgDifficultyNumber);
+
+  const mostUsedType = (() => {
+    if (!totalTests) return "—";
+    const counts = {};
+    tests.forEach((t) => {
+      const k = t.type || "Unknown";
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  })();
+
+  const mostUsedTopic = (() => {
+    if (!totalTests) return "—";
+    const counts = {};
+    tests.forEach((t) => {
+      const k = t.topic || "Unknown";
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  })();
 
   const handleDelete = async (testId, index) => {
     const confirmDelete = confirm("Delete this saved test? This cannot be undone.");
@@ -255,16 +286,109 @@ export default function ProgressPage() {
 
           {error && <div style={{ marginBottom: 12, color: "#ffdddd", textAlign: "center" }}>{error}</div>}
 
-          {/* Best Test as a bigger saved test card */}
+          {/* Top Stats */}
+          <div style={{ display: "flex", gap: "20px", flexWrap: "nowrap", justifyContent: "center", marginBottom: "40px", overflowX: "auto" }}>
+            {/* Average Score */}
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              border: "3px solid rgba(0,0,0,0.12)",
+              padding: "20px",
+              textAlign: "center",
+              minWidth: "160px",
+              color: cardTextColor,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.06)"
+            }}>
+              <div style={{
+                width: "80px",
+                height: "80px",
+                margin: "0 auto 10px",
+                borderRadius: "50%",
+                border: "6px solid rgba(0,0,0,0.08)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontSize: "1.2rem",
+                background: "white",
+                color: cardTextColor,
+              }}>{tests.length === 0 ? "0%" : `${avgPercent}%`}</div>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Average Score</p>
+            </div>
+
+            {/* Avg Questions */}
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              border: "3px solid rgba(0,0,0,0.12)",
+              padding: "20px",
+              textAlign: "center",
+              minWidth: "160px",
+              color: cardTextColor,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.06)"
+            }}>
+              <h2 style={{ margin: 0, color: cardTextColor }}>{avgNumQuestions}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Avg Number of Questions</p>
+            </div>
+
+            {/* Avg Difficulty */}
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              border: "3px solid rgba(0,0,0,0.12)",
+              padding: "20px",
+              textAlign: "center",
+              minWidth: "160px",
+              color: cardTextColor,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.06)"
+            }}>
+              <h2 style={{ margin: 0, color: cardTextColor }}>{avgDifficultyLabel}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Avg Difficulty</p>
+            </div>
+
+            {/* Most Used Type */}
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              border: "3px solid rgba(0,0,0,0.12)",
+              padding: "20px",
+              textAlign: "center",
+              minWidth: "160px",
+              color: cardTextColor,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.06)"
+            }}>
+              <h2 style={{ margin: 0, color: cardTextColor }}>{mostUsedType}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Most Used Test Type</p>
+            </div>
+
+            {/* Most Used Topic */}
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              border: "3px solid rgba(0,0,0,0.12)",
+              padding: "20px",
+              textAlign: "center",
+              minWidth: "160px",
+              color: cardTextColor,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.06)"
+            }}>
+              <h2 style={{ margin: 0, color: cardTextColor }}>{mostUsedTopic}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Most Common Topic</p>
+            </div>
+          </div>
+
+          {/* Best Test Ever Title */}
+          {bestTest && <h2 style={{ marginBottom: "20px", fontWeight: 700, color: "white" }}>Your Best Test Ever</h2>}
+
+          {/* Best Test Card */}
           {bestTest && (
             <div style={{
               background: "white",
               color: cardTextColor,
               borderRadius: "20px",
               padding: "24px",
-              marginBottom: "30px",
-              border: "3px solid rgba(0,0,0,0.12)",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.18)"
+              marginBottom: "40px",
+              border: "3px solid gold",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.25)"
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
@@ -274,15 +398,9 @@ export default function ProgressPage() {
                   </p>
                 </div>
                 <div style={{ display: "flex", gap: "12px" }}>
-                  <button onClick={() => openRetakeModal(bestTest.id)} style={restartBtnStyle}>
-                    Retake
-                  </button>
-                  <button onClick={() => setExpandedIndex(expandedIndex === -1 ? null : -1)} style={viewBtnStyle}>
-                    View
-                  </button>
-                  <button onClick={() => handleDelete(bestTest.id, tests.indexOf(bestTest))} style={deleteBtnStyle}>
-                    Delete
-                  </button>
+                  <button onClick={() => openRetakeModal(bestTest.id)} style={restartBtnStyle}>Retake</button>
+                  <button onClick={() => setExpandedIndex(expandedIndex === -1 ? null : -1)} style={viewBtnStyle}>View</button>
+                  <button onClick={() => handleDelete(bestTest.id, tests.indexOf(bestTest))} style={deleteBtnStyle}>Delete</button>
                 </div>
               </div>
 
@@ -302,7 +420,7 @@ export default function ProgressPage() {
             </div>
           )}
 
-          {/* Saved Tests */}
+          {/* Saved Tests Section */}
           <h2 style={{ marginBottom: "20px", fontWeight: 700, color: "white" }}>Your Saved Tests</h2>
           {tests.filter(t => t !== bestTest).length === 0 ? (
             <p style={{ textAlign: "center", opacity: 0.8, color: "white" }}>No saved tests yet.</p>
