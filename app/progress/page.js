@@ -472,10 +472,10 @@ export default function ProgressPage() {
           </div>
 
           {/* Saved Tests */}
-          <h2 style={{ marginBottom: "20px", fontWeight: 700, color: cardTextColor }}>Your Saved Tests</h2>
+          <h2 style={{ marginBottom: "20px", fontWeight: 700, color: "white" }}>Your Saved Tests</h2>
 
           {tests.length === 0 ? (
-            <p style={{ textAlign: "center", opacity: 0.8, color: cardTextColor }}>No saved tests yet.</p>
+            <p style={{ textAlign: "center", opacity: 0.8, color: "white" }}>No saved tests yet.</p>
           ) : (
             tests.map((test, index) => (
               <div
