@@ -343,9 +343,10 @@ export default function ProgressPage() {
             style={{
               display: "flex",
               gap: "20px",
-              flexWrap: "wrap",
+              flexWrap: "nowrap",    // <--- THIS forces all 5 in one row
               justifyContent: "center",
               marginBottom: "40px",
+              overflowX: "auto",     // <--- prevents layout breaking on smaller screens
             }}
           >
             {/* Average Score */}
