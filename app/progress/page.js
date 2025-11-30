@@ -345,7 +345,7 @@ export default function ProgressPage() {
               <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Avg Difficulty</p>
             </div>
 
-            {/* Most Used Type */}
+            {/* tests taken in total */}
             <div style={{
               background: "white",
               borderRadius: "16px",
@@ -357,7 +357,7 @@ export default function ProgressPage() {
               boxShadow: "0 6px 20px rgba(0,0,0,0.06)"
             }}>
               <h2 style={{ margin: 0, color: cardTextColor }}>{mostUsedType}</h2>
-              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Most Used Test Type</p>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>total tests taken</p>
             </div>
 
             {/* Most Used Topic */}
