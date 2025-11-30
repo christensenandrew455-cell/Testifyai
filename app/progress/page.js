@@ -1,3 +1,4 @@
+// FULL FILE WITH ICON FIX
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,9 +7,6 @@ import { getAllTests } from "../lib/firestore";
 import { db } from "../firebase";
 import { doc, deleteDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-
-// ★ NEW IMPORTS (only change at top)
-import { RotateCw, Eye, Trash2 } from "lucide-react";
 
 export default function ProgressPage() {
   const { user } = useAuth();
@@ -190,9 +188,7 @@ export default function ProgressPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ testId: selectedTestId }),
       });
-      if (!res.ok) {
-        console.error("retake API error");
-      }
+      if (!res.ok) console.error("retake API error");
     } catch (err) {
       console.error("retake error:", err);
     } finally {
@@ -209,9 +205,7 @@ export default function ProgressPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ testId: selectedTestId }),
       });
-      if (!res.ok) {
-        console.error("revised API error");
-      }
+      if (!res.ok) console.error("revised API error");
     } catch (err) {
       console.error("revised error:", err);
     } finally {
@@ -351,7 +345,6 @@ export default function ProgressPage() {
               overflowX: "auto",
             }}
           >
-
             {/* Average Score */}
             <div
               style={{
@@ -465,10 +458,13 @@ export default function ProgressPage() {
               border: "2px solid rgba(0,0,0,0.08)",
             }}
           >
-            <h2 style={{ marginBottom: "10px", fontWeight: 700, color: cardTextColor }}>Your Best Test Ever</h2>
+            <h2 style={{ marginBottom: "10px", fontWeight: 700, color: cardTextColor }}>
+              Your Best Test Ever
+            </h2>
             {bestTest ? (
               <p style={{ color: cardTextColor }}>
-                Topic: <b style={{ color: cardTextColor }}>{bestTest.topic}</b> — Score: <b style={{ color: cardTextColor }}>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
+                Topic: <b style={{ color: cardTextColor }}>{bestTest.topic}</b> — Score:{" "}
+                <b style={{ color: cardTextColor }}>{bestTest.score}/{bestTest.total}</b> ({bestTest.percent}%)
               </p>
             ) : (
               <p style={{ color: cardTextColor }}>No test data yet</p>
@@ -510,17 +506,27 @@ export default function ProgressPage() {
                   </div>
 
                   <div style={{ display: "flex", gap: "12px" }}>
-                    {/* ★ CHANGED: Restart Icon */}
+                    {/* RETAKE BUTTON (FIXED) */}
                     <button
                       onClick={() => openRetakeModal(test.id)}
                       style={restartBtnStyle}
                       aria-label="Retake / Revised"
                       title="Retake / Revised"
                     >
-                      <RotateCw size={18} stroke="black" />
+                      <div style={{
+                        width: "20px",
+                        height: "20px",
+                        background: "black",
+                        borderRadius: "4px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center"
+                      }}>
+                        ↻
+                      </div>
                     </button>
 
-                    {/* ★ CHANGED: View Icon */}
+                    {/* VIEW BUTTON (FIXED) */}
                     <button
                       onClick={() =>
                         setExpandedIndex(expandedIndex === index ? null : index)
@@ -529,17 +535,37 @@ export default function ProgressPage() {
                       aria-label="View test"
                       title="View"
                     >
-                      <Eye size={18} stroke="black" />
+                      <div style={{
+                        width: "20px",
+                        height: "20px",
+                        background: "black",
+                        borderRadius: "4px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center"
+                      }}>
+                        👁
+                      </div>
                     </button>
 
-                    {/* ★ CHANGED: Delete Icon */}
+                    {/* DELETE BUTTON (FIXED) */}
                     <button
                       onClick={() => handleDelete(test.id, index)}
                       style={deleteBtnStyle}
                       aria-label="Delete test"
                       title="Delete"
                     >
-                      <Trash2 size={18} stroke="black" />
+                      <div style={{
+                        width: "20px",
+                        height: "20px",
+                        background: "black",
+                        borderRadius: "4px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center"
+                      }}>
+                        🗑
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -553,7 +579,9 @@ export default function ProgressPage() {
                         </p>
                         <p style={{ color: cardTextColor }}>User Answer: {q.userAnswer}</p>
                         <p style={{ color: cardTextColor }}>Correct Answer: {q.correctAnswer}</p>
-                        {q.explanation && <p style={{ color: cardTextColor }}>Explanation: {q.explanation}</p>}
+                        {q.explanation && (
+                          <p style={{ color: cardTextColor }}>Explanation: {q.explanation}</p>
+                        )}
                         <p style={{ color: q.isCorrect ? "green" : "red" }}>
                           {q.isCorrect ? "Correct" : "Incorrect"}
                         </p>
