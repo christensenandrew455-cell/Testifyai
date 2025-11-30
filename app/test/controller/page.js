@@ -109,24 +109,58 @@ function TestControllerInner() {
         : [userAnswer];
 
     // ---------------------------------------------------------
-    // ✅ FIX #1 — REAL correct answer detection
+    // ✅ Robust correct-answer detection that supports both
+    //    - old format: question.answers (array) + question.correct (value or array)
+    //    - new format (if ever present): question.choices + question.answer
+    //
+    // We write correctAnswer as an array. Prefer indexes (numbers) when we can
+    // map them to an options array (answers || choices). Otherwise save strings.
     // ---------------------------------------------------------
     let safeCorrectAnswer = [];
 
-    if (question.type === "multiple-choice") {
-      const idx = question.choices.indexOf(question.answer);
-      safeCorrectAnswer = [idx];
-    } else if (question.type === "true-false") {
-      safeCorrectAnswer = [question.answer];
-    } else if (question.type === "multi-select") {
-      safeCorrectAnswer = question.answer.map((ans) =>
-        question.choices.indexOf(ans)
-      );
-    } else if (
-      question.type === "short-answer" ||
-      question.type === "open-response"
-    ) {
-      safeCorrectAnswer = [question.answer];
+    // helper: get options array from whichever field exists
+    const options = Array.isArray(question.answers)
+      ? question.answers
+      : Array.isArray(question.choices)
+      ? question.choices
+      : null;
+
+    // raw correct value could be in multiple fields depending on generator
+    const rawCorrect =
+      question.correct !== undefined && question.correct !== null
+        ? question.correct
+        : question.answer !== undefined && question.answer !== null
+        ? question.answer
+        : undefined;
+
+    // Normalize multi vs single for rawCorrect and map to indexes when possible
+    if (rawCorrect === undefined) {
+      // nothing found — leave as empty array
+      safeCorrectAnswer = [];
+    } else if (Array.isArray(rawCorrect)) {
+      // multi-select style correct answers
+      safeCorrectAnswer = rawCorrect.map((ans) => {
+        if (options && options.indexOf) {
+          const idx = options.indexOf(ans);
+          return idx !== -1 ? idx : ans;
+        }
+        return ans;
+      });
+    } else {
+      // single correct answer (string or index)
+      if (typeof rawCorrect === "number") {
+        // already an index (legacy), keep as index
+        safeCorrectAnswer = [rawCorrect];
+      } else {
+        // a string — try to map to index if options exist
+        if (options && options.indexOf) {
+          const idx = options.indexOf(rawCorrect);
+          safeCorrectAnswer = idx !== -1 ? [idx] : [rawCorrect];
+        } else {
+          // no options array, just store the string
+          safeCorrectAnswer = [rawCorrect];
+        }
+      }
     }
     // ---------------------------------------------------------
 
@@ -139,7 +173,8 @@ function TestControllerInner() {
     }
 
     // ---------------------------------------------------------
-    // ✅ FIX #2 — Save correctAnswer so progress page can show it
+    // Save correctAnswer so progress page can show human text
+    // (progress page will map indexes -> options array when present)
     // ---------------------------------------------------------
     data.questions[index] = {
       ...question,
