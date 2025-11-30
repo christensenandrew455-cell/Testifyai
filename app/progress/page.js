@@ -7,6 +7,9 @@ import { db } from "../firebase";
 import { doc, deleteDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
+// ★ NEW IMPORTS (only change at top)
+import { RotateCw, Eye, Trash2 } from "lucide-react";
+
 export default function ProgressPage() {
   const { user } = useAuth();
   const [tests, setTests] = useState([]);
@@ -217,7 +220,6 @@ export default function ProgressPage() {
     }
   };
 
-  // light gray to use inside white boxes
   const cardTextColor = "#666";
 
   return (
@@ -343,12 +345,13 @@ export default function ProgressPage() {
             style={{
               display: "flex",
               gap: "20px",
-              flexWrap: "nowrap",    // <--- THIS forces all 5 in one row
+              flexWrap: "nowrap",
               justifyContent: "center",
               marginBottom: "40px",
-              overflowX: "auto",     // <--- prevents layout breaking on smaller screens
+              overflowX: "auto",
             }}
           >
+
             {/* Average Score */}
             <div
               style={{
@@ -507,15 +510,17 @@ export default function ProgressPage() {
                   </div>
 
                   <div style={{ display: "flex", gap: "12px" }}>
+                    {/* ★ CHANGED: Restart Icon */}
                     <button
                       onClick={() => openRetakeModal(test.id)}
                       style={restartBtnStyle}
                       aria-label="Retake / Revised"
                       title="Retake / Revised"
                     >
-                      ↻
+                      <RotateCw size={18} stroke="black" />
                     </button>
 
+                    {/* ★ CHANGED: View Icon */}
                     <button
                       onClick={() =>
                         setExpandedIndex(expandedIndex === index ? null : index)
@@ -524,16 +529,17 @@ export default function ProgressPage() {
                       aria-label="View test"
                       title="View"
                     >
-                      👁
+                      <Eye size={18} stroke="black" />
                     </button>
 
+                    {/* ★ CHANGED: Delete Icon */}
                     <button
                       onClick={() => handleDelete(test.id, index)}
                       style={deleteBtnStyle}
                       aria-label="Delete test"
                       title="Delete"
                     >
-                      🗑
+                      <Trash2 size={18} stroke="black" />
                     </button>
                   </div>
                 </div>
