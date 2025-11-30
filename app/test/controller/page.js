@@ -31,40 +31,36 @@ function TestControllerInner() {
         // ✅ SHUFFLE CHANGES (ONLY THIS WAS ADDED)
         // ---------------------------------------------------------
 
-       
-       const earlyTypes = normalized.filter(
-  (q) =>
-    q.type === "multiple-choice" ||
-    q.type === "true-false" ||
-    q.type === "multi-select"
-);
+        const earlyTypes = normalized.filter(
+          (q) =>
+            q.type === "multiple-choice" ||
+            q.type === "true-false" ||
+            q.type === "multi-select"
+        );
 
-// Separate them instead of mixing them
-const shortAnswerTypes = normalized.filter(
-  (q) => q.type === "short-answer"
-);
+        const shortAnswerTypes = normalized.filter(
+          (q) => q.type === "short-answer"
+        );
 
-const openResponseTypes = normalized.filter(
-  (q) => q.type === "open-response"
-);
+        const openResponseTypes = normalized.filter(
+          (q) => q.type === "open-response"
+        );
 
-// Shuffle early group only
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+        function shuffle(arr) {
+          for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+          }
+          return arr;
+        }
 
-shuffle(earlyTypes);
+        shuffle(earlyTypes);
 
-// Final order
-const finalOrder = [
-  ...earlyTypes,
-  ...shortAnswerTypes,
-  ...openResponseTypes,
-];
+        const finalOrder = [
+          ...earlyTypes,
+          ...shortAnswerTypes,
+          ...openResponseTypes,
+        ];
 
         // ---------------------------------------------------------
 
@@ -112,14 +108,27 @@ const finalOrder = [
         ? userAnswer
         : [userAnswer];
 
-    const safeCorrectAnswer =
-      question.correct === undefined || question.correct === null
-        ? []
-        : Array.isArray(question.correct)
-        ? question.correct.map((ans) =>
-            typeof ans === "number" ? ans : question.answers.indexOf(ans)
-          )
-        : [question.answers.indexOf(question.correct)];
+    // ---------------------------------------------------------
+    // ✅ FIX #1 — REAL correct answer detection
+    // ---------------------------------------------------------
+    let safeCorrectAnswer = [];
+
+    if (question.type === "multiple-choice") {
+      const idx = question.choices.indexOf(question.answer);
+      safeCorrectAnswer = [idx];
+    } else if (question.type === "true-false") {
+      safeCorrectAnswer = [question.answer];
+    } else if (question.type === "multi-select") {
+      safeCorrectAnswer = question.answer.map((ans) =>
+        question.choices.indexOf(ans)
+      );
+    } else if (
+      question.type === "short-answer" ||
+      question.type === "open-response"
+    ) {
+      safeCorrectAnswer = [question.answer];
+    }
+    // ---------------------------------------------------------
 
     const stored = sessionStorage.getItem("testData");
     let data;
@@ -129,12 +138,17 @@ const finalOrder = [
       data = { questions: [] };
     }
 
+    // ---------------------------------------------------------
+    // ✅ FIX #2 — Save correctAnswer so progress page can show it
+    // ---------------------------------------------------------
     data.questions[index] = {
       ...question,
       userAnswer: safeUserAnswer,
+      correctAnswer: safeCorrectAnswer,
       isCorrect: correct,
       topic: question.topic || topic,
     };
+    // ---------------------------------------------------------
 
     sessionStorage.setItem("testData", JSON.stringify(data));
 
