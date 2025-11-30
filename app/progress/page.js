@@ -1,4 +1,4 @@
-// FULL FILE WITH ICON FIX AND UPDATED BEST TEST CARD
+// FULL FILE WITH BEST TEST UPGRADE
 "use client";
 
 import { useEffect, useState } from "react";
@@ -345,54 +345,254 @@ export default function ProgressPage() {
               overflowX: "auto",
             }}
           >
-            {/* ...other stats cards unchanged */}
+
+            {/* Average Score */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.12)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: cardTextColor,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <div
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  margin: "0 auto 10px",
+                  borderRadius: "50%",
+                  border: "6px solid rgba(0,0,0,0.08)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  fontSize: "1.2rem",
+                  background: "white",
+                  color: cardTextColor,
+                }}
+              >
+                {tests.length === 0 ? "0%" : `${avgPercent}%`}
+              </div>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Average Score</p>
+            </div>
+
+            {/* Avg Questions */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.12)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: cardTextColor,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0, color: cardTextColor }}>{avgNumQuestions}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Avg Number of Questions</p>
+            </div>
+
+            {/* Avg Difficulty */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.12)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: cardTextColor,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0, color: cardTextColor }}>{avgDifficultyLabel}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Avg Difficulty</p>
+            </div>
+
+            {/* Most Used Type */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.12)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: cardTextColor,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0, color: cardTextColor }}>{mostUsedType}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Most Used Test Type</p>
+            </div>
+
+            {/* Most Used Topic */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                border: "3px solid rgba(0,0,0,0.12)",
+                padding: "20px",
+                textAlign: "center",
+                minWidth: "160px",
+                color: cardTextColor,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 style={{ margin: 0, color: cardTextColor }}>{mostUsedTopic}</h2>
+              <p style={{ fontSize: "0.9rem", color: cardTextColor }}>Most Common Topic</p>
+            </div>
           </div>
 
-          {/* ------------------------------ */}
-          {/*        BEST TEST CARD UPDATED */}
-          {/* ------------------------------ */}
+          {/* Best Test - Upgraded Hero Card */}
           <div
             style={{
               background: "white",
               color: cardTextColor,
-              borderRadius: "20px",
-              padding: "24px",
-              marginBottom: "40px",
-              border: "2px solid rgba(0,0,0,0.08)",
+              borderRadius: "28px",
+              padding: "36px",
+              marginBottom: "50px",
+              border: "3px solid rgba(0,0,0,0.12)",
+              boxShadow: "0 12px 36px rgba(0,0,0,0.2)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+              maxWidth: "720px",
+              margin: "0 auto 50px auto",
             }}
           >
-            <h2 style={{ marginBottom: "10px", fontWeight: 700, color: cardTextColor }}>
+            <h2 style={{ marginBottom: "16px", fontWeight: 900, fontSize: "1.8rem", color: cardTextColor }}>
               Your Best Test Ever
             </h2>
 
             {bestTest ? (
-              <div
-                style={{
-                  background: "#fafafa",
-                  border: "2px solid rgba(0,0,0,0.08)",
-                  borderRadius: "14px",
-                  padding: "18px 20px",
-                  marginBottom: "10px",
-                }}
-              >
-                <h3 style={{ margin: 0, fontWeight: 700, color: cardTextColor }}>
-                  {bestTest.topic}
-                </h3>
-                <p style={{ margin: 0, color: cardTextColor }}>
-                  Score: {bestTest.score}/{bestTest.total} ({bestTest.percent}%)
-                  {" — "}
-                  {(bestTest.questions || []).length} questions
-                  {" — "}
-                  Difficulty: {difficultyLabel(bestTest.difficultyNumber)}
+              <>
+                <div
+                  style={{
+                    fontSize: "2rem",
+                    fontWeight: 800,
+                    color: "#1976d2",
+                    marginBottom: "14px",
+                  }}
+                >
+                  {bestTest.percent}%
+                </div>
+                <p style={{ fontSize: "1.1rem", color: cardTextColor, marginBottom: "8px" }}>
+                  Topic: <b>{bestTest.topic}</b>
                 </p>
-              </div>
+                <p style={{ fontSize: "1rem", color: cardTextColor }}>
+                  Score: <b>{bestTest.score}/{bestTest.total}</b>
+                </p>
+              </>
             ) : (
               <p style={{ color: cardTextColor }}>No test data yet</p>
             )}
           </div>
 
           {/* Saved Tests */}
-          {/* ...the saved tests list unchanged */}
+          <h2 style={{ marginBottom: "20px", fontWeight: 700, color: "white" }}>Your Saved Tests</h2>
+
+          {tests.length === 0 ? (
+            <p style={{ textAlign: "center", opacity: 0.8, color: "white" }}>No saved tests yet.</p>
+          ) : (
+            tests.map((test, index) => (
+              <div
+                key={test.id || index}
+                style={{
+                  background: "white",
+                  color: cardTextColor,
+                  borderRadius: "12px",
+                  padding: "15px",
+                  marginBottom: "18px",
+                  border: "2px solid rgba(0,0,0,0.06)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <h3 style={{ margin: 0, fontWeight: 700, color: cardTextColor }}>{test.topic}</h3>
+                    <p style={{ margin: 0, color: cardTextColor }}>
+                      Score: {test.score}/{test.total} ({test.percent}%) —{" "}
+                      {(test.questions || []).length} questions — Difficulty:{" "}
+                      {difficultyLabel(test.difficultyNumber)}
+                    </p>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "12px" }}>
+
+                    {/* RETAKE BUTTON */}
+                    <button
+                      onClick={() => openRetakeModal(test.id)}
+                      style={restartBtnStyle}
+                      aria-label="Retake / Revised"
+                      title="Retake / Revised"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="black">
+                        <path d="M17.65 6.35A8 8 0 1 0 19 12h-2a6 6 0 1 1-1.76-4.24L12 10h8V2l-2.35 2.35z"/>
+                      </svg>
+                    </button>
+
+                    {/* VIEW BUTTON */}
+                    <button
+                      onClick={() =>
+                        setExpandedIndex(expandedIndex === index ? null : index)
+                      }
+                      style={viewBtnStyle}
+                      aria-label="View test"
+                      title="View"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="black">
+                        <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+                      </svg>
+                    </button>
+
+                    {/* DELETE BUTTON */}
+                    <button
+                      onClick={() => handleDelete(test.id, index)}
+                      style={deleteBtnStyle}
+                      aria-label="Delete test"
+                      title="Delete"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="black">
+                        <path d="M3 6l3 18h12l3-18H3zm5 16V10h2v12H8zm6 0V10h2v12h-2zM19 4h-4l-1-2h-4l-1 2H5v2h14V4z"/>
+                      </svg>
+                    </button>
+
+                  </div>
+                </div>
+
+                {expandedIndex === index && (
+                  <div style={{ marginTop: "14px", paddingLeft: "10px" }}>
+                    {(test.questions || []).map((q, i) => (
+                      <div key={i} style={{ marginBottom: "12px", color: cardTextColor }}>
+                        <p style={{ color: cardTextColor }}>
+                          <b>Q{i + 1}:</b> {q.question}
+                        </p>
+                        <p style={{ color: cardTextColor }}>User Answer: {q.userAnswer}</p>
+                        <p style={{ color: cardTextColor }}>Correct Answer: {q.correctAnswer}</p>
+                        {q.explanation && (
+                          <p style={{ color: cardTextColor }}>Explanation: {q.explanation}</p>
+                        )}
+                        <p style={{ color: q.isCorrect ? "green" : "red" }}>
+                          {q.isCorrect ? "Correct" : "Incorrect"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </>
