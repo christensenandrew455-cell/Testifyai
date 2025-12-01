@@ -10,8 +10,8 @@ import { AuthProvider } from "./AuthContext";   // <--- ADD THIS
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "TestifyAI",
-  description: "For all your testing needs — powered by AI precision.",
+  title: "ThetestifyAI",
+  description: "study, learn, and improve",
 };
 
 export default function RootLayout({ children }) {
