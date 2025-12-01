@@ -13,15 +13,15 @@ Generate ${numQuestions} MULTIPLE-CHOICE questions about "${topic}".
 Difficulty: ${difficulty}.
 
 Difficulty scale (1–9):
-1 = Easy / Very Simple
-2 = Easy / Slightly Challenging
-3 = Easy / Hard
-4 = Medium / Easy
-5 = Medium / Medium
-6 = Medium / Hard
-7 = Hard / Easy
-8 = Hard / Medium
-9 = Hard / Very Hard
+1 = easy easy, 
+2 = medium easy, 
+3 = hard easy, 
+4 = easy medium, 
+5 = medium medium, 
+6 = hard medium, 
+7 = easy hard, 
+8 = medium hard, 
+9 = hard hard
 
 For EACH question, follow this EXACT process:
 
