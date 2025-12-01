@@ -101,7 +101,7 @@ export default function HomePage() {
               marginBottom: "40px",
             }}
           >
-            Your personal AI-powered learning assistant — fast, simple, and fun.
+            Instant quizzes, smart questions, and direct feedback. Learn anything, anywhere!
           </p>
 
           {/* Buttons */}
