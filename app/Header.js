@@ -28,7 +28,7 @@ export default function Header() {
 
   const handleProtectedRoute = (href) => {
     if (!user) {
-      setShowLoginModal(true); // 🔥 OPEN MODAL INSTEAD OF REDIRECTING
+      setShowLoginModal(true);
       return;
     }
 
@@ -54,7 +54,7 @@ export default function Header() {
           alignItems: "center",
         }}
       >
-        {/* LOGO (Hidden on mobile) */}
+        {/* LOGO */}
         <span
           className="logo-text"
           style={{
@@ -67,12 +67,23 @@ export default function Header() {
           thetestifyai
         </span>
 
-        {/* Responsive CSS */}
+        {/* Inline responsive CSS */}
         <style>
           {`
             @media (max-width: 768px) {
               .logo-text {
                 display: none !important;
+              }
+
+              nav {
+                gap: 12px !important;
+                font-size: 0.75rem !important;
+                letter-spacing: 0.3px !important;
+              }
+
+              nav a,
+              nav span {
+                font-size: 0.75rem !important;
               }
             }
           `}
@@ -106,7 +117,7 @@ export default function Header() {
         </nav>
       </header>
 
-      {/* 🔥 LOGIN MODAL */}
+      {/* LOGIN MODAL */}
       {showLoginModal && (
         <div
           style={{
