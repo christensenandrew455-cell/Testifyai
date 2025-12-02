@@ -60,7 +60,8 @@ export default function HomePage() {
         {/* HERO SECTION */}
         <div
           style={{
-            minHeight: "100vh",
+            minHeight: "80vh", // ⬅️ Moved hero UP (100vh → 80vh)
+            marginTop: "40px", // ⬅️ Adds a little space under header
             width: "100%",
             display: "flex",
             flexDirection: "column",
@@ -88,44 +89,19 @@ export default function HomePage() {
               marginBottom: "40px",
             }}
           >
-            Instant quizzes, smart questions, and direct feedback. Learn anything, anywhere!
-                                       Test it out for free
+            Instant quizzes, smart questions, and direct feedback. Learn anything,
+            anywhere! Test it out for free.
           </p>
 
-          {/* Buttons */}
+          {/* Buttons (Learn More removed) */}
           <div
             style={{
               display: "flex",
-              gap: "24px",
               justifyContent: "center",
               alignItems: "center",
               flexWrap: "wrap",
             }}
           >
-            <button
-              onClick={() => router.push("/learn")}
-              style={{
-                padding: "16px 30px",
-                fontSize: "1.1rem",
-                fontWeight: 700,
-                borderRadius: "16px",
-                border: "3px solid rgba(255,255,255,0.45)",
-                backgroundColor: "rgba(255,255,255,0.18)",
-                color: "white",
-                cursor: "pointer",
-                backdropFilter: "blur(8px)",
-                transition: "0.25s",
-              }}
-              onMouseOver={(e) =>
-                (e.target.style.backgroundColor = "rgba(255,255,255,0.28)")
-              }
-              onMouseOut={(e) =>
-                (e.target.style.backgroundColor = "rgba(255,255,255,0.18)")
-              }
-            >
-              Learn More
-            </button>
-
             <button
               onClick={() => router.push("/testsetup")}
               style={{
@@ -152,7 +128,7 @@ export default function HomePage() {
         </div>
 
         {/* EXTRA SPACE */}
-        <div style={{ height: "25vh" }}></div>
+        <div style={{ height: "15vh" }}></div>
 
         {/* FEATURES SECTION */}
         <div
@@ -229,3 +205,4 @@ export default function HomePage() {
     </>
   );
 }
+
