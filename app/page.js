@@ -102,6 +102,7 @@ export default function HomePage() {
             }}
           >
             Instant quizzes, smart questions, and direct feedback. Learn anything, anywhere!
+                                       test it out for free
           </p>
 
           {/* Buttons */}
