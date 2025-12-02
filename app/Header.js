@@ -103,15 +103,24 @@ export default function Header() {
           <Link href="/" style={{ color: "#333" }}>Home</Link>
           <Link href="/testsetup" style={{ color: "#333" }}>Test Me</Link>
 
-          <span style={{ color: "#333", cursor: "pointer" }} onClick={() => handleProtectedRoute("/data")}>
+          <span
+            style={{ color: "#333", cursor: "pointer" }}
+            onClick={() => handleProtectedRoute("/data")}
+          >
             Data
           </span>
 
-          <span style={{ color: "#333", cursor: "pointer" }} onClick={() => handleProtectedRoute("/progress")}>
+          <span
+            style={{ color: "#333", cursor: "pointer" }}
+            onClick={() => handleProtectedRoute("/progress")}
+          >
             Progress
           </span>
 
-          <span style={{ color: "#333", cursor: "pointer" }} onClick={() => handleProtectedRoute("/profile")}>
+          <span
+            style={{ color: "#333", cursor: "pointer" }}
+            onClick={() => handleProtectedRoute("/profile")}
+          >
             Profile
           </span>
         </nav>
@@ -192,7 +201,8 @@ export default function Header() {
                 color: "black",
               }}
             >
-              To access this feature, you need to be signed in.  
+              To access this feature, you need to be signed in.
+              <br />
               Create an account or log in below.
             </p>
 
@@ -206,6 +216,7 @@ export default function Header() {
             >
               <Link
                 href="/signup"
+                onClick={() => setShowLoginModal(false)}
                 style={{
                   padding: "16px 0",
                   borderRadius: "12px",
@@ -222,6 +233,7 @@ export default function Header() {
 
               <Link
                 href="/login"
+                onClick={() => setShowLoginModal(false)}
                 style={{
                   padding: "16px 0",
                   borderRadius: "12px",
