@@ -110,18 +110,7 @@ export default function TestSetupPage({ user }) {
       }}
     >
       <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "30px",
-          fontWeight: 700,
-          color: "white",
-          fontSize: "1.2rem",
-        }}
-      >
-        TheTestifyAI
-      </div>
-
+       
       {/* Test Setup Card */}
       <div
         style={{
