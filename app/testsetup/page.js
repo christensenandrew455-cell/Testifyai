@@ -109,8 +109,6 @@ export default function TestSetupPage({ user }) {
         position: "relative",
       }}
     >
-      <div></div>
-       
       {/* Test Setup Card */}
       <div
         style={{
