@@ -57,19 +57,6 @@ export default function HomePage() {
           position: "relative",
         }}
       >
-        {/* LOGO */}
-        <div
-          style={{
-            position: "absolute",
-            top: "20px",
-            right: "30px",
-            fontWeight: 700,
-            fontSize: "1.2rem",
-          }}
-        >
-          TheTestifyAI
-        </div>
-
         {/* HERO SECTION */}
         <div
           style={{
