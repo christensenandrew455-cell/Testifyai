@@ -60,7 +60,7 @@ export default function HomePage() {
         {/* HERO SECTION */}
         <div
           style={{
-            minHeight: "80vh", // ⬅️ Moved hero UP (100vh → 80vh)
+            minHeight: "40vh", // ⬅️ Moved hero UP (100vh → 80vh)
             marginTop: "40px", // ⬅️ Adds a little space under header
             width: "100%",
             display: "flex",
