@@ -54,7 +54,9 @@ export default function Header() {
           alignItems: "center",
         }}
       >
+        {/* LOGO (Hidden on mobile) */}
         <span
+          className="logo-text"
           style={{
             fontWeight: "800",
             fontSize: "1.25rem",
@@ -64,6 +66,17 @@ export default function Header() {
         >
           thetestifyai
         </span>
+
+        {/* Responsive CSS */}
+        <style>
+          {`
+            @media (max-width: 768px) {
+              .logo-text {
+                display: none !important;
+              }
+            }
+          `}
+        </style>
 
         <nav
           style={{
@@ -93,7 +106,7 @@ export default function Header() {
         </nav>
       </header>
 
-      {/* 🔥 LOGIN MODAL (REPLACES signuplogin/page.js COMPLETELY) */}
+      {/* 🔥 LOGIN MODAL */}
       {showLoginModal && (
         <div
           style={{
@@ -127,7 +140,6 @@ export default function Header() {
               border: "3px solid rgba(0,0,0,0.06)",
             }}
           >
-            {/* Close button */}
             <button
               onClick={() => setShowLoginModal(false)}
               style={{
@@ -173,7 +185,6 @@ export default function Header() {
               Create an account or log in below.
             </p>
 
-            {/* BUTTONS */}
             <div
               style={{
                 display: "flex",
