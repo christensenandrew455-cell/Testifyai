@@ -186,7 +186,6 @@ export default function ProgressPage() {
 
   const fetchTestsData = async () => {
     if (!user?.uid) {
-      // Load local fallback
       try {
         const local = JSON.parse(localStorage.getItem("savedTests") || "[]");
         const normalized = local.map((t, i) => ({
@@ -288,7 +287,22 @@ export default function ProgressPage() {
 
   // ---------- COMPUTED STATS ----------
   const totalTests = tests.length;
-  const bestTest = totalTests ? [...tests].sort((a, b) => (b.percent || 0) - (a.percent || 0))[0] : null;
+
+  // New bestTest logic
+  const bestTest = totalTests
+    ? [...tests].sort((a, b) => {
+        const aWeighted = (a.percent || 0) * ((a.questions?.length || 1));
+        const bWeighted = (b.percent || 0) * ((b.questions?.length || 1));
+        if (bWeighted !== aWeighted) return bWeighted - aWeighted;
+
+        const aDiff = Number(a.difficultyNumber || 1);
+        const bDiff = Number(b.difficultyNumber || 1);
+        if (bDiff !== aDiff) return bDiff - aDiff;
+
+        return 0;
+      })[0]
+    : null;
+
   const avgPercent = totalTests ? Math.round(tests.reduce((a, t) => a + (Number(t.percent) || 0), 0) / totalTests) : 0;
   const avgNumQuestions = totalTests ? Math.round(tests.reduce((a, t) => a + ((t.questions || []).length || 0), 0) / totalTests) : 0;
   const avgDifficultyNumber = totalTests ? Math.round(tests.reduce((a, t) => a + (Number(t.difficultyNumber) || 1), 0) / totalTests) : 0;
