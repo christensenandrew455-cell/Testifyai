@@ -8,14 +8,14 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "*",
-    "@next/swc-linux-x64-gnu": "*",
-    "react": "*",
-    "react-dom": "*",
-    "openai": "*",
-    "@vercel/analytics": "*",
-    "firebase": "*",
-    "next-auth": "*",
-    "firebase-admin": "*"
+    "next": "latest",
+    "@next/swc-linux-x64-gnu": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "openai": "latest",
+    "@vercel/analytics": "latest",
+    "firebase": "latest",
+    "next-auth": "latest",
+    "firebase-admin": "latest"
   }
 }
