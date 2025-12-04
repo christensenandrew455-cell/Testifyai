@@ -4,45 +4,38 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
-import { saveTest } from "../lib/firestore";
+import { saveTest, incrementTestCount } from "../lib/firestore"; // ⭐ NEW
 import { v4 as uuidv4 } from "uuid";
 
-// ⭐ Modal component (copied from signuplogin & styled the same)
+// ⭐ Modal
 function LoginModal({ onClose }) {
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        height: "100vh",
-        width: "100vw",
-        background: "rgba(0,0,0,0.25)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "20px",
-        zIndex: 9999,
-      }}
-    >
-      <div
-        style={{
-          background: "white",
-          borderRadius: "40px",
-          padding: "50px 40px",
-          width: "95%",
-          maxWidth: "540px",
-          color: "black",
-          fontFamily: "Segoe UI, Roboto, sans-serif",
-          textAlign: "center",
-          position: "relative",
-          boxShadow: "0 10px 26px rgba(0,0,0,0.28)",
-          border: "3px solid rgba(0,0,0,0.06)",
-        }}
-      >
-        {/* Close Button */}
+    <div style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      height: "100vh",
+      width: "100vw",
+      background: "rgba(0,0,0,0.25)",
+      backdropFilter: "blur(12px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px",
+      zIndex: 9999
+    }}>
+      <div style={{
+        background: "white",
+        borderRadius: "40px",
+        padding: "50px 40px",
+        width: "95%",
+        maxWidth: "540px",
+        color: "black",
+        textAlign: "center",
+        position: "relative",
+        boxShadow: "0 10px 26px rgba(0,0,0,0.28)",
+        border: "3px solid rgba(0,0,0,0.06)"
+      }}>
         <button
           onClick={onClose}
           style={{
@@ -51,51 +44,24 @@ function LoginModal({ onClose }) {
             right: "22px",
             background: "rgba(0,0,0,0.05)",
             border: "2px solid rgba(0,0,0,0.15)",
-            backdropFilter: "blur(4px)",
-            WebkitBackdropFilter: "blur(4px)",
             borderRadius: "50%",
             width: "36px",
             height: "36px",
             fontSize: "1.2rem",
             fontWeight: 700,
             cursor: "pointer",
-            color: "black",
+            color: "black"
           }}
         >
           ✕
         </button>
 
-        <h2
-          style={{
-            marginBottom: "10px",
-            fontWeight: 800,
-            fontSize: "1.6rem",
-            color: "black",
-          }}
-        >
-          Sign In Required
-        </h2>
-
-        <p
-          style={{
-            marginBottom: "30px",
-            opacity: 0.85,
-            fontSize: "1.05rem",
-            lineHeight: "1.45",
-            color: "black",
-          }}
-        >
+        <h2 style={{ fontWeight: 800, fontSize: "1.6rem" }}>Sign In Required</h2>
+        <p style={{ marginBottom: "30px", opacity: 0.85 }}>
           To save your test results, please sign in below.
         </p>
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "18px",
-            width: "100%",
-          }}
-        >
+        <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
           <Link
             href="/signup"
             style={{
@@ -106,8 +72,7 @@ function LoginModal({ onClose }) {
               fontWeight: 700,
               fontSize: "1.05rem",
               textDecoration: "none",
-              display: "block",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              display: "block"
             }}
           >
             Sign Up
@@ -124,9 +89,7 @@ function LoginModal({ onClose }) {
               fontWeight: 700,
               fontSize: "1.05rem",
               textDecoration: "none",
-              display: "block",
-              backdropFilter: "blur(4px)",
-              WebkitBackdropFilter: "blur(4px)",
+              display: "block"
             }}
           >
             Log In
@@ -147,10 +110,9 @@ function ResultsInner() {
   const [topic, setTopic] = useState("Unknown Topic");
   const [testData, setTestData] = useState(null);
 
-  // ⭐ Modal visibility
   const [showModal, setShowModal] = useState(false);
 
-  // Load test data from sessionStorage
+  // ⭐ Load test data
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("testData");
@@ -175,18 +137,28 @@ function ResultsInner() {
         setTopic(topicParam);
       }
     } catch (err) {
-      console.error("Error parsing test data:", err);
+      console.error("Error loading test data:", err);
     }
   }, [searchParams]);
 
   const percent = total > 0 ? Math.round((score / total) * 100) : 0;
 
-  function getMessage() {
-    if (percent >= 90) return "🔥 Master Level! Excellent job!";
-    if (percent >= 70) return "💪 Great work! You’re learning fast.";
-    if (percent >= 50) return "🧠 Not bad — keep studying!";
-    return "📘 Keep going — you’ll improve!";
-  }
+  // ⭐ NEW: Automatically count test as "taken"
+  useEffect(() => {
+    if (!topic || total === 0) return;
+
+    const increment = async () => {
+      if (user?.uid) {
+        await incrementTestCount(user.uid);
+      } else {
+        // guest mode
+        const current = parseInt(localStorage.getItem("testsTaken") || "0", 10);
+        localStorage.setItem("testsTaken", current + 1);
+      }
+    };
+
+    increment();
+  }, [user, total, topic]);
 
   function difficultyLabel(num) {
     if (num >= 1 && num <= 3) return "Beginner";
@@ -195,10 +167,10 @@ function ResultsInner() {
     return "Unknown";
   }
 
-  // ⭐ SAVE BUTTON
+  // ⭐ SAVE manually
   const handleSave = async () => {
     if (!user) {
-      setShowModal(true); // show modal instead of redirecting
+      setShowModal(true);
       return;
     }
 
@@ -223,95 +195,44 @@ function ResultsInner() {
 
   return (
     <>
-      {/* ⭐ Render login modal if needed */}
       {showModal && <LoginModal onClose={() => setShowModal(false)} />}
 
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#f8fafc",
-          color: "#222",
-          padding: "40px 20px",
-        }}
-      >
-        <div
-          style={{
-            border: "3px solid #1976d2",
-            borderRadius: "24px",
-            backgroundColor: "white",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-            padding: "40px",
-            textAlign: "center",
-            width: "100%",
-            maxWidth: "600px",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "2rem",
-              fontWeight: "800",
-              color: "#1976d2",
-              marginBottom: "25px",
-            }}
-          >
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f8fafc",
+        padding: "40px 20px"
+      }}>
+        <div style={{
+          border: "3px solid #1976d2",
+          borderRadius: "24px",
+          backgroundColor: "white",
+          padding: "40px",
+          textAlign: "center",
+          width: "100%",
+          maxWidth: "600px"
+        }}>
+          <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#1976d2" }}>
             Your Results
           </h1>
 
-          <h2
-            style={{
-              fontSize: "1.4rem",
-              fontWeight: "700",
-              color: "#333",
-              marginBottom: "10px",
-            }}
-          >
-            {topic}
-          </h2>
+          <h2 style={{ fontSize: "1.4rem", fontWeight: 700 }}>{topic}</h2>
 
-          <p
-            style={{
-              fontSize: "1.8rem",
-              fontWeight: "800",
-              color: "#333",
-              marginBottom: "5px",
-            }}
-          >
-            {score} / {total}
-          </p>
+          <p style={{ fontSize: "1.8rem", fontWeight: 800 }}>{score} / {total}</p>
 
-          <p
-            style={{
-              fontSize: "1.3rem",
-              fontWeight: "600",
-              color: "#555",
-              marginBottom: "20px",
-            }}
-          >
-            {percent}%
-          </p>
-
-          <p style={{ fontSize: "1.1rem", marginBottom: "30px", color: "#555" }}>
-            {getMessage()}
-          </p>
+          <p style={{ fontSize: "1.3rem", fontWeight: 600 }}>{percent}%</p>
 
           <div style={{ display: "flex", justifyContent: "center", gap: "16px" }}>
             <Link href="/">
-              <button
-                style={{
-                  backgroundColor: "#e0e0e0",
-                  color: "#333",
-                  border: "none",
-                  borderRadius: "12px",
-                  padding: "10px 20px",
-                  fontWeight: "700",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                }}
-              >
+              <button style={{
+                backgroundColor: "#e0e0e0",
+                padding: "10px 20px",
+                borderRadius: "12px",
+                fontWeight: 700
+              }}>
                 Home
               </button>
             </Link>
@@ -321,28 +242,14 @@ function ResultsInner() {
               style={{
                 backgroundColor: "#1976d2",
                 color: "white",
-                border: "none",
                 borderRadius: "12px",
                 padding: "10px 20px",
-                fontWeight: "700",
-                cursor: "pointer",
-                fontSize: "1rem",
+                fontWeight: 700
               }}
             >
               Save
             </button>
           </div>
-        </div>
-
-        <div
-          style={{
-            marginTop: "20px",
-            fontWeight: "700",
-            color: "#1976d2",
-            fontSize: "1.1rem",
-          }}
-        >
-          TheTestifyAI
         </div>
       </div>
     </>
