@@ -7,12 +7,15 @@ import {
   collection,
   getDocs,
   deleteDoc,
+  increment
 } from "firebase/firestore";
 
-// ✅ Save a new test as /users/{uid}/data/{testId}
+/* -------------------------------------------------------
+   SAVE A TEST (Called ONLY when clicking "Save")
+-------------------------------------------------------- */
 export async function saveTest(uid, testId, testData) {
   try {
-    // ❗ STOP empty tests from being saved
+    // Prevent saving empty or broken test files
     if (
       !testData ||
       !testData.questions ||
@@ -23,7 +26,6 @@ export async function saveTest(uid, testId, testData) {
       return { success: false, error: "EMPTY_TEST" };
     }
 
-    // ❗ extra protection — must have topic & total
     if (!testData.topic || !testData.total) {
       console.warn("❌ saveTest aborted — test missing essential fields");
       return { success: false, error: "INCOMPLETE_TEST" };
@@ -43,15 +45,17 @@ export async function saveTest(uid, testId, testData) {
   }
 }
 
-// ✅ Get ALL tests for a user
+/* -------------------------------------------------------
+   GET ALL SAVED TESTS
+-------------------------------------------------------- */
 export async function getAllTests(uid) {
   try {
     const collectionRef = collection(db, "users", uid, "data");
     const snap = await getDocs(collectionRef);
 
     const tests = [];
-    snap.forEach((doc) => {
-      tests.push({ id: doc.id, ...doc.data() });
+    snap.forEach((docItem) => {
+      tests.push({ id: docItem.id, ...docItem.data() });
     });
 
     return tests;
@@ -61,7 +65,9 @@ export async function getAllTests(uid) {
   }
 }
 
-// ✅ Get ONE test by ID
+/* -------------------------------------------------------
+   GET A SINGLE TEST
+-------------------------------------------------------- */
 export async function getTest(uid, testId) {
   try {
     const ref = doc(db, "users", uid, "data", testId);
@@ -73,12 +79,13 @@ export async function getTest(uid, testId) {
   }
 }
 
-// ✅ Update existing test
+/* -------------------------------------------------------
+   UPDATE A TEST
+-------------------------------------------------------- */
 export async function updateTest(uid, testId, updates) {
   try {
     const ref = doc(db, "users", uid, "data", testId);
     await updateDoc(ref, updates);
-
     return { success: true };
   } catch (err) {
     console.error("updateTest error:", err);
@@ -86,7 +93,9 @@ export async function updateTest(uid, testId, updates) {
   }
 }
 
-// ❌ Delete test (optional)
+/* -------------------------------------------------------
+   DELETE A TEST
+-------------------------------------------------------- */
 export async function deleteTest(uid, testId) {
   try {
     const ref = doc(db, "users", uid, "data", testId);
@@ -94,6 +103,31 @@ export async function deleteTest(uid, testId) {
     return { success: true };
   } catch (err) {
     console.error("deleteTest error:", err);
+    return { success: false, error: err };
+  }
+}
+
+/* -------------------------------------------------------
+   ⭐ INCREMENT TESTS TAKEN — DOES NOT SAVE TEST DATA ⭐
+-------------------------------------------------------- */
+export async function incrementTestCount(uid) {
+  try {
+    // This creates:
+    //
+    // users/{uid}/stats/progress
+    //     → testsTaken: N
+    //
+    const ref = doc(db, "users", uid, "stats", "progress");
+
+    await setDoc(
+      ref,
+      { testsTaken: increment(1) },
+      { merge: true }
+    );
+
+    return { success: true };
+  } catch (err) {
+    console.error("incrementTestCount error:", err);
     return { success: false, error: err };
   }
 }
