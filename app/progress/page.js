@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { getAllTests } from "../lib/firestore";
 import { db } from "../firebase";
-import { doc, deleteDoc } from "firebase/firestore";
+import { doc, deleteDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
 // ---------- STYLE CONSTANTS ----------
@@ -37,8 +37,8 @@ const deleteBtnStyle = {
   fontWeight: 700,
 };
 
-// ---------- STAT CARD COMPONENT ----------
-const StatCard = ({ title, value, subtitle }) => (
+// ---------- STAT CARD ----------
+const StatCard = ({ value, subtitle }) => (
   <div style={{
     background: "white",
     borderRadius: "16px",
@@ -54,7 +54,7 @@ const StatCard = ({ title, value, subtitle }) => (
   </div>
 );
 
-// ---------- RETAKE MODAL COMPONENT ----------
+// ---------- RETAKE MODAL ----------
 const RetakeModal = ({ open, onClose, onRetake, onRevised }) => {
   if (!open) return null;
   return (
@@ -77,9 +77,9 @@ const RetakeModal = ({ open, onClose, onRetake, onRevised }) => {
       }}>
         <h2 style={{ marginBottom: "12px", color: cardTextColor }}>Retake Options</h2>
         <p style={{ color: cardTextColor, marginBottom: "22px" }}>
-          Would you like to retake the exact same test, or take a revised version
-          with similar questions worded differently?
+          Retake the same test or get a revised version?
         </p>
+
         <div style={{ display: "flex", justifyContent: "center", gap: "14px" }}>
           <button onClick={onRetake} style={{
             padding: "10px 16px",
@@ -90,6 +90,7 @@ const RetakeModal = ({ open, onClose, onRetake, onRevised }) => {
             cursor: "pointer",
             fontWeight: 700
           }}>Retake</button>
+
           <button onClick={onRevised} style={{
             padding: "10px 16px",
             background: "#ff9800",
@@ -100,6 +101,7 @@ const RetakeModal = ({ open, onClose, onRetake, onRevised }) => {
             fontWeight: 700
           }}>Revised</button>
         </div>
+
         <button onClick={onClose} style={{
           marginTop: "18px",
           background: "transparent",
@@ -113,13 +115,13 @@ const RetakeModal = ({ open, onClose, onRetake, onRevised }) => {
   );
 };
 
-// ---------- TEST CARD COMPONENT ----------
+// ---------- TEST CARD ----------
 const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }) => {
   const difficultyLabel = (num) => {
     const n = Number(num);
-    if (n >= 1 && n <= 3) return "Beginner";
-    if (n >= 4 && n <= 6) return "Apprentice";
-    if (n >= 7 && n <= 9) return "Master";
+    if (n <= 3) return "Beginner";
+    if (n <= 6) return "Apprentice";
+    if (n <= 9) return "Master";
     return "Unknown";
   };
 
@@ -135,9 +137,9 @@ const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h3 style={{ margin: 0, fontWeight: 700, fontSize: "1.3rem", color: cardTextColor }}>{test.topic}</h3>
-          <p style={{ margin: "6px 0", color: cardTextColor }}>
-            Score: {test.score}/{test.total} ({test.percent}%) — {(test.questions || []).length} questions — Difficulty: {difficultyLabel(test.difficultyNumber)}
+          <h3 style={{ margin: 0, fontWeight: 700, color: cardTextColor }}>{test.topic}</h3>
+          <p style={{ margin: "6px 0" }}>
+            Score: {test.score}/{test.total} ({test.percent}%) — Difficulty: {difficultyLabel(test.difficultyNumber)}
           </p>
         </div>
         <div style={{ display: "flex", gap: "12px" }}>
@@ -146,15 +148,18 @@ const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }
           <button onClick={() => onDelete(test.id)} style={deleteBtnStyle}>Delete</button>
         </div>
       </div>
+
       {expanded && (
-        <div style={{ marginTop: "14px", paddingLeft: "10px" }}>
+        <div style={{ marginTop: "14px" }}>
           {(test.questions || []).map((q, i) => (
-            <div key={i} style={{ marginBottom: "12px", color: cardTextColor }}>
-              <p><b>Q{i+1}:</b> {q.question}</p>
+            <div key={i} style={{ marginBottom: "12px" }}>
+              <p><b>Q{i + 1}:</b> {q.question}</p>
               <p>User Answer: {q.userAnswer}</p>
               <p>Correct Answer: {q.correctAnswer}</p>
               {q.explanation && <p>Explanation: {q.explanation}</p>}
-              <p style={{ color: q.isCorrect ? "green" : "red" }}>{q.isCorrect ? "Correct" : "Incorrect"}</p>
+              <p style={{ color: q.isCorrect ? "green" : "red" }}>
+                {q.isCorrect ? "Correct" : "Incorrect"}
+              </p>
             </div>
           ))}
         </div>
@@ -167,164 +172,130 @@ const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }
 export default function ProgressPage() {
   const { user } = useAuth();
   const [tests, setTests] = useState([]);
+  const [testsTaken, setTestsTaken] = useState(0);
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [error, setError] = useState(null);
+
   const [retakeModalOpen, setRetakeModalOpen] = useState(false);
   const [selectedTestId, setSelectedTestId] = useState(null);
 
   const router = useRouter();
 
-  // ---------- HELPER FUNCTIONS ----------
-  const difficultyLabel = (num) => {
-    const n = Number(num);
-    if (n >= 1 && n <= 3) return "Beginner";
-    if (n >= 4 && n <= 6) return "Apprentice";
-    if (n >= 7 && n <= 9) return "Master";
-    return "Unknown";
+  // ---------- LOAD Firestore Stats ----------
+  const fetchStats = async () => {
+    if (!user?.uid) return;
+
+    try {
+      const ref = doc(db, "users", user.uid, "stats", "progress");
+      const snap = await getDoc(ref);
+
+      if (snap.exists()) {
+        setTestsTaken(snap.data().testsTaken || 0);
+      } else {
+        setTestsTaken(0);
+      }
+    } catch (err) {
+      console.error("stats error:", err);
+      setTestsTaken(0);
+    }
   };
 
+  // ---------- LOAD Tests ----------
   const fetchTestsData = async () => {
     if (!user?.uid) {
+      // Guest mode
       try {
         const local = JSON.parse(localStorage.getItem("savedTests") || "[]");
-        const normalized = local.map((t, i) => ({
-          ...t,
-          id: t.id || `local-${i}`,
-          questions: Array.isArray(t.questions) ? t.questions : [],
-          difficultyNumber: Number(t.difficultyNumber || t.difficulty || 1),
-        }));
-        setTests(normalized);
+        setTests(local);
       } catch {
         setTests([]);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
       return;
     }
 
     try {
       const docs = await getAllTests(user.uid);
-      const safeDocs = docs.map((t) => ({
-        ...t,
-        questions: Array.isArray(t.questions) ? t.questions : [],
-        difficultyNumber: Number(t.difficultyNumber || 1),
-      }));
-      setTests(safeDocs);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load saved tests — using local fallback.");
-      const local = JSON.parse(localStorage.getItem("savedTests") || "[]");
-      setTests(local);
+      setTests(docs);
+    } catch {
+      setTests([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    if (!user) return;
     fetchTestsData();
+    fetchStats();
   }, [user]);
 
-  const handleDelete = async (testId) => {
-    const confirmDelete = confirm("Delete this saved test? This cannot be undone.");
-    if (!confirmDelete) return;
+  // ---------- COMPUTED STATS ----------
+  const totalSaved = tests.length;
+  const avgPercent = totalSaved
+    ? Math.round(tests.reduce((a, t) => a + (Number(t.percent) || 0), 0) / totalSaved)
+    : 0;
 
-    try {
-      if (user?.uid && testId && !String(testId).startsWith("local-")) {
-        await deleteDoc(doc(db, "users", user.uid, "data", testId));
-        setTests(prev => prev.filter(t => t.id !== testId));
-      } else {
-        const newTests = tests.filter(t => t.id !== testId);
-        setTests(newTests);
-        localStorage.setItem("savedTests", JSON.stringify(newTests));
-      }
-    } catch {
-      alert("Failed to delete test.");
-    }
+  const avgDifficultyNumber = totalSaved
+    ? Math.round(tests.reduce((a, t) => a + (Number(t.difficultyNumber) || 1), 0) / totalSaved)
+    : 0;
+
+  const difficultyLabel = (num) => {
+    const n = Number(num);
+    if (n <= 3) return "Beginner";
+    if (n <= 6) return "Apprentice";
+    return "Master";
   };
 
-  const openRetakeModal = (testId) => {
-    setSelectedTestId(testId);
+  const avgDifficulty = difficultyLabel(avgDifficultyNumber);
+
+  // ---------- BEST TEST ----------
+  const bestTest = totalSaved
+    ? [...tests].sort((a, b) => (b.percent || 0) - (a.percent || 0))[0]
+    : null;
+
+  // ---------- Delete ----------
+  const handleDelete = async (testId) => {
+    const ok = confirm("Delete this test?");
+    if (!ok) return;
+
+    try {
+      if (user?.uid) {
+        await deleteDoc(doc(db, "users", user.uid, "data", testId));
+      }
+      setTests(prev => prev.filter(t => t.id !== testId));
+    } catch {}
+  };
+
+  // ---------- Modal Controls ----------
+  const openRetakeModal = (id) => {
+    setSelectedTestId(id);
     setRetakeModalOpen(true);
   };
 
   const closeModal = () => {
-    setRetakeModalOpen(false);
     setSelectedTestId(null);
+    setRetakeModalOpen(false);
   };
 
-  const handleRetake = async () => {
-    if (!selectedTestId) return;
-    try {
-      await fetch("/api/retake", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ testId: selectedTestId }),
-      });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      closeModal();
-      router.push(`/testcontroller?mode=retake&testId=${encodeURIComponent(selectedTestId)}`);
-    }
+  const handleRetake = () => {
+    router.push(`/testcontroller?mode=retake&testId=${selectedTestId}`);
   };
 
-  const handleRevised = async () => {
-    if (!selectedTestId) return;
-    try {
-      await fetch("/api/revised", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ testId: selectedTestId }),
-      });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      closeModal();
-      router.push(`/testcontroller?mode=revised&testId=${encodeURIComponent(selectedTestId)}`);
-    }
+  const handleRevised = () => {
+    router.push(`/testcontroller?mode=revised&testId=${selectedTestId}`);
   };
 
-  // ---------- COMPUTED STATS ----------
-  const totalTests = tests.length;
-
-  // New bestTest logic
-  const bestTest = totalTests
-    ? [...tests].sort((a, b) => {
-        const aWeighted = (a.percent || 0) * ((a.questions?.length || 1));
-        const bWeighted = (b.percent || 0) * ((b.questions?.length || 1));
-        if (bWeighted !== aWeighted) return bWeighted - aWeighted;
-
-        const aDiff = Number(a.difficultyNumber || 1);
-        const bDiff = Number(b.difficultyNumber || 1);
-        if (bDiff !== aDiff) return bDiff - aDiff;
-
-        return 0;
-      })[0]
-    : null;
-
-  const avgPercent = totalTests ? Math.round(tests.reduce((a, t) => a + (Number(t.percent) || 0), 0) / totalTests) : 0;
-  const avgNumQuestions = totalTests ? Math.round(tests.reduce((a, t) => a + ((t.questions || []).length || 0), 0) / totalTests) : 0;
-  const avgDifficultyNumber = totalTests ? Math.round(tests.reduce((a, t) => a + (Number(t.difficultyNumber) || 1), 0) / totalTests) : 0;
-  const avgDifficultyLabel = difficultyLabel(avgDifficultyNumber);
-
-  const mostUsedType = (() => {
-    if (!totalTests) return "—";
-    const counts = {};
-    tests.forEach(t => counts[t.type || "Unknown"] = (counts[t.type || "Unknown"] || 0) + 1);
-    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-  })();
-
-  const mostUsedTopic = (() => {
-    if (!totalTests) return "—";
-    const counts = {};
-    tests.forEach(t => counts[t.topic || "Unknown"] = (counts[t.topic || "Unknown"] || 0) + 1);
-    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-  })();
-
+  // ---------- PAGE ----------
   return (
     <>
-      <RetakeModal open={retakeModalOpen} onClose={closeModal} onRetake={handleRetake} onRevised={handleRevised} />
+      <RetakeModal
+        open={retakeModalOpen}
+        onClose={closeModal}
+        onRetake={handleRetake}
+        onRevised={handleRevised}
+      />
 
       <div style={{
         minHeight: "100vh",
@@ -333,58 +304,66 @@ export default function ProgressPage() {
         display: "flex",
         justifyContent: "center",
         padding: "40px 20px",
-        color: "white",
-        fontFamily: "Segoe UI, Roboto, sans-serif"
+        color: "white"
       }}>
         <div style={{
           width: "92%",
           maxWidth: "980px",
-          backgroundColor: "rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.08)",
           backdropFilter: "blur(14px)",
           borderRadius: "36px",
           border: "3px solid rgba(255,255,255,0.18)",
-          padding: "40px",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.18)"
+          padding: "40px"
         }}>
-          <h1 style={{ textAlign: "center", marginBottom: "30px", fontWeight: 800 }}>Your Progress</h1>
 
-          {error && <div style={{ marginBottom: 12, color: "#ffdddd", textAlign: "center" }}>{error}</div>}
+          <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Your Progress</h1>
 
-          {/* Top Stats */}
-          <div style={{ display: "flex", gap: "20px", flexWrap: "nowrap", justifyContent: "center", marginBottom: "40px", overflowX: "auto" }}>
-            <StatCard value={`${avgPercent}%`} subtitle="Average Score" />
-            <StatCard value={avgNumQuestions} subtitle="Avg Number of Questions" />
-            <StatCard value={avgDifficultyLabel} subtitle="Avg Difficulty" />
-            <StatCard value={mostUsedType} subtitle="Total Tests Taken" />
-            <StatCard value={mostUsedTopic} subtitle="Most Common Topic" />
+          {/* Stats */}
+          <div style={{
+            display: "flex",
+            gap: "20px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            marginBottom: "40px"
+          }}>
+            <StatCard value={testsTaken} subtitle="Total Tests Taken" />
+            <StatCard value={`${avgPercent}%`} subtitle="Avg Score (Saved Tests)" />
+            <StatCard value={avgDifficulty} subtitle="Avg Difficulty" />
           </div>
 
           {/* Best Test */}
-          {bestTest && <h2 style={{ marginBottom: "20px", fontWeight: 700, color: "white" }}>Your Best Test Ever</h2>}
-          {bestTest && <TestCard
-            test={bestTest}
-            expanded={expandedIndex === -1}
-            onExpandToggle={() => setExpandedIndex(expandedIndex === -1 ? null : -1)}
-            onRetake={openRetakeModal}
-            onDelete={handleDelete}
-            isBest
-          />}
-
-          {/* Saved Tests */}
-          <h2 style={{ marginBottom: "20px", fontWeight: 700, color: "white" }}>Your Saved Tests</h2>
-          {tests.filter(t => t !== bestTest).length === 0
-            ? <p style={{ textAlign: "center", opacity: 0.8, color: "white" }}>No saved tests yet.</p>
-            : tests.filter(t => t !== bestTest).map((test, index) => (
+          {bestTest && (
+            <>
+              <h2>Your Best Saved Test</h2>
               <TestCard
-                key={test.id || index}
-                test={test}
-                expanded={expandedIndex === index}
-                onExpandToggle={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                test={bestTest}
+                expanded={expandedIndex === -1}
+                onExpandToggle={() => setExpandedIndex(expandedIndex === -1 ? null : -1)}
                 onRetake={openRetakeModal}
                 onDelete={handleDelete}
+                isBest
               />
-            ))
-          }
+            </>
+          )}
+
+          {/* Saved Tests */}
+          <h2>Your Saved Tests</h2>
+          {tests.length === 0 ? (
+            <p style={{ opacity: 0.8 }}>No saved tests yet.</p>
+          ) : (
+            tests
+              .filter(t => t !== bestTest)
+              .map((test, i) => (
+                <TestCard
+                  key={test.id}
+                  test={test}
+                  expanded={expandedIndex === i}
+                  onExpandToggle={() => setExpandedIndex(expandedIndex === i ? null : i)}
+                  onRetake={openRetakeModal}
+                  onDelete={handleDelete}
+                />
+              ))
+          )}
         </div>
       </div>
     </>
