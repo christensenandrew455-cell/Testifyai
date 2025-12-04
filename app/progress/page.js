@@ -11,13 +11,13 @@ import { useRouter } from "next/navigation";
 function getAnswerText(q, index) {
   if (!Number.isInteger(index)) return "";
   if (q.answers && q.answers[index]) return q.answers[index];
-
   const fallback = ["A", "B", "C", "D", "E", "F"];
   return fallback[index] || `Choice ${index}`;
 }
 
 // ---------- STYLE CONSTANTS ----------
 const cardTextColor = "#666";
+const darkGray = "#333"; // NEW
 const restartBtnStyle = { padding: "8px 12px", background: "#ff9800", border: "2px solid rgba(0,0,0,0.08)", color: "white", borderRadius: "8px", cursor: "pointer", fontWeight: 700 };
 const viewBtnStyle = { padding: "8px 12px", background: "#1976d2", border: "2px solid rgba(0,0,0,0.08)", color: "white", borderRadius: "8px", cursor: "pointer", fontWeight: 700 };
 const deleteBtnStyle = { padding: "8px 12px", background: "#d32f2f", border: "2px solid rgba(0,0,0,0.08)", color: "white", borderRadius: "8px", cursor: "pointer", fontWeight: 700 };
@@ -50,8 +50,7 @@ const RetakeModal = ({ open, onClose, onRetake, onRevised }) => {
 
 // ---------- TEST CARD ----------
 const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }) => {
-  const difficultyLabel = (n) =>
-    n <= 3 ? "Beginner" : n <= 6 ? "Apprentice" : "Master";
+  const difficultyLabel = (n) => (n <= 3 ? "Beginner" : n <= 6 ? "Apprentice" : "Master");
 
   return (
     <div style={{
@@ -65,8 +64,8 @@ const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h3 style={{ margin: 0, fontWeight: 700, fontSize: "1.3rem" }}>{test.topic}</h3>
-          <p style={{ margin: "6px 0" }}>
+          <h3 style={{ margin: 0, fontWeight: 700, fontSize: "1.3rem", color: darkGray }}>{test.topic}</h3>
+          <p style={{ margin: "6px 0", color: darkGray }}>
             Score: {test.score}/{test.total} ({test.percent}%) — {(test.questions || []).length} questions — Difficulty: {difficultyLabel(test.difficultyNumber)}
           </p>
         </div>
@@ -84,10 +83,8 @@ const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }
             <div key={i} style={{ marginBottom: "12px" }}>
 
               <p><b>Q{i + 1}:</b> {q.question}</p>
-
               <p>User Answer: {getAnswerText(q, q.userAnswer)}</p>
               <p>Correct Answer: {getAnswerText(q, q.correctAnswer)}</p>
-
               {q.explanation && <p>Explanation: {q.explanation}</p>}
 
               <p style={{ color: q.isCorrect ? "green" : "red" }}>
@@ -221,7 +218,7 @@ export default function ProgressPage() {
       <div style={{ minHeight: "100vh", width: "100vw", background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)", display: "flex", justifyContent: "center", padding: "40px 20px", color: "white" }}>
         <div style={{ width: "92%", maxWidth: "980px", backgroundColor: "rgba(255,255,255,0.08)", backdropFilter: "blur(14px)", borderRadius: "36px", border: "3px solid rgba(255,255,255,0.18)", padding: "40px" }}>
 
-          <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Your Progress</h1>
+          <h1 style={{ textAlign: "center", marginBottom: "30px", color: darkGray }}>Your Progress</h1>
 
           <div style={{ display: "flex", gap: "20px", flexWrap: "nowrap", justifyContent: "center", marginBottom: "40px", overflowX: "auto" }}>
             <StatCard value={`${avgPercent}%`} subtitle="Average Score" />
@@ -231,7 +228,7 @@ export default function ProgressPage() {
             <StatCard value={mostUsedTopic} subtitle="Most Common Topic" />
           </div>
 
-          {bestTest && <h2 style={{ marginBottom: "20px", color: "white" }}>Your Best Test Ever</h2>}
+          {bestTest && <h2 style={{ marginBottom: "20px", color: darkGray }}>Your Best Test Ever</h2>}
           {bestTest && (
             <TestCard
               test={bestTest}
@@ -243,10 +240,10 @@ export default function ProgressPage() {
             />
           )}
 
-          <h2 style={{ marginBottom: "20px", color: "white" }}>Your Saved Tests</h2>
+          <h2 style={{ marginBottom: "20px", color: darkGray }}>Your Saved Tests</h2>
 
           {tests.filter((t) => t !== bestTest).length === 0 ? (
-            <p style={{ textAlign: "center", opacity: 0.8 }}>No saved tests yet.</p>
+            <p style={{ textAlign: "center", opacity: 0.8, color: darkGray }}>No saved tests yet.</p>
           ) : (
             tests
               .filter((t) => t !== bestTest)
