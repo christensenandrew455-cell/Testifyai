@@ -39,16 +39,18 @@ const deleteBtnStyle = {
 
 // ---------- STAT CARD ----------
 const StatCard = ({ value, subtitle }) => (
-  <div style={{
-    background: "white",
-    borderRadius: "16px",
-    border: "3px solid rgba(0,0,0,0.12)",
-    padding: "20px",
-    textAlign: "center",
-    minWidth: "160px",
-    color: cardTextColor,
-    boxShadow: "0 6px 20px rgba(0,0,0,0.06)"
-  }}>
+  <div
+    style={{
+      background: "white",
+      borderRadius: "16px",
+      border: "3px solid rgba(0,0,0,0.12)",
+      padding: "20px",
+      textAlign: "center",
+      minWidth: "160px",
+      color: cardTextColor,
+      boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+    }}
+  >
     <h2 style={{ margin: 0, color: cardTextColor }}>{value}</h2>
     <p style={{ fontSize: "0.9rem", color: cardTextColor }}>{subtitle}</p>
   </div>
@@ -58,58 +60,80 @@ const StatCard = ({ value, subtitle }) => (
 const RetakeModal = ({ open, onClose, onRetake, onRevised }) => {
   if (!open) return null;
   return (
-    <div style={{
-      position: "fixed", top: 0, left: 0,
-      width: "100vw", height: "100vh",
-      background: "rgba(0,0,0,0.6)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      zIndex: 9999
-    }}>
-      <div style={{
-        background: "white",
-        padding: "30px",
-        borderRadius: "18px",
-        width: "90%",
-        maxWidth: "480px",
-        textAlign: "center",
-        boxShadow: "0 10px 40px rgba(0,0,0,0.25)",
-        color: cardTextColor
-      }}>
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.6)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+      }}
+    >
+      <div
+        style={{
+          background: "white",
+          padding: "30px",
+          borderRadius: "18px",
+          width: "90%",
+          maxWidth: "480px",
+          textAlign: "center",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.25)",
+          color: cardTextColor,
+        }}
+      >
         <h2 style={{ marginBottom: "12px", color: cardTextColor }}>Retake Options</h2>
         <p style={{ color: cardTextColor, marginBottom: "22px" }}>
-          Retake the same test or get a revised version?
+          Would you like to retake the exact same test, or take a revised version
+          with similar questions worded differently?
         </p>
-
         <div style={{ display: "flex", justifyContent: "center", gap: "14px" }}>
-          <button onClick={onRetake} style={{
-            padding: "10px 16px",
-            background: "#1976d2",
-            color: "white",
-            borderRadius: "8px",
-            border: "none",
-            cursor: "pointer",
-            fontWeight: 700
-          }}>Retake</button>
-
-          <button onClick={onRevised} style={{
-            padding: "10px 16px",
-            background: "#ff9800",
-            color: "white",
-            borderRadius: "8px",
-            border: "none",
-            cursor: "pointer",
-            fontWeight: 700
-          }}>Revised</button>
+          <button
+            onClick={onRetake}
+            style={{
+              padding: "10px 16px",
+              background: "#1976d2",
+              color: "white",
+              borderRadius: "8px",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 700,
+            }}
+          >
+            Retake
+          </button>
+          <button
+            onClick={onRevised}
+            style={{
+              padding: "10px 16px",
+              background: "#ff9800",
+              color: "white",
+              borderRadius: "8px",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 700,
+            }}
+          >
+            Revised
+          </button>
         </div>
-
-        <button onClick={onClose} style={{
-          marginTop: "18px",
-          background: "transparent",
-          border: "none",
-          textDecoration: "underline",
-          color: "#444",
-          cursor: "pointer"
-        }}>Cancel</button>
+        <button
+          onClick={onClose}
+          style={{
+            marginTop: "18px",
+            background: "transparent",
+            border: "none",
+            textDecoration: "underline",
+            color: "#444",
+            cursor: "pointer",
+          }}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );
@@ -121,20 +145,21 @@ const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }
     const n = Number(num);
     if (n <= 3) return "Beginner";
     if (n <= 6) return "Apprentice";
-    if (n <= 9) return "Master";
-    return "Unknown";
+    return "Master";
   };
 
   return (
-    <div style={{
-      background: "white",
-      color: cardTextColor,
-      borderRadius: isBest ? "20px" : "12px",
-      padding: isBest ? "24px" : "15px",
-      marginBottom: "18px",
-      border: isBest ? "3px solid gold" : "2px solid rgba(0,0,0,0.06)",
-      boxShadow: isBest ? "0 10px 30px rgba(0,0,0,0.25)" : "none"
-    }}>
+    <div
+      style={{
+        background: "white",
+        color: cardTextColor,
+        borderRadius: isBest ? "20px" : "12px",
+        padding: isBest ? "24px" : "15px",
+        marginBottom: "18px",
+        border: isBest ? "3px solid gold" : "2px solid rgba(0,0,0,0.06)",
+        boxShadow: isBest ? "0 10px 30px rgba(0,0,0,0.25)" : "none",
+      }}
+    >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <h3 style={{ margin: 0, fontWeight: 700, color: cardTextColor }}>{test.topic}</h3>
@@ -143,9 +168,15 @@ const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }
           </p>
         </div>
         <div style={{ display: "flex", gap: "12px" }}>
-          <button onClick={() => onRetake(test.id)} style={restartBtnStyle}>Retake</button>
-          <button onClick={onExpandToggle} style={viewBtnStyle}>View</button>
-          <button onClick={() => onDelete(test.id)} style={deleteBtnStyle}>Delete</button>
+          <button onClick={() => onRetake(test.id)} style={restartBtnStyle}>
+            Retake
+          </button>
+          <button onClick={onExpandToggle} style={viewBtnStyle}>
+            View
+          </button>
+          <button onClick={() => onDelete(test.id)} style={deleteBtnStyle}>
+            Delete
+          </button>
         </div>
       </div>
 
@@ -153,13 +184,13 @@ const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }
         <div style={{ marginTop: "14px" }}>
           {(test.questions || []).map((q, i) => (
             <div key={i} style={{ marginBottom: "12px" }}>
-              <p><b>Q{i + 1}:</b> {q.question}</p>
+              <p>
+                <b>Q{i + 1}:</b> {q.question}
+              </p>
               <p>User Answer: {q.userAnswer}</p>
               <p>Correct Answer: {q.correctAnswer}</p>
               {q.explanation && <p>Explanation: {q.explanation}</p>}
-              <p style={{ color: q.isCorrect ? "green" : "red" }}>
-                {q.isCorrect ? "Correct" : "Incorrect"}
-              </p>
+              <p style={{ color: q.isCorrect ? "green" : "red" }}>{q.isCorrect ? "Correct" : "Incorrect"}</p>
             </div>
           ))}
         </div>
@@ -175,7 +206,6 @@ export default function ProgressPage() {
   const [testsTaken, setTestsTaken] = useState(0);
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState(null);
-  const [error, setError] = useState(null);
 
   const [retakeModalOpen, setRetakeModalOpen] = useState(false);
   const [selectedTestId, setSelectedTestId] = useState(null);
@@ -185,18 +215,12 @@ export default function ProgressPage() {
   // ---------- LOAD Firestore Stats ----------
   const fetchStats = async () => {
     if (!user?.uid) return;
-
     try {
       const ref = doc(db, "users", user.uid, "stats", "progress");
       const snap = await getDoc(ref);
-
-      if (snap.exists()) {
-        setTestsTaken(snap.data().testsTaken || 0);
-      } else {
-        setTestsTaken(0);
-      }
+      setTestsTaken(snap.exists() ? snap.data().testsTaken || 0 : 0);
     } catch (err) {
-      console.error("stats error:", err);
+      console.error(err);
       setTestsTaken(0);
     }
   };
@@ -204,17 +228,11 @@ export default function ProgressPage() {
   // ---------- LOAD Tests ----------
   const fetchTestsData = async () => {
     if (!user?.uid) {
-      // Guest mode
-      try {
-        const local = JSON.parse(localStorage.getItem("savedTests") || "[]");
-        setTests(local);
-      } catch {
-        setTests([]);
-      }
+      const local = JSON.parse(localStorage.getItem("savedTests") || "[]");
+      setTests(local);
       setLoading(false);
       return;
     }
-
     try {
       const docs = await getAllTests(user.uid);
       setTests(docs);
@@ -236,30 +254,18 @@ export default function ProgressPage() {
   const avgPercent = totalSaved
     ? Math.round(tests.reduce((a, t) => a + (Number(t.percent) || 0), 0) / totalSaved)
     : 0;
-
   const avgDifficultyNumber = totalSaved
     ? Math.round(tests.reduce((a, t) => a + (Number(t.difficultyNumber) || 1), 0) / totalSaved)
     : 0;
+  const avgDifficulty = avgDifficultyNumber <= 3 ? "Beginner" : avgDifficultyNumber <= 6 ? "Apprentice" : "Master";
 
-  const difficultyLabel = (num) => {
-    const n = Number(num);
-    if (n <= 3) return "Beginner";
-    if (n <= 6) return "Apprentice";
-    return "Master";
-  };
-
-  const avgDifficulty = difficultyLabel(avgDifficultyNumber);
-
-  // ---------- BEST TEST ----------
   const bestTest = totalSaved
     ? [...tests].sort((a, b) => (b.percent || 0) - (a.percent || 0))[0]
     : null;
 
   // ---------- Delete ----------
   const handleDelete = async (testId) => {
-    const ok = confirm("Delete this test?");
-    if (!ok) return;
-
+    if (!confirm("Delete this test?")) return;
     try {
       if (user?.uid) {
         await deleteDoc(doc(db, "users", user.uid, "data", testId));
@@ -290,45 +296,46 @@ export default function ProgressPage() {
   // ---------- PAGE ----------
   return (
     <>
-      <RetakeModal
-        open={retakeModalOpen}
-        onClose={closeModal}
-        onRetake={handleRetake}
-        onRevised={handleRevised}
-      />
+      <RetakeModal open={retakeModalOpen} onClose={closeModal} onRetake={handleRetake} onRevised={handleRevised} />
 
-      <div style={{
-        minHeight: "100vh",
-        width: "100vw",
-        background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
-        display: "flex",
-        justifyContent: "center",
-        padding: "40px 20px",
-        color: "white"
-      }}>
-        <div style={{
-          width: "92%",
-          maxWidth: "980px",
-          background: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(14px)",
-          borderRadius: "36px",
-          border: "3px solid rgba(255,255,255,0.18)",
-          padding: "40px"
-        }}>
-
+      <div
+        style={{
+          minHeight: "100vh",
+          width: "100vw",
+          background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)",
+          display: "flex",
+          justifyContent: "center",
+          padding: "40px 20px",
+          color: "white",
+        }}
+      >
+        <div
+          style={{
+            width: "92%",
+            maxWidth: "980px",
+            background: "rgba(255,255,255,0.08)",
+            backdropFilter: "blur(14px)",
+            borderRadius: "36px",
+            border: "3px solid rgba(255,255,255,0.18)",
+            padding: "40px",
+          }}
+        >
           <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Your Progress</h1>
 
           {/* Stats */}
-          <div style={{
-            display: "flex",
-            gap: "20px",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            marginBottom: "40px"
-          }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "20px",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              marginBottom: "40px",
+            }}
+          >
             <StatCard value={testsTaken} subtitle="Total Tests Taken" />
             <StatCard value={`${avgPercent}%`} subtitle="Avg Score (Saved Tests)" />
             <StatCard value={avgDifficulty} subtitle="Avg Difficulty" />
+            <StatCard value={totalSaved} subtitle="Saved Tests Count" />
           </div>
 
           {/* Best Test */}
