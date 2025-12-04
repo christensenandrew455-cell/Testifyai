@@ -7,6 +7,15 @@ import { db } from "../firebase";
 import { doc, deleteDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
+// ---- ADDED: Small helper to decode answer index → text ----
+function getAnswerText(q, index) {
+  if (!Number.isInteger(index)) return "";
+  if (q.answers && q.answers[index]) return q.answers[index];
+
+  const fallback = ["A", "B", "C", "D", "E", "F"];
+  return fallback[index] || `Choice ${index}`;
+}
+
 // ---------- STYLE CONSTANTS ----------
 const cardTextColor = "#666";
 const restartBtnStyle = { padding: "8px 12px", background: "#ff9800", border: "2px solid rgba(0,0,0,0.08)", color: "white", borderRadius: "8px", cursor: "pointer", fontWeight: 700 };
@@ -70,16 +79,21 @@ const TestCard = ({ test, expanded, onExpandToggle, onRetake, onDelete, isBest }
       </div>
 
       {expanded && (
-        <div style={{ marginTop: "14px", paddingLeft: "10px" }}>
+        <div style={{ marginTop: "14px", paddingLeft: "10px", color: cardTextColor }}>
           {(test.questions || []).map((q, i) => (
             <div key={i} style={{ marginBottom: "12px" }}>
+
               <p><b>Q{i + 1}:</b> {q.question}</p>
-              <p>User Answer: {q.userAnswer}</p>
-              <p>Correct Answer: {q.correctAnswer}</p>
+
+              <p>User Answer: {getAnswerText(q, q.userAnswer)}</p>
+              <p>Correct Answer: {getAnswerText(q, q.correctAnswer)}</p>
+
               {q.explanation && <p>Explanation: {q.explanation}</p>}
+
               <p style={{ color: q.isCorrect ? "green" : "red" }}>
                 {q.isCorrect ? "Correct" : "Incorrect"}
               </p>
+
             </div>
           ))}
         </div>
@@ -98,7 +112,6 @@ export default function ProgressPage() {
   const [selectedTestId, setSelectedTestId] = useState(null);
   const router = useRouter();
 
-  // Load tests
   const fetchTestsData = async () => {
     if (!user?.uid) {
       const local = JSON.parse(localStorage.getItem("savedTests") || "[]");
@@ -133,7 +146,6 @@ export default function ProgressPage() {
     fetchTestsData();
   }, [user]);
 
-  // delete
   const handleDelete = async (testId) => {
     const ok = confirm("Delete this saved test? This cannot be undone.");
     if (!ok) return;
@@ -150,7 +162,6 @@ export default function ProgressPage() {
     }
   };
 
-  // retake modal logic
   const openRetakeModal = (id) => {
     setSelectedTestId(id);
     setRetakeModalOpen(true);
@@ -171,20 +182,16 @@ export default function ProgressPage() {
     router.push(`/testcontroller?mode=revised&testId=${selectedTestId}`);
   };
 
-  // ---------- COMPUTED STATS ----------
   const totalTests = tests.length;
 
-  // ⭐ OLD VERSION'S BETTER BEST-TEST LOGIC ⭐
   const bestTest = totalTests
     ? [...tests].sort((a, b) => {
         const aWeighted = (a.percent || 0) * ((a.questions?.length || 1));
         const bWeighted = (b.percent || 0) * ((b.questions?.length || 1));
-
         if (bWeighted !== aWeighted) return bWeighted - aWeighted;
 
         const aDiff = Number(a.difficultyNumber || 1);
         const bDiff = Number(b.difficultyNumber || 1);
-
         if (bDiff !== aDiff) return bDiff - aDiff;
 
         return 0;
@@ -200,20 +207,22 @@ export default function ProgressPage() {
   })();
 
   const mostUsedTopic = totalTests
-    ? Object.entries(tests.reduce((acc, t) => { acc[t.topic || "Unknown"] = (acc[t.topic || "Unknown"] || 0) + 1; return acc; }, {}))
+    ? Object.entries(tests.reduce((acc, t) => {
+        acc[t.topic || "Unknown"] = (acc[t.topic || "Unknown"] || 0) + 1;
+        return acc;
+      }, {}))
         .sort((a, b) => b[1] - a[1])[0][0]
     : "—";
 
   return (
     <>
       <RetakeModal open={retakeModalOpen} onClose={closeModal} onRetake={handleRetake} onRevised={handleRevised} />
-      
+
       <div style={{ minHeight: "100vh", width: "100vw", background: "linear-gradient(90deg, #1976d2 0%, #ff9800 100%)", display: "flex", justifyContent: "center", padding: "40px 20px", color: "white" }}>
         <div style={{ width: "92%", maxWidth: "980px", backgroundColor: "rgba(255,255,255,0.08)", backdropFilter: "blur(14px)", borderRadius: "36px", border: "3px solid rgba(255,255,255,0.18)", padding: "40px" }}>
-          
+
           <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Your Progress</h1>
 
-          {/* Stats */}
           <div style={{ display: "flex", gap: "20px", flexWrap: "nowrap", justifyContent: "center", marginBottom: "40px", overflowX: "auto" }}>
             <StatCard value={`${avgPercent}%`} subtitle="Average Score" />
             <StatCard value={avgNumQuestions} subtitle="Avg Number of Questions" />
@@ -222,7 +231,6 @@ export default function ProgressPage() {
             <StatCard value={mostUsedTopic} subtitle="Most Common Topic" />
           </div>
 
-          {/* ⭐ BEST TEST (OLD VERSION STYLE LOGIC) ⭐ */}
           {bestTest && <h2 style={{ marginBottom: "20px", color: "white" }}>Your Best Test Ever</h2>}
           {bestTest && (
             <TestCard
@@ -235,7 +243,6 @@ export default function ProgressPage() {
             />
           )}
 
-          {/* All other tests */}
           <h2 style={{ marginBottom: "20px", color: "white" }}>Your Saved Tests</h2>
 
           {tests.filter((t) => t !== bestTest).length === 0 ? (
