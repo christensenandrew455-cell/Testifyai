@@ -5,6 +5,6 @@ const nextConfig = {
     return [
       // Add any future redirects if needed
     ];
-  },
+  }
 
 module.exports = nextConfig;
