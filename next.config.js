@@ -5,6 +5,8 @@ const nextConfig = {
     return [
       // Add any future redirects if needed
     ];
-  }
+  },
+};
 
+// ⬇️ You forgot this brace ^
 module.exports = nextConfig;
