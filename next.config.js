@@ -7,13 +7,4 @@ const nextConfig = {
     ];
   },
 
-  // Disable SWC minifier to avoid missing binary errors
-  swcMinify: false,
-
-  // Experimental: skip SWC compilation if binaries are missing
-  experimental: {
-    forceSwcTransforms: false,
-  },
-};
-
 module.exports = nextConfig;
